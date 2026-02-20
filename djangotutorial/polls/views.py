@@ -1,14 +1,20 @@
 from django.shortcuts import render
-
-# Create your views here.
 from django.http import HttpResponse
+from django.template import loader # Il importe le template. 
+from .models import Question
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+    latest_question_list = Question.objects.order_by("-pub_date")[:5]
+    # template = loader.get_template("polls/index.html") # You do not need it because it is in the above 
+    context = {"latest_question_list": latest_question_list}
+    return HttpResponse(template.render(context, request))
+
+# Leave the rest of the views (detail, results, vote) unchanged
 
 def detail(request, question_id):
-    return HttpResponse("You're looking at question %s." % question_id)
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, "polls/detail.html", {"question": question})
 
 
 def results(request, question_id):
