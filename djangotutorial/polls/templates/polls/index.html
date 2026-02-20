@@ -1,10 +1,17 @@
-<h1>Mon site internet</h1>
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+
+<h1 class=hero-title>
+    <span class="title-line">Explorez</span>
+    <span class="tile-line highlight">vos rêves</span>
+</h1>
 
 
 <div>
 <p> La vie est belle <p>
 <div>
-    
+
 {% if latest_question_list %}
     <ul>
     {% for question in latest_question_list %}
