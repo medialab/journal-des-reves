@@ -24,18 +24,21 @@
                         <span class="title-line highlight">vos rêves</span>
                     </h1>
                 </div>
-                <p class="hero-description">Un journal de rêves pour soi, pour la science et sécurisé.</p>
-            </div>
+                <p class="hero-description">Un journal de rêves pour soi et pour les sciences sociales.</p>
+        
+
 
                 {% if latest_question_list %}
                     <ul>
                     {% for question in latest_question_list %}
-                        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+                        <li><a class="hero-description" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
                     {% endfor %}
                     </ul>
                 {% else %}
                     <p>No polls are available.</p>
                 {% endif %}
+        
+            </div>
         </section>
     </div>
 </body>
