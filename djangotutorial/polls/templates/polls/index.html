@@ -1,23 +1,42 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal de Rêves</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+</head>
 
-<h1 class=hero-title>
-    <span class="title-line">Explorez</span>
-    <span class="tile-line highlight">vos rêves</span>
-</h1>
+<body>
+    <div class="page active"> 
+        <section class="hero-section">
+            <div class="hero-background">
+                <div class="hero-image"></div>
+                <div class="hero-overlay"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        <span class="title-line">Explorez</span>
+                        <span class="title-line highlight">vos rêves</span>
+                    </h1>
+                </div>
+                <p class="hero-description">Un journal de rêves pour soi, pour la science et sécurisé.</p>
+            </div>
 
-
-<div>
-<p> La vie est belle <p>
-<div>
-
-{% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
+                {% if latest_question_list %}
+                    <ul>
+                    {% for question in latest_question_list %}
+                        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No polls are available.</p>
+                {% endif %}
+        </section>
+    </div>
+</body>
+</html> 
