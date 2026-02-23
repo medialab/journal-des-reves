@@ -101,9 +101,10 @@ class AudioTranscriber {
 
             console.log('📥 Chargement transformers.js depuis CDN...');
             
-            // Créer un script tag
+            // Créer un script tag avec l'URL correcte vers le fichier JS
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.11.0';
+            // URL correcte pointant vers le bundle transformers.js
+            script.src = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.11.0/dist/transformers.min.js';
             script.type = 'text/javascript';
             script.async = true;
             
@@ -112,10 +113,12 @@ class AudioTranscriber {
                 
                 // Attendre que la libraire soit prête globalement
                 const checkInterval = setInterval(() => {
-                    if (window.transformers) {
+                    // Vérifier différents noms possibles
+                    const lib = window.transformers || window.TransformersJS;
+                    if (lib) {
                         clearInterval(checkInterval);
                         // Exporter au namespace global
-                        window.TransformersJS = window.transformers;
+                        window.TransformersJS = lib;
                         console.log('✓ window.TransformersJS disponible');
                         resolve();
                     }
@@ -124,8 +127,10 @@ class AudioTranscriber {
                 // Timeout après 30s
                 setTimeout(() => {
                     clearInterval(checkInterval);
-                    if (window.transformers) {
-                        window.TransformersJS = window.transformers;
+                    const lib = window.transformers || window.TransformersJS;
+                    if (lib) {
+                        window.TransformersJS = lib;
+                        console.log('✓ Timeout: TransformersJS disponible');
                         resolve();
                     } else {
                         reject(new Error('Timeout: transformers.js ne s\'est pas chargée'));
@@ -134,6 +139,7 @@ class AudioTranscriber {
             };
             
             script.onerror = () => {
+                console.error('❌ Erreur CDN:', script.src);
                 reject(new Error('Impossible de charger transformers.js depuis CDN'));
             };
             
