@@ -1,0 +1,616 @@
+{% extends "polls/base.html" %}
+{% load static %}
+
+{% block title %}Enregistrer un rêve – Journal des Rêves{% endblock %}
+
+{% block content %}
+<div class="page active">
+	<section class="page-hero page-hero-small">
+		<div class="container-small journal-hero">
+			<span class="journal-kicker">Journal des rêves</span>
+			<h1 class="page-title">Enregistrez votre rêve</h1>
+			<p class="page-subtitle">
+				Partagez vos rêves en audio - la transcription se fait en local dans votre navigateur.
+			</p>
+		</div>
+	</section>
+
+	<section class="page-content">
+		<div class="container-small">
+			<!-- Messages -->
+			{% if messages %}
+				{% for message in messages %}
+					<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+				{% endfor %}
+			{% endif %}
+
+			<div class="form-card">
+				<div class="recorder-section">
+					<!-- État Enregistrement -->
+					<div class="recorder-status" id="recorderStatus">
+						<div class="status-indicator idle" id="statusIndicator"></div>
+						<div class="status-text" id="statusText">Prêt à enregistrer</div>
+						<div class="status-time" id="statusTime">00:00</div>
+					</div>
+
+					<!-- Contrôles Enregistrement -->
+					<div class="recorder-controls">
+						<button type="button" class="btn btn-primary btn-large" id="startBtn" data-action="start">
+							🎤 Démarrer l'enregistrement
+						</button>
+						<button type="button" class="btn btn-danger btn-large" id="stopBtn" data-action="stop" disabled>
+							⏹️ Arrêter l'enregistrement
+						</button>
+					</div>
+
+					<!-- Waveform Visualizer -->
+					<div class="waveform-container" id="waveformContainer" style="display: none;">
+						<canvas id="waveformCanvas" width="600" height="100"></canvas>
+					</div>
+
+					<!-- Lecteur Audio Prévisualization -->
+					<div class="audio-preview" id="audioPreview" style="display: none;">
+						<h3>Aperçu de l'enregistrement</h3>
+						<audio id="audioPlayer" controls style="width: 100%;"></audio>
+					</div>
+
+					<!-- Status Transcription -->
+					<div class="transcription-status" id="transcriptionStatus" style="display: none;">
+						<div class="spinner"></div>
+						<p id="transcriptionMessage">Transcription en cours...</p>
+					</div>
+
+					<!-- Résultat Transcription -->
+					<div class="transcription-result" id="transcriptionResult" style="display: none;">
+						<h3>Transcription</h3>
+						<div class="transcription-text" id="transcriptionText"></div>
+						<button type="button" class="btn btn-secondary" id="editTranscriptionBtn">
+							✏️ Éditer la transcription
+						</button>
+					</div>
+				</div>
+
+				<!-- Formulaire Django -->
+				<form method="post" id="reve-form" enctype="multipart/form-data" class="modern-form">
+					{% csrf_token %}
+
+					<!-- Champ Audio (Blob) -->
+					<input type="hidden" id="audioData" name="audio_data">
+
+					<!-- Formulaire visible -->
+					<!-- Intensité Field -->
+					<div class="form-group">
+						<label class="form-label">
+							Intensité du rêve
+							<span class="label-hint">*</span>
+						</label>
+						<p class="field-help">De 1 (très faible) à 10 (très intense)</p>
+						<div class="intensity-slider-wrapper">
+							<input type="range" name="intensite" id="intensiteInput" min="1" max="10" value="5" required>
+							<div class="intensity-display">
+								<span class="intensity-value" id="intensiteValue">5</span>/10
+							</div>
+						</div>
+					</div>
+
+					<!-- Transcription Editable -->
+					<div class="form-group" id="transcriptionFormGroup" style="display: none;">
+						<label class="form-label">
+							Transcription (optionnel)
+						</label>
+						<p class="field-help">Vous pouvez éditer ou supprimer la transcription automatique</p>
+						<textarea name="transcription" id="transcriptionInput" class="form-textarea" placeholder="La transcription apparaîtra ici..."></textarea>
+					</div>
+
+					<div class="form-actions">
+						<button type="submit" class="btn btn-primary btn-large" id="submitBtn" disabled>
+							✅ Enregistrer le rêve
+						</button>
+						<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large">
+							Annuler
+						</a>
+					</div>
+				</form>
+
+				<div class="form-info-box">
+					<h3>ℹ️ Comment ça marche</h3>
+					<ul>
+						<li><strong>Enregistrement:</strong> Cliquez sur "Démarrer" pour enregistrer votre rêve en audio</li>
+						<li><strong>Transcription:</strong> La transcription se fait automatiquement en local (dans votre navigateur)</li>
+						<li><strong>Édition:</strong> Vous pouvez éditer la transcription avant de sauvegarder</li>
+						<li><strong>Confidentialité:</strong> Aucun audio n'est envoyé à un serveur externe</li>
+						<li><strong>Intensité:</strong> Évaluez l'intensité émotionnelle de votre rêve</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'polls/js/recorder.js' %}"></script>
+<script src="{% static 'polls/js/transcription.js' %}"></script>
+
+<script>
+// Variables globales
+let recorder = null;
+let transcriber = null;
+let currentAudioBlob = null;
+let startTime = null;
+let timerInterval = null;
+
+// DOM Elements
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const submitBtn = document.getElementById('submitBtn');
+const audioData = document.getElementById('audioData');
+const audioPlayer = document.getElementById('audioPlayer');
+const audioPreview = document.getElementById('audioPreview');
+const waveformContainer = document.getElementById('waveformContainer');
+const transcriptionStatus = document.getElementById('transcriptionStatus');
+const transcriptionResult = document.getElementById('transcriptionResult');
+const transcriptionText = document.getElementById('transcriptionText');
+const transcriptionInput = document.getElementById('transcriptionInput');
+const transcriptionFormGroup = document.getElementById('transcriptionFormGroup');
+const intensiteInput = document.getElementById('intensiteInput');
+const intensiteValue = document.getElementById('intensiteValue');
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', async () => {
+	console.log('🚀 Initialisation de la page d\'enregistrement...');
+	
+	// Initialiser l'enregistreur
+	recorder = new AudioRecorder({
+		sampleRate: 16000,
+		onStart: handleRecorderStart,
+		onStop: handleRecorderStop,
+		onError: handleRecorderError
+	});
+
+	// Initialiser le transcripteur
+	transcriber = new AudioTranscriber({
+		onReady: () => console.log('✅ Whisper prêt'),
+		onProgress: (msg) => updateTranscriptionMessage(msg),
+		onComplete: handleTranscriptionComplete,
+		onError: handleTranscriptionError
+	});
+
+	// Initialiser les ressources audio
+	const recorderReady = await recorder.initialize();
+	const transcriberReady = await transcriber.initialize();
+
+	if (!recorderReady) {
+		showError('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+		startBtn.disabled = true;
+	}
+
+	// Event listeners
+	startBtn.addEventListener('click', startRecording);
+	stopBtn.addEventListener('click', stopRecording);
+	intensiteInput.addEventListener('input', updateIntensiteDisplay);
+	document.getElementById('editTranscriptionBtn')?.addEventListener('click', editTranscription);
+	document.getElementById('reve-form').addEventListener('submit', handleFormSubmit);
+
+	console.log('✅ Page prête');
+});
+
+/**
+ * Démarrer l'enregistrement
+ */
+async function startRecording() {
+	console.log('🎤 Démarrage de l\'enregistrement...');
+	
+	try {
+		// Réinitialiser
+		currentAudioBlob = null;
+		audioPreview.style.display = 'none';
+		transcriptionResult.style.display = 'none';
+		transcriptionFormGroup.style.display = 'none';
+
+		// Démarrer
+		recorder.start();
+		startTime = Date.now();
+		startTimer();
+
+		// UI
+		startBtn.disabled = true;
+		stopBtn.disabled = false;
+		document.getElementById('statusIndicator').className = 'status-indicator recording';
+		document.getElementById('statusText').textContent = 'Enregistrement en cours...';
+
+	} catch (error) {
+		showError('Erreur lors du démarrage: ' + error.message);
+	}
+}
+
+/**
+ * Arrêter l'enregistrement
+ */
+function stopRecording() {
+	console.log('⏹️ Arrêt de l\'enregistrement...');
+	
+	recorder.stop();
+	stopTimer();
+
+	// UI
+	startBtn.disabled = false;
+	stopBtn.disabled = true;
+	document.getElementById('statusIndicator').className = 'status-indicator ready';
+	document.getElementById('statusText').textContent = 'Enregistrement arrêté';
+}
+
+/**
+ * Callback: Enregistrement démarré
+ */
+function handleRecorderStart() {
+	console.log('🎙️ Enregistrement actif');
+}
+
+/**
+ * Callback: Enregistrement arrêté
+ */
+function handleRecorderStop(audioBlob) {
+	console.log('✅ Audio reçu:', (audioBlob.size / 1024).toFixed(2), 'KB');
+	
+	currentAudioBlob = audioBlob;
+
+	// Afficher la prévisualisation
+	const audioUrl = URL.createObjectURL(audioBlob);
+	audioPlayer.src = audioUrl;
+	audioPreview.style.display = 'block';
+
+	// Démarrer la transcription automatique
+	transcribeAudio(audioBlob);
+}
+
+/**
+ * Callback: Erreur enregistrement
+ */
+function handleRecorderError(error) {
+	console.error('❌ Erreur enregistrement:', error);
+	showError('Erreur d\'enregistrement: ' + error);
+}
+
+/**
+ * Transcrire l'audio
+ */
+async function transcribeAudio(audioBlob) {
+	if (!transcriber.isReady) {
+		console.warn('⚠️ Whisper non prêt');
+		return;
+	}
+
+	transcriptionStatus.style.display = 'block';
+	updateTranscriptionMessage('Transcription en cours...');
+
+	const result = await transcriber.transcribe(audioBlob);
+
+	if (result) {
+		transcriptionResult.style.display = 'block';
+		transcriptionText.textContent = result;
+		transcriptionInput.value = result;
+		transcriptionFormGroup.style.display = 'block';
+		submitBtn.disabled = false;
+		transcriptionStatus.style.display = 'none';
+	}
+}
+
+/**
+ * Callback: Transcription complète
+ */
+function handleTranscriptionComplete(text) {
+	console.log('✅ Transcription:', text);
+	transcriptionStatus.style.display = 'none';
+}
+
+/**
+ * Callback: Erreur transcription
+ */
+function handleTranscriptionError(error) {
+	console.warn('⚠️ Erreur transcription:', error);
+	transcriptionStatus.style.display = 'none';
+	transcriptionResult.style.display = 'block';
+	transcriptionText.textContent = '(Transcription non disponible)';
+	submitBtn.disabled = false;
+}
+
+/**
+ * Mettre à jour le message de transcription
+ */
+function updateTranscriptionMessage(message) {
+	document.getElementById('transcriptionMessage').textContent = message;
+}
+
+/**
+ * Éditer la transcription
+ */
+function editTranscription() {
+	transcriptionInput.focus();
+	transcriptionInput.select();
+}
+
+/**
+ * Mettre à jour l'affichage intensité
+ */
+function updateIntensiteDisplay() {
+	intensiteValue.textContent = intensiteInput.value;
+}
+
+/**
+ * Démarrer le chronomètre
+ */
+function startTimer() {
+	timerInterval = setInterval(() => {
+		const elapsed = Math.floor((Date.now() - startTime) / 1000);
+		const minutes = Math.floor(elapsed / 60);
+		const seconds = elapsed % 60;
+		document.getElementById('statusTime').textContent = 
+			`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+	}, 100);
+}
+
+/**
+ * Arrêter le chronomètre
+ */
+function stopTimer() {
+	if (timerInterval) {
+		clearInterval(timerInterval);
+		document.getElementById('statusTime').textContent = '00:00';
+	}
+}
+
+/**
+ * Soumettre le formulaire
+ */
+async function handleFormSubmit(event) {
+	event.preventDefault();
+
+	if (!currentAudioBlob) {
+		showError('Veuillez d\'abord enregistrer un audio');
+		return;
+	}
+
+	const formData = new FormData();
+	formData.append('audio_file', currentAudioBlob, `reve-${Date.now()}.wav`);
+	formData.append('intensite', intensiteInput.value);
+	formData.append('transcription', transcriptionInput.value);
+	formData.append('csrfmiddlewaretoken', document.querySelector('[name="csrfmiddlewaretoken"]').value);
+
+	try {
+		submitBtn.disabled = true;
+		submitBtn.textContent = '⏳ Sauvegarde en cours...';
+
+		const response = await fetch('{% url "polls:enregistrer" %}', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (!response.ok) {
+			throw new Error(`Erreur serveur: ${response.status}`);
+		}
+
+		const result = await response.json();
+		
+		if (result.success) {
+			console.log('✅ Rêve sauvegardé');
+			showSuccess('Votre rêve a été enregistré!');
+			setTimeout(() => {
+				window.location.href = '{% url "polls:journal" %}';
+			}, 1500);
+		} else {
+			throw new Error(result.message || 'Erreur inconnue');
+		}
+
+	} catch (error) {
+		console.error('❌ Erreur sauvegarde:', error);
+		showError('Erreur lors de la sauvegarde: ' + error.message);
+		submitBtn.disabled = false;
+		submitBtn.textContent = '✅ Enregistrer le rêve';
+	}
+}
+
+/**
+ * Afficher une erreur
+ */
+function showError(message) {
+	const alert = document.createElement('div');
+	alert.className = 'alert alert-error';
+	alert.textContent = '❌ ' + message;
+	document.querySelector('.form-card').insertBefore(alert, document.querySelector('.recorder-section'));
+	setTimeout(() => alert.remove(), 5000);
+}
+
+/**
+ * Afficher un succès
+ */
+function showSuccess(message) {
+	const alert = document.createElement('div');
+	alert.className = 'alert alert-success';
+	alert.textContent = '✅ ' + message;
+	document.querySelector('.form-card').insertBefore(alert, document.querySelector('.recorder-section'));
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+	if (recorder) recorder.cleanup();
+	if (transcriber) transcriber.cleanup();
+});
+</script>
+
+<style>
+.recorder-status {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1.5rem;
+	background: var(--gray-50);
+	border-radius: var(--radius-lg);
+	margin-bottom: 1.5rem;
+}
+
+.status-indicator {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	transition: all var(--transition-base);
+}
+
+.status-indicator.idle {
+	background: var(--gray-400);
+}
+
+.status-indicator.recording {
+	background: #e74c3c;
+	animation: pulse 1.5s infinite;
+}
+
+.status-indicator.ready {
+	background: #27ae60;
+}
+
+.status-text {
+	flex: 1;
+	font-weight: 600;
+	color: var(--gray-700);
+}
+
+.status-time {
+	font-family: 'Courier New', monospace;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--primary);
+}
+
+.recorder-controls {
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+	flex-wrap: wrap;
+}
+
+.btn-danger {
+	background: #e74c3c;
+}
+
+.btn-danger:hover:not(:disabled) {
+	background: #c0392b;
+}
+
+.btn-danger:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.waveform-container {
+	margin: 1.5rem 0;
+	padding: 1rem;
+	background: var(--white);
+	border: 1px solid var(--gray-200);
+	border-radius: var(--radius-lg);
+}
+
+.audio-preview {
+	margin: 1.5rem 0;
+	padding: 1.5rem;
+	background: var(--gray-50);
+	border-radius: var(--radius-lg);
+	border-left: 4px solid var(--primary);
+}
+
+.audio-preview h3 {
+	margin-bottom: 1rem;
+	color: var(--primary);
+}
+
+.transcription-status {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1.5rem;
+	background: rgba(107, 157, 225, 0.1);
+	border-radius: var(--radius-lg);
+	margin: 1.5rem 0;
+}
+
+.spinner {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 3px solid rgba(50, 69, 189, 0.3);
+	border-radius: 50%;
+	border-top-color: var(--primary);
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+.transcription-result {
+	margin: 1.5rem 0;
+	padding: 1.5rem;
+	background: #f0fdf4;
+	border-radius: var(--radius-lg);
+	border-left: 4px solid #22c55e;
+}
+
+.transcription-result h3 {
+	color: #16a34a;
+	margin-bottom: 1rem;
+}
+
+.transcription-text {
+	background: var(--white);
+	padding: 1rem;
+	border-radius: var(--radius-md);
+	border: 1px solid #dcfce7;
+	margin-bottom: 1rem;
+	line-height: 1.6;
+	color: var(--gray-900);
+	font-style: italic;
+}
+
+.alert {
+	padding: 1rem;
+	border-radius: var(--radius-lg);
+	margin-bottom: 1rem;
+	border-left: 4px solid;
+}
+
+.alert-error {
+	background: #fee;
+	border-left-color: #e74c3c;
+	color: #c0392b;
+}
+
+.alert-success {
+	background: #efe;
+	border-left-color: #27ae60;
+	color: #229954;
+}
+
+.form-textarea {
+	width: 100%;
+	padding: 0.875rem 1.125rem;
+	font-size: 1rem;
+	font-family: var(--font-sans);
+	border: 2px solid var(--gray-200);
+	border-radius: var(--radius-md);
+	resize: vertical;
+	min-height: 120px;
+	line-height: 1.6;
+	transition: all var(--transition-base);
+}
+
+.form-textarea:focus {
+	outline: none;
+	border-color: var(--primary);
+	box-shadow: 0 0 0 4px rgba(50, 69, 189, 0.1);
+}
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
+}
+</style>
+{% endblock %}

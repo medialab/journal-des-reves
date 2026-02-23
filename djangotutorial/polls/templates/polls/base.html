@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Journal des Rêves{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="navbar-container">
+
+        <!-- LOGO -->
+        <a href="{% url 'polls:index' %}" class="navbar-logo">
+            <span class="logo-icon">🌙</span>
+            Journal des Rêves
+        </a>
+
+        <!-- HAMBURGER MOBILE -->
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- MENU -->
+        <ul class="nav-menu" id="navMenu">
+            <li>
+                <a href="{% url 'polls:index' %}" class="nav-link">Accueil</a>
+            </li>
+            <li>
+                <a href="{% url 'polls:enregistrer' %}" class="nav-link">Enregistrer</a>
+            </li>
+            <li>
+                <a href="{% url 'polls:journal' %}" class="nav-link">Journal</a>
+            </li>
+            <li>
+                <a href="{% url 'polls:profil' %}" class="nav-link">Profil</a>
+            </li>
+            <li>
+                <a href="{% url 'polls:description' %}" class="nav-link">Description</a>
+            </li>
+
+            {% if user.is_authenticated %}
+                <li>
+                    <a href="{% url 'logout' %}" class="nav-link">Déconnexion</a>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{% url 'login' %}" class="nav-link">Connexion</a>
+                </li>
+            {% endif %}
+        </ul>
+
+    </div>
+</header>
+
+{% block content %}
+{% endblock %}
+
+<script>
+    // Hamburger mobile
+    const hamburger = document.getElementById("hamburger");
+    const navMenu = document.getElementById("navMenu");
+
+    if (hamburger) {
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+    }
+
+    // Ombre au scroll
+    window.addEventListener("scroll", () => {
+        const navbar = document.querySelector(".navbar");
+        if (window.scrollY > 10) {
+            navbar.classList.add("scrolled");
+        } else {
+            navbar.classList.remove("scrolled");
+        }
+    });
+</script>
+
+</body>
+</html>

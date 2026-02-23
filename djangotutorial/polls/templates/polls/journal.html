@@ -1,0 +1,121 @@
+{% extends "polls/base.html" %}
+
+{% block title %}Journal – {{ profil.name }}{% endblock %}
+
+{% block content %}
+<div class="page active">
+	<section class="page-hero page-hero-small">
+		<div class="container-small journal-hero">
+			<span class="journal-kicker">Journal de rêves</span>
+			<h1 class="page-title">Bonjour {{ profil.name }}</h1>
+			<p class="page-subtitle">
+				Un panorama clair de vos rêves, de vos tags, et de votre rythme nocturne.
+			</p>
+			<p class="journal-hero-meta">
+				{% if total_reves %}
+					{{ total_reves }} rêve{{ total_reves|pluralize }} enregistré{{ total_reves|pluralize }}
+				{% else %}
+					Aucun rêve enregistré pour le moment
+				{% endif %}
+			</p>
+			<div class="hero-buttons">
+				<a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
+					Ajouter un rêve
+					<span class="btn-arrow">→</span>
+				</a>
+				<a href="{% url 'polls:profil' %}" class="btn btn-outline btn-large">
+					Mettre à jour le profil
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="page-content">
+		<div class="container">
+			<div class="stats-grid">
+				<div class="stat-card">
+					<span class="stat-icon">🌙</span>
+					<span class="stat-number">{{ total_reves|default:0 }}</span>
+					<span class="stat-label">Rêves enregistrés</span>
+				</div>
+				<div class="stat-card">
+					<span class="stat-icon">✨</span>
+					<span class="stat-number">
+						{% if moyenne_intensite %}
+							{{ moyenne_intensite|floatformat:1 }}
+						{% else %}
+							-
+						{% endif %}
+					</span>
+					<span class="stat-label">Intensité moyenne</span>
+				</div>
+				<div class="stat-card">
+					<span class="stat-icon">🏷️</span>
+					<span class="stat-number">
+						{% if tags_stats %}
+							{{ tags_stats|length }}
+						{% else %}
+							0
+						{% endif %}
+					</span>
+					<span class="stat-label">Tags uniques</span>
+				</div>
+			</div>
+
+			<div class="journal-grid journal-full-width">
+				<div class="journal-column">
+					<div class="dreams-container">
+						<h2 class="panel-title">Vos rêves récents</h2>
+						{% if reves %}
+							<div class="dreams-list">
+								{% for reve in reves %}
+									<div class="dream-card">
+										<div class="dream-card-header">
+											<div>
+												<div class="dream-date">{{ reve.date|date:"d M Y" }}</div>
+												<div class="dream-meta">
+													<span>Enregistré le {{ reve.created_at|date:"d M Y" }}</span>
+													<span>Heure {{ reve.created_at|date:"H:i" }}</span>
+												</div>
+											</div>
+											<div class="dream-intensity">Intensité {{ reve.intensite }}/10</div>
+										</div>
+										<div class="dream-card-actions">
+											<a href="{% url 'polls:reve_detail' reve.id %}" class="btn btn-small btn-primary">
+												Voir le rêve
+											</a>
+											{% if reve.audio %}
+												<a href="{{ reve.audio.url }}" class="btn btn-small btn-muted" target="_blank" rel="noopener">
+													Écouter l'audio
+												</a>
+											{% endif %}
+										</div>
+										{% if reve.tags %}
+											<div class="tag-cloud">
+												{% for tag in reve.tags.all %}
+													<span class="tag-chip">#{{ tag.name }}</span>
+												{% endfor %}
+											</div>
+										{% endif %}
+									</div>
+								{% endfor %}
+							</div>
+						{% else %}
+							<div class="empty-state">
+								<span class="empty-icon">🌌</span>
+								<h3>Commencez votre journal</h3>
+								<p>Enregistrez votre premier rêve pour obtenir des statistiques personnalisées.</p>
+								<a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
+									Écrire un rêve
+								</a>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}
+

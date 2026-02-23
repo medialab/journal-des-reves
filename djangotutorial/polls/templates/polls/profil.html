@@ -1,0 +1,121 @@
+{% extends "polls/base.html" %}
+
+{% block title %}Profil – {{ profil.name }}{% endblock %}
+
+{% block content %}
+<div class="page active">
+	<section class="page-hero page-hero-small">
+		<div class="container-small journal-hero">
+			<span class="journal-kicker">Profil</span>
+			<h1 class="page-title">{{ profil.name }}</h1>
+			<p class="page-subtitle">
+				Vos informations, votre rythme et un resume de vos reves.
+			</p>
+			<div class="hero-buttons">
+				<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">
+					Voir le journal
+					<span class="btn-arrow">→</span>
+				</a>
+				<a href="{% url 'polls:enregistrer' %}" class="btn btn-outline btn-large">
+					Ajouter un reve
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="page-content">
+		<div class="container">
+			<div class="stats-grid">
+				<div class="stat-card">
+					<span class="stat-icon">🌙</span>
+					<span class="stat-number">{{ total_reves|default:0 }}</span>
+					<span class="stat-label">Reves enregistres</span>
+				</div>
+				<div class="stat-card">
+					<span class="stat-icon">✨</span>
+					<span class="stat-number">
+						{% if moyenne_intensite %}
+							{{ moyenne_intensite|floatformat:1 }}
+						{% else %}
+							-
+						{% endif %}
+					</span>
+					<span class="stat-label">Intensite moyenne</span>
+				</div>
+				<div class="stat-card">
+					<span class="stat-icon">📅</span>
+					<span class="stat-number">
+						{% if reves %}
+							{{ reves.0.date|date:"d M" }}
+						{% else %}
+							-
+						{% endif %}
+					</span>
+					<span class="stat-label">Dernier reve</span>
+				</div>
+			</div>
+
+			<div class="journal-grid">
+				<div class="journal-column">
+					<div class="profile-card">
+						<div class="profile-header">
+							<div class="profile-avatar">
+								<span class="avatar-initials">{{ profil.name|slice:":1"|upper }}</span>
+							</div>
+							<div class="profile-header-text">
+								<h2>Informations principales</h2>
+								{% if profil.biography %}
+									<p class="profile-bio">{{ profil.biography }}</p>
+								{% else %}
+									<p class="profile-bio">Ajoutez une biographie pour contextualiser vos reves.</p>
+								{% endif %}
+							</div>
+						</div>
+						<div class="profile-info-grid">
+							<div class="profile-info-item">
+								<span class="info-label">Genre</span>
+								<span class="info-value">{{ profil.get_genre_display }}</span>
+							</div>
+							<div class="profile-info-item">
+								<span class="info-label">Annee de naissance</span>
+								<span class="info-value">{{ profil.birth_year }}</span>
+							</div>
+							<div class="profile-info-item">
+								<span class="info-label">Email</span>
+								<span class="info-value">{{ profil.email }}</span>
+							</div>
+							<div class="profile-info-item">
+								<span class="info-label">Journal deja tenu</span>
+								<span class="info-value">
+									{% if profil.deja_ecrit_reve %}
+										Oui
+									{% else %}
+										Non
+									{% endif %}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel">
+						<h3 class="panel-title">Rythme mensuel</h3>
+						{% if stats_mensuelles %}
+							<div class="monthly-stats">
+								{% for stat in stats_mensuelles %}
+									<div class="monthly-item">
+										<span class="monthly-label">{{ stat.mois|date:"M Y" }}</span>
+										<span class="monthly-count">{{ stat.total }}</span>
+									</div>
+								{% endfor %}
+							</div>
+						{% else %}
+							<p class="panel-muted">Pas encore de rythme mensuel calcule.</p>
+						{% endif %}
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}

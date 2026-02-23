@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib import admin
+from django.contrib.auth.models import User
 import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
@@ -30,20 +31,62 @@ class Choice(models.Model):
     votes = models.IntegerField(default=0)
     def __str__(self):
         return self.choice_text
-    
 
 class Profil(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+
     class Genre(models.TextChoices):
         Femme = 'F'
         Homme = 'H'
         Non_binaire = 'NB'
         Autre = 'A'
-    name = models.CharField(max_length=100)
-    genre = models.fields.CharField(choices=Genre.choices, max_length=(15)) 
-    biography = models.fields.CharField(max_length=1000)
-    birth_year = models.fields.IntegerField(validators=[MinValueValidator(1900), MaxValueValidator(2021)])
-    deja_ecrit_reve = models.fields.BooleanField(default=True)
-    page_officiel = models.fields.URLField(null=True, blank=True)
-    email = models.fields.EmailField(error_messages={"invalid": "Saisissez une adresse de courriel valide"})
 
+    name = models.CharField(max_length=100)
+    genre = models.CharField(choices=Genre.choices, max_length=15)
+    biography = models.TextField()  # mieux que CharField pour long texte
+    birth_year = models.IntegerField(
+        validators=[MinValueValidator(1900), MaxValueValidator(2025)]
+    )
+    deja_ecrit_reve = models.BooleanField(default=True)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.name
+
+
+class Reve(models.Model):
+    profil = models.ForeignKey(
+        Profil,
+        on_delete=models.CASCADE,
+        related_name="reves"
+    )
+
+    date = models.DateField(auto_now_add=True)
+
+    audio = models.FileField(
+        upload_to="reves_audio/",
+        help_text="Enregistrement audio du rêve (WAV)"
+    )
+
+    transcription = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Transcription automatique du rêve"
+    )
+
+    intensite = models.IntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"Rêve de {self.profil.name} - {self.date}"
 

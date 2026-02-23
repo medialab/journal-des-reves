@@ -1,0 +1,48 @@
+{% extends "polls/base.html" %}
+
+{% block title %}Connexion – Journal des Rêves{% endblock %}
+
+{% block content %}
+<div class="page active">
+    <section class="page-hero page-hero-small">
+        <div class="container-small journal-hero">
+            <span class="journal-kicker">Connexion</span>
+            <h1 class="page-title">Ravie de vous revoir</h1>
+            <p class="page-subtitle">Accedez a votre journal et a vos statistiques.</p>
+        </div>
+    </section>
+
+    <section class="page-content">
+        <div class="container-small">
+            <div class="form-card">
+                {% if form.non_field_errors %}
+                    <div class="error-message">{{ form.non_field_errors|striptags }}</div>
+                {% endif %}
+
+                <form method="post" class="modern-form">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field.as_widget(attrs={'class': 'form-input'}) }}
+                            {% if field.errors %}
+                                <div class="error-message">{{ field.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">Se connecter</button>
+                        <a href="{% url 'polls:index' %}" class="btn btn-outline btn-large">Retour a l'accueil</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
