@@ -1,0 +1,720 @@
+{% extends 'polls/base.html' %}
+{% load static %}
+
+{% block title %}Questionnaire - Journal des Rêves{% endblock %}
+
+{% block content %}
+<section class="page-content">
+    <div class="container-small">
+        
+        <!-- Messages Django -->
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Popup de connexion -->
+        {% if not is_authenticated %}
+        <div class="auth-modal active" id="questionnaireLoginModal">
+            <div class="auth-modal-content">
+                <div class="auth-modal-header">
+                    <h2>🔐 Connexion requise</h2>
+                    <p>Veuillez vous connecter avant de remplir le questionnaire</p>
+                </div>
+                <div class="auth-modal-body">
+                    <button type="button" class="btn btn-primary btn-large" onclick="openLoginModal(event)">
+                        Se connecter
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="window.location.href='{% url 'polls:index' %}'">
+                        Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-card"{% if not is_authenticated %} style="opacity: 0.4; pointer-events: none;"{% endif %}>
+            <div class="questionnaire-intro">
+                <h1 class="questionnaire-title">📝 <strong>Questionnaire</strong></h1>
+                <p class="questionnaire-description">
+                    Ce questionnaire fait partie d'une recherche en sciences sociales visant à comprendre l'expérience des rêves et 
+                    leur relation avec votre vie quotidienne. Vos réponses, entièrement confidentielles, nous aideront à approfondir 
+                    notre connaissance des phénomènes oniriques. L'ensemble du questionnaire dure environ 10-15 minutes.
+                </p>
+            </div>
+            
+            <!-- Barre de progression -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            
+            <!-- Numéro d'étape -->
+            <div class="step-indicator">
+                <span class="step-number" id="stepNumber">1</span> / <span class="step-total">3</span>
+            </div>
+
+            <form method="post" id="questionnaireForm" class="modern-form">
+                {% csrf_token %}
+                
+                <!-- ========== SECTION 1: VARIABLES SOCIO-DÉMOGRAPHIQUES ========== -->
+                <section class="form-section active" data-section="1">
+                    <div class="section-header">
+                        <h2 class="section-title">📊 Informations personnelles</h2>
+                        <p class="section-description">Commençons par quelques questions sur vous</p>
+                    </div>
+
+                    <!-- Année de naissance -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_annee_naissance">Année de naissance</label>
+                        <input type="number" id="id_annee_naissance" name="annee_naissance" class="form-input" 
+                               min="1900" max="2025" placeholder="AAAA" value="{{ form.annee_naissance.value|default:'' }}">
+                        {% if form.annee_naissance.errors %}<div class="error-message">{{ form.annee_naissance.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Genre -->
+                    <div class="form-group">
+                        <label class="form-label">Genre</label>
+                        <div class="radio-grid-2">
+                            <label class="radio-card">
+                                <input type="radio" name="genre" value="F" {% if form.genre.value == "F" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-label">👩 Femme</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="genre" value="H" {% if form.genre.value == "H" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-label">👨 Homme</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="genre" value="A" {% if form.genre.value == "A" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-label">🏳️ Autre</span>
+                                </div>
+                            </label>
+                        </div>
+                        {% if form.genre.errors %}<div class="error-message">{{ form.genre.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Diplôme -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_niv_diplome">Quel est votre diplôme le plus élevé ?</label>
+                        <select id="id_niv_diplome" name="niv_diplome" class="form-input">
+                            <option value="">Sélectionnez...</option>
+                            <option value="1" {% if form.niv_diplome.value == "1" %}selected{% endif %}>Aucun diplôme</option>
+                            <option value="2" {% if form.niv_diplome.value == "2" %}selected{% endif %}>Certificat d'études primaires</option>
+                            <option value="3" {% if form.niv_diplome.value == "3" %}selected{% endif %}>BEPC, brevet des collèges</option>
+                            <option value="4" {% if form.niv_diplome.value == "4" %}selected{% endif %}>CAP, BEP ou équivalent</option>
+                            <option value="5" {% if form.niv_diplome.value == "5" %}selected{% endif %}>Brevet supérieur, professionnel</option>
+                            <option value="6" {% if form.niv_diplome.value == "6" %}selected{% endif %}>Bac technologique ou professionnel</option>
+                            <option value="7" {% if form.niv_diplome.value == "7" %}selected{% endif %}>Bac d'enseignement général</option>
+                            <option value="8" {% if form.niv_diplome.value == "8" %}selected{% endif %}>Capacité en droit, DAEU</option>
+                            <option value="9" {% if form.niv_diplome.value == "9" %}selected{% endif %}>Bac +2 (BTS, DUT, etc.)</option>
+                            <option value="10" {% if form.niv_diplome.value == "10" %}selected{% endif %}>Bac +3 ou Bac +4 (Licence, etc.)</option>
+                            <option value="11" {% if form.niv_diplome.value == "11" %}selected{% endif %}>Bac +5 (Master, école, etc.)</option>
+                            <option value="12" {% if form.niv_diplome.value == "12" %}selected{% endif %}>Doctorat de recherche</option>
+                        </select>
+                        {% if form.niv_diplome.errors %}<div class="error-message">{{ form.niv_diplome.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Revenus -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_revenus_tranche">Revenus mensuels du ménage</label>
+                        <select id="id_revenus_tranche" name="revenus_tranche" class="form-input">
+                            <option value="">Sélectionnez...</option>
+                            <option value="1" {% if form.revenus_tranche.value == "1" %}selected{% endif %}>Moins de 400 €</option>
+                            <option value="2" {% if form.revenus_tranche.value == "2" %}selected{% endif %}>De 400 € à moins de 600 €</option>
+                            <option value="3" {% if form.revenus_tranche.value == "3" %}selected{% endif %}>De 600 € à moins de 800 €</option>
+                            <option value="4" {% if form.revenus_tranche.value == "4" %}selected{% endif %}>De 800 € à moins de 1 000 €</option>
+                            <option value="5" {% if form.revenus_tranche.value == "5" %}selected{% endif %}>De 1 000 € à moins de 1 200 €</option>
+                            <option value="6" {% if form.revenus_tranche.value == "6" %}selected{% endif %}>De 1 200 € à moins de 1 500 €</option>
+                            <option value="7" {% if form.revenus_tranche.value == "7" %}selected{% endif %}>De 1 500 € à moins de 1 800 €</option>
+                            <option value="8" {% if form.revenus_tranche.value == "8" %}selected{% endif %}>De 1 800 € à moins de 2 000 €</option>
+                            <option value="9" {% if form.revenus_tranche.value == "9" %}selected{% endif %}>De 2 000 € à moins de 2 500 €</option>
+                            <option value="10" {% if form.revenus_tranche.value == "10" %}selected{% endif %}>De 2 500 € à moins de 3 000 €</option>
+                            <option value="11" {% if form.revenus_tranche.value == "11" %}selected{% endif %}>De 3 000 € à moins de 4 000 €</option>
+                            <option value="12" {% if form.revenus_tranche.value == "12" %}selected{% endif %}>De 4 000 € à moins de 6 000 €</option>
+                            <option value="13" {% if form.revenus_tranche.value == "13" %}selected{% endif %}>De 6 000 € à moins de 10 000 €</option>
+                            <option value="14" {% if form.revenus_tranche.value == "14" %}selected{% endif %}>10 000 € ou plus</option>
+                        </select>
+                        {% if form.revenus_tranche.errors %}<div class="error-message">{{ form.revenus_tranche.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Situation de travail -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_travail_statut">Situation principale vis-à-vis du travail *</label>
+                        <select id="id_travail_statut" name="travail_statut" class="form-input" required onchange="updateProfessionField()">
+                            <option value="">Sélectionnez...</option>
+                            <option value="1" {% if form.travail_statut.value == "1" %}selected{% endif %}>En emploi</option>
+                            <option value="2" {% if form.travail_statut.value == "2" %}selected{% endif %}>En études, formation ou stage</option>
+                            <option value="3" {% if form.travail_statut.value == "3" %}selected{% endif %}>Au chômage</option>
+                            <option value="4" {% if form.travail_statut.value == "4" %}selected{% endif %}>Retraité(e), préretraité(e)</option>
+                            <option value="5" {% if form.travail_statut.value == "5" %}selected{% endif %}>Homme ou femme au foyer</option>
+                            <option value="6" {% if form.travail_statut.value == "6" %}selected{% endif %}>Inactif(ve) pour invalidité</option>
+                            <option value="7" {% if form.travail_statut.value == "7" %}selected{% endif %}>Autre situation d'inactivité</option>
+                        </select>
+                        {% if form.travail_statut.errors %}<div class="error-message">{{ form.travail_statut.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Profession (texte libre) -->
+                    <div class="form-group" id="profession_group">
+                        <label class="form-label" for="id_profession">Profession *</label>
+                        <textarea id="id_profession" name="profession" class="form-textarea" rows="3" 
+                                  placeholder="Décrivez votre profession">{{ form.profession.value|default:'' }}</textarea>
+                        {% if form.profession.errors %}<div class="error-message">{{ form.profession.errors }}</div>{% endif %}
+                    </div>
+                </section>
+
+                <!-- ========== SECTION 2: QUESTIONS SUR LES RÊVES ========== -->
+                <section class="form-section" data-section="2">
+                    <div class="section-header">
+                        <h2 class="section-title">💤 Vos rêves</h2>
+                        <p class="section-description">Parlez-nous de vos rêves</p>
+                    </div>
+
+                    <!-- Fréquence -->
+                    <div class="form-group">
+                        <label class="form-label">À quelle fréquence vous souvenez-vous de vos rêves ?</label>
+                        <div class="radio-grid">
+                            <label class="radio-card">
+                                <input type="radio" name="frequency" value="daily" {% if form.frequency.value == "daily" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-icon">📅</span>
+                                    <span class="radio-label">Tous les jours</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="frequency" value="often" {% if form.frequency.value == "often" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-icon">⭐</span>
+                                    <span class="radio-label">Souvent</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="frequency" value="sometimes" {% if form.frequency.value == "sometimes" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-icon">🌙</span>
+                                    <span class="radio-label">Parfois</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="frequency" value="rarely" {% if form.frequency.value == "rarely" %}checked{% endif %}>
+                                <div class="radio-content">
+                                    <span class="radio-icon">💫</span>
+                                    <span class="radio-label">Rarement</span>
+                                </div>
+                            </label>
+                        </div>
+                        {% if form.frequency.errors %}<div class="error-message">{{ form.frequency.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Types de rêves -->
+                    <div class="form-group">
+                        <label class="form-label">Quel type de rêves faites-vous le plus souvent ? *</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="dream_lucide" {% if form.dream_lucide.value %}checked{% endif %}>
+                                <div class="checkbox-content">
+                                    <span class="checkbox-icon">✨</span>
+                                    <span class="checkbox-label">Rêves lucides</span>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="dream_recurrent" {% if form.dream_recurrent.value %}checked{% endif %}>
+                                <div class="checkbox-content">
+                                    <span class="checkbox-icon">🔄</span>
+                                    <span class="checkbox-label">Rêves récurrents</span>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="dream_nightmare" {% if form.dream_nightmare.value %}checked{% endif %}>
+                                <div class="checkbox-content">
+                                    <span class="checkbox-icon">😱</span>
+                                    <span class="checkbox-label">Cauchemars</span>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="dream_pleasant" {% if form.dream_pleasant.value %}checked{% endif %}>
+                                <div class="checkbox-content">
+                                    <span class="checkbox-icon">😊</span>
+                                    <span class="checkbox-label">Rêves agréables</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========== SECTION 3: SOMMEIL ET COMMENTAIRES ========== -->
+                <section class="form-section" data-section="3">
+                    <div class="section-header">
+                        <h2 class="section-title">🛌 Sommeil et observations</h2>
+                        <p class="section-description">Dernière étape du questionnaire</p>
+                    </div>
+
+                    <!-- Qualité du sommeil -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_sleep_quality">Comment évaluez-vous votre qualité de sommeil ?</label>
+                        <select id="id_sleep_quality" name="sleep_quality" class="form-input">
+                            <option value="">Sélectionnez...</option>
+                            <option value="excellent" {% if form.sleep_quality.value == "excellent" %}selected{% endif %}>Excellent</option>
+                            <option value="good" {% if form.sleep_quality.value == "good" %}selected{% endif %}>Bon</option>
+                            <option value="average" {% if form.sleep_quality.value == "average" %}selected{% endif %}>Moyen</option>
+                            <option value="poor" {% if form.sleep_quality.value == "poor" %}selected{% endif %}>Mauvais</option>
+                        </select>
+                        {% if form.sleep_quality.errors %}<div class="error-message">{{ form.sleep_quality.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Heures de sommeil -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_sleep_hours">Combien d'heures dormez-vous généralement par nuit ?</label>
+                        <input type="number" id="id_sleep_hours" name="sleep_hours" class="form-input" 
+                               min="1" max="24" placeholder="Nombre d'heures" value="{{ form.sleep_hours.value|default:'' }}">
+                        {% if form.sleep_hours.errors %}<div class="error-message">{{ form.sleep_hours.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Commentaires -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_comments">Avez-vous des observations supplémentaires sur vos rêves ?</label>
+                        <textarea id="id_comments" name="comments" class="form-textarea" rows="5" 
+                                  placeholder="Partagez vos observations...">{{ form.comments.value|default:'' }}</textarea>
+                        {% if form.comments.errors %}<div class="error-message">{{ form.comments.errors }}</div>{% endif %}
+                    </div>
+                </section>
+
+                <!-- Boutons de navigation -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="prevBtn" onclick="changeSection(-1)" style="display:none;">
+                        ← Précédent
+                    </button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeSection(1)">
+                        Suivant →
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submitBtn" style="display:none;">
+                        ✓ Soumettre
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Modal d'authentification du questionnaire */
+    .auth-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .auth-modal-content {
+        background: var(--white);
+        padding: 3rem;
+        border-radius: var(--radius-xl);
+        max-width: 500px;
+        width: 90%;
+        box-shadow: var(--shadow-xl);
+        text-align: center;
+    }
+
+    .auth-modal-header h2 {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .auth-modal-header p {
+        font-size: 1.1rem;
+        color: var(--gray-600);
+        margin-bottom: 2rem;
+    }
+
+    .auth-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .auth-modal-body .btn {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+
+    .questionnaire-intro {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-lg);
+        border-bottom: 2px solid var(--gray-100);
+    }
+
+    .questionnaire-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--gray-800);
+    }
+
+    .questionnaire-title strong {
+        color: var(--gray-800);
+        cursor: pointer;
+        transition: all var(--transition-base);
+        font-weight: 700;
+    }
+
+    .questionnaire-title strong:hover {
+        color: var(--primary);
+    }
+
+    .questionnaire-description {
+        font-size: 1rem;
+        color: var(--gray-600);
+        line-height: 1.6;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .progress-bar {
+        height: 4px;
+        background: var(--gray-200);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        transition: width 0.3s ease;
+    }
+
+    .step-indicator {
+        text-align: center;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .step-number {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .form-section {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .form-section.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-lg);
+        border-bottom: 2px solid var(--gray-100);
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .section-description {
+        color: var(--gray-600);
+        font-size: 0.95rem;
+    }
+
+    .form-card {
+        background: var(--white);
+        padding: var(--spacing-xl);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.75rem;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1.125rem;
+        font-size: 1rem;
+        font-family: var(--font-sans);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+        background: var(--white);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(50, 69, 189, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+    }
+
+    .radio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .radio-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .radio-card,
+    .checkbox-card {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .radio-card input,
+    .checkbox-card input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .radio-content,
+    .checkbox-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.25rem 1rem;
+        background: var(--white);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+        text-align: center;
+    }
+
+    .radio-card:hover .radio-content,
+    .checkbox-card:hover .checkbox-content {
+        border-color: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .radio-card input:checked ~ .radio-content,
+    .checkbox-card input:checked ~ .checkbox-content {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--white);
+    }
+
+    .radio-icon,
+    .checkbox-icon {
+        font-size: 2rem;
+    }
+
+    .radio-label,
+    .checkbox-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-xl);
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: var(--white);
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .radio-grid,
+        .checkbox-grid,
+        .radio-grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    let currentSection = 1;
+    const totalSections = 3;
+
+    function changeSection(direction) {
+        const nextSection = currentSection + direction;
+        
+        if (nextSection < 1 || nextSection > totalSections) {
+            return;
+        }
+
+        // Valider la section actuelle avant de continuer
+        if (!validateSection(currentSection)) {
+            return;
+        }
+
+        // Masquer la section actuelle
+        document.querySelector('.form-section.active').classList.remove('active');
+        
+        // Afficher la nouvelle section
+        currentSection = nextSection;
+        document.querySelector(`[data-section="${currentSection}"]`).classList.add('active');
+        
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateUI() {
+        // Mettre à jour la barre de progression
+        const progress = (currentSection / totalSections) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('stepNumber').textContent = currentSection;
+
+        // Afficher/masquer les boutons
+        document.getElementById('prevBtn').style.display = currentSection === 1 ? 'none' : 'inline-flex';
+        document.getElementById('nextBtn').style.display = currentSection === totalSections ? 'none' : 'inline-flex';
+        document.getElementById('submitBtn').style.display = currentSection === totalSections ? 'inline-flex' : 'none';
+
+        // Mettre à jour le label du bouton suivant
+        if (currentSection < totalSections) {
+            document.getElementById('nextBtn').textContent = 'Suivant →';
+        }
+    }
+
+    function validateSection(section) {
+        // Validation optionnelle - laisser passer même si les champs non remplis
+        // puisque tous les champs sont optionnels dans le modèle
+        return true;
+    }
+
+    function updateProfessionField() {
+        const status = document.getElementById('id_travail_statut').value;
+        const professionGroup = document.getElementById('profession_group');
+        
+        // Afficher le champ de profession si l'utilisateur a travaillé ou travaille
+        if (status === '1' || status === '2' || status === '3' || status === '4') {
+            professionGroup.style.display = 'block';
+        } else {
+            professionGroup.style.display = 'none';
+        }
+    }
+
+    // Initialiser l'UI au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUI();
+        updateProfessionField();
+        
+        // Fermer le modal du questionnaire si on ouvre le modal global
+        const questionnaireModal = document.getElementById('questionnaireLoginModal');
+        if (questionnaireModal) {
+            const originalOpenModal = window.openLoginModal;
+            window.openLoginModal = function(event) {
+                questionnaireModal.style.display = 'none';
+                if (originalOpenModal) originalOpenModal(event);
+            };
+        }
+    });
+</script>
+{% endblock %}

@@ -322,6 +322,49 @@ img {
     width: 100%;
 }
 
+.nav-user {
+    display: flex;
+    align-items: center;
+}
+
+.nav-username {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.nav-logout {
+    color: var(--gray-700);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color var(--transition-base);
+}
+
+.nav-logout::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: width var(--transition-base);
+}
+
+.nav-logout:hover {
+    color: var(--primary);
+}
+
+.nav-logout:hover::after {
+    width: 100%;
+}
+
 /* ============================================
    HERO SECTION MODERNE
    ============================================ */
@@ -1454,6 +1497,37 @@ select:focus {
     width: 100%;
     max-width: 450px;
     animation: slideUp 0.3s ease;
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    padding: var(--spacing-xl);
+}
+
+.auth-modal-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.auth-modal-header h2 {
+    font-size: 1.75rem;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.auth-modal-header p {
+    color: var(--gray-600);
+    font-size: 0.95rem;
+}
+
+.auth-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.auth-modal-body .btn {
+    width: 100%;
+    justify-content: center;
 }
 
 .auth-modal-close {
@@ -1666,4 +1740,52 @@ select:focus {
     .form-actions .btn {
         width: 100%;
     }
+}
+
+/* ============================================
+   ALERTS & MESSAGES
+   ============================================ */
+.messages-container {
+    margin-bottom: var(--spacing-lg);
+}
+
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    border: 1px solid transparent;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+.alert-error,
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+.alert-info {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
 }

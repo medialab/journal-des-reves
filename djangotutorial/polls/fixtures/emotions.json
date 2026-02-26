@@ -1,0 +1,56 @@
+[
+  {
+    "model": "polls.emotion",
+    "pk": 1,
+    "fields": {
+      "libelle": "Peur",
+      "emoji": "😨",
+      "ordre": 1
+    }
+  },
+  {
+    "model": "polls.emotion",
+    "pk": 2,
+    "fields": {
+      "libelle": "Colère",
+      "emoji": "😠",
+      "ordre": 2
+    }
+  },
+  {
+    "model": "polls.emotion",
+    "pk": 3,
+    "fields": {
+      "libelle": "Appréhension",
+      "emoji": "😰",
+      "ordre": 3
+    }
+  },
+  {
+    "model": "polls.emotion",
+    "pk": 4,
+    "fields": {
+      "libelle": "Tristesse",
+      "emoji": "😢",
+      "ordre": 4
+    }
+  },
+  {
+    "model": "polls.emotion",
+    "pk": 5,
+    "fields": {
+      "libelle": "Joie",
+      "emoji": "😊",
+      "ordre": 5
+    }
+  },
+  {
+    "model": "polls.emotion",
+    "pk": 6,
+    "fields": {
+      "libelle": "Bonheur",
+      "emoji": "😄",
+      "ordre": 6
+    }
+  }
+]

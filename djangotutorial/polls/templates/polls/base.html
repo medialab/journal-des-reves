@@ -38,19 +38,30 @@
                 <a href="{% url 'polls:journal' %}" class="nav-link">Journal</a>
             </li>
             <li>
-                <a href="{% url 'polls:profil' %}" class="nav-link">Profil</a>
+                <a href="{% url 'polls:questionnaire' %}" class="nav-link">Questionnaire</a>
             </li>
             <li>
+                <a href="{% url 'polls:profil' %}" class="nav-link">Profil</a>
+            </li>
+            <li> 
                 <a href="{% url 'polls:description' %}" class="nav-link">Description</a>
             </li>
-
+ 
             {% if user.is_authenticated %}
+                <li class="nav-user">
+                    <span class="nav-username"> {{ user.username }}</span>
+                </li>
                 <li>
-                    <a href="{% url 'logout' %}" class="nav-link">Déconnexion</a>
+                    <form method="post" action="{% url 'logout' %}" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link nav-logout">
+                            Déconnexion
+                        </button>
+                    </form>
                 </li>
             {% else %}
                 <li>
-                    <a href="{% url 'login' %}" class="nav-link">Connexion</a>
+                    <a href="#" class="nav-link" onclick="openLoginModal(event)">Connexion</a>
                 </li>
             {% endif %}
         </ul>
@@ -61,7 +72,169 @@
 {% block content %}
 {% endblock %}
 
+<!-- Modal de connexion -->
+<div class="login-modal" id="loginModal">
+    <div class="login-modal-content">
+        <button type="button" class="login-modal-close" onclick="closeLoginModal()">✕</button>
+        <div class="login-modal-header">
+            <h2>🔐 Connexion</h2>
+            <p>Connectez-vous à votre compte</p>
+        </div>
+        <div class="login-modal-body">
+            <form method="post" action="{% url 'login' %}" class="login-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="form-group">
+                    <label for="username" class="form-label">Nom d'utilisateur</label>
+                    <input type="text" id="username" name="username" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Se connecter</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .login-modal.active {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-modal-content {
+        background: var(--white);
+        padding: 2.5rem;
+        border-radius: var(--radius-xl);
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        position: relative;
+        animation: slideUp 0.3s ease;
+    }
+
+    .login-modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray-500);
+        transition: color var(--transition-base);
+    }
+
+    .login-modal-close:hover {
+        color: var(--primary);
+    }
+
+    .login-modal-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-modal-header h2 {
+        font-size: 1.75rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .login-modal-header p {
+        color: var(--gray-600);
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        transition: all var(--transition-base);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(50, 69, 189, 0.1);
+    }
+
+    .btn-full {
+        width: 100%;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>
+
 <script>
+    // Gestion du modal de connexion
+    function openLoginModal(event) {
+        event.preventDefault();
+        document.getElementById('loginModal').classList.add('active');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').classList.remove('active');
+    }
+
+    // Fermer le modal en cliquant en dehors
+    window.onclick = function(event) {
+        const modal = document.getElementById('loginModal');
+        if (event.target == modal) {
+            modal.classList.remove('active');
+        }
+    }
+
     // Hamburger mobile
     const hamburger = document.getElementById("hamburger");
     const navMenu = document.getElementById("navMenu");

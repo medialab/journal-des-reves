@@ -19,7 +19,8 @@ urlpatterns = [
 
     # Page profil
     path("profil/", views.ProfilView.as_view(), name="profil"),
-
+    # Questionnaire
+    path("questionnaire/", views.QuestionnaireView.as_view(), name="questionnaire"),
     # Détail d’un rêve
     path("journal/reve/<int:pk>/", views.ReveDetailView.as_view(), name="reve_detail"),
     # Télécharger l'audio d'un rêve (sécurisé)
