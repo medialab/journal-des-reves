@@ -1,5 +1,5 @@
 from django.db.models import F
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.urls import reverse
 from django.contrib import messages
@@ -8,12 +8,15 @@ from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
+from django.contrib.auth import authenticate, login
 import uuid
 import os
+import json
 
 from .models import Choice, Question, Reve, Profil, Questionnaire
 from .services.journal_service import get_journal_data
-from .forms import ReveForm, QuestionnaireForm
+from .services.transcription_service import start_transcription_async
+from .forms import ReveForm, QuestionnaireForm, SignUpForm
 
 
 class ProfilView(LoginRequiredMixin, View):
@@ -196,20 +199,8 @@ class EnregistrerView(LoginRequiredMixin, View):
                 if custom_objects:
                     reve.emotions_custom.set(custom_objects)
 
-            # Lancer la transcription en arrière-plan
-            import subprocess
-            subprocess.Popen(
-                [
-                    "/home/maudyaiche/dev/site_reves/mon_env/bin/python",
-                    "manage.py",
-                    "transcribe_dreams",
-                    "--reve-id",
-                    str(reve.id)
-                ],
-                cwd="/home/maudyaiche/dev/site_reves/djangotutorial",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
+            # Lancer la transcription en arrière-plan de manière asynchrone et non-bloquante
+            start_transcription_async(reve.id)
 
             return JsonResponse({
                 'success': True,
@@ -244,7 +235,14 @@ class JournalView(LoginRequiredMixin, View):
 
         context = {
             "profil": profil,
-            **journal_data
+            "total_reves": journal_data['total_reves'],
+            "reves": journal_data['reves'],
+            "stats_mensuelles": journal_data['stats_mensuelles'],
+            # Convertir les données pour Chart.js en JSON valide
+            "emotions_labels": json.dumps(journal_data['emotions_labels'], ensure_ascii=False),
+            "emotions_counts": json.dumps(journal_data['emotions_counts']),
+            "etendue_labels": json.dumps(journal_data['etendue_labels'], ensure_ascii=False),
+            "etendue_counts": json.dumps(journal_data['etendue_counts']),
         }
 
         return render(request, "polls/journal.html", context)
@@ -354,3 +352,65 @@ class QuestionnaireView(View):
                 'is_authenticated': request.user.is_authenticated
             }
             return render(request, self.template_name, context)
+
+class SignUpView(View):
+    """
+    Vue pour l'inscription avec consentement.
+    Sécurité:
+    - Utilise UserCreationForm pour le hashage sécurisé des mots de passe (PBKDF2)
+    - Validation des mots de passe selon les standards Django
+    - CSRF protection via CsrfViewMiddleware (déjà activé)
+    - Validation de l'email unique
+    """
+    template_name = 'registration/signup.html'
+    form_class = SignUpForm
+    
+    def get(self, request):
+        """Afficher le formulaire d'inscription"""
+        if request.user.is_authenticated:
+            return redirect('polls:index')
+        
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+    
+    def post(self, request):
+        """Traiter l'inscription"""
+        if request.user.is_authenticated:
+            return redirect('polls:index')
+        
+        form = self.form_class(request.POST)
+        
+        if form.is_valid():
+            try:
+                # Sauvegarder l'utilisateur et le profil avec les consentements
+                user = form.save()
+                
+                # Authentifier et connecter l'utilisateur automatiquement
+                user = authenticate(
+                    username=form.cleaned_data['username'],
+                    password=form.cleaned_data['password1']
+                )
+                
+                if user is not None:
+                    login(request, user)
+                    messages.success(
+                        request,
+                        f'Bienvenue {user.username} ! Votre compte a été créé avec succès.'
+                    )
+                    return redirect('polls:questionnaire')
+                else:
+                    messages.error(
+                        request,
+                        'Une erreur est survenue lors de la connexion. Veuillez vous connecter manuellement.'
+                    )
+                    return redirect('login')
+            
+            except Exception as e:
+                messages.error(
+                    request,
+                    f'Une erreur est survenue lors de la création du compte: {str(e)}'
+                )
+                return render(request, self.template_name, {'form': form})
+        else:
+            # Le formulaire contient des erreurs
+            return render(request, self.template_name, {'form': form})

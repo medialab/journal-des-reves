@@ -1,5 +1,8 @@
 from django import forms
-from .models import Reve, Questionnaire, Emotion, Tag
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.utils import timezone
+from .models import Reve, Questionnaire, Emotion, Tag, Profil
 
 
 class ReveForm(forms.ModelForm):
@@ -116,3 +119,113 @@ class QuestionnaireForm(forms.ModelForm):
             'sleep_hours': 'Heures de sommeil',
             'comments': 'Commentaires',
         }
+
+class SignUpForm(UserCreationForm):
+    """
+    Formulaire d'inscription avec consentement pour l'enquête sur les rêves.
+    Utilise UserCreationForm de Django pour la sécurité du mot de passe.
+    """
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'votre.email@exemple.com'
+        }),
+        label='Adresse email'
+    )
+    
+    # Champs de consentement
+    consent_data_processing = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='J\'accepte que mes données soient traitées par l\'équipe de recherche composée de Maud Yaïche et de ses directeurs de recherche.'
+    )
+    
+    consent_password_account = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='Je souscris à un compte spécialisé protégé par un mot de passe.'
+    )
+    
+    consent_quote_expressions = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='J\'autorise qu\'une partie de mes expressions puisse être citée, étant entendu qu\'il ne sera pas possible de m\'identifier.'
+    )
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nom d\'utilisateur'
+            }),
+        }
+        labels = {
+            'username': 'Nom d\'utilisateur',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Personnaliser les labels des champs password
+        self.fields['password1'].label = 'Mot de passe'
+        self.fields['password1'].widget = forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Entrez un mot de passe sécurisé'
+        })
+        self.fields['password2'].label = 'Confirmer le mot de passe'
+        self.fields['password2'].widget = forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Confirmez votre mot de passe'
+        })
+        
+        # Améliorer l'affichage de l'aide sur le mot de passe
+        if self.fields['password1'].help_text:
+            self.fields['password1'].help_text = 'Votre mot de passe doit contenir au moins 8 caractères et ne pas être uniquement numérique.'
+    
+    def clean_email(self):
+        """Vérifier que l'email n'existe pas déjà"""
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Un compte avec cet email existe déjà.')
+        return email
+    
+    def clean(self):
+        """Vérifier que tous les consentements sont acceptés"""
+        cleaned_data = super().clean()
+        
+        # Les champs required=True sont vérifiés automatiquement,
+        # mais on peut ajouter une validation personnalisée si nécessaire
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        """
+        Sauvegarder l'utilisateur et créer un profil avec les consentements.
+        Utilise le hashage sécurisé de Django par défaut (PBKDF2).
+        """
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        
+        if commit:
+            user.save()
+            
+            # Créer un profil associé avec les consentements
+            profil = Profil.objects.create(
+                user=user,
+                email=user.email,
+                name=user.username,  # Utiliser le username comme nom par défaut
+                genre='A',  # Autre par défaut, à compléter dans le questionnaire
+                biography='',
+                birth_year=2000,  # Valeur par défaut, à compléter dans le questionnaire
+                deja_ecrit_reve=True,
+                # Enregistrer les consentements
+                consent_data_processing=self.cleaned_data['consent_data_processing'],
+                consent_password_account=self.cleaned_data['consent_password_account'],
+                consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
+                consent_date=timezone.now()
+            )
+        
+        return user

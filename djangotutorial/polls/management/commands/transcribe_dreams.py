@@ -73,6 +73,20 @@ class TranscriberService:
             print(f"✅ Transcription réussie: {transcription_text[:100]}...")
             return transcription_text
             
+        except FileNotFoundError as error:
+            if 'ffmpeg' in str(error):
+                error_msg = """❌ ffmpeg n'est pas disponible
+            
+Pour installer ffmpeg:
+  - Debian/Ubuntu: sudo apt-get install ffmpeg
+  - macOS: brew install ffmpeg
+  - Windows: https://ffmpeg.org/download.html
+            
+Après installation, relancez la commande."""
+                print(error_msg)
+            else:
+                print(f"❌ Erreur fichier: {error}")
+            raise
         except Exception as error:
             print(f"❌ Erreur lors de la transcription: {error}")
             raise

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Journal des Rêves{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 
 <body>
@@ -94,6 +95,9 @@
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Se connecter</button>
             </form>
+            <div class="login-modal-footer">
+                <a href="{% url 'polls:signup' %}" class="btn btn-secondary btn-full">S'inscrire</a>
+            </div>
         </div>
     </div>
 </div>
@@ -193,6 +197,24 @@
 
     .btn-full {
         width: 100%;
+    }
+
+    .login-modal-footer {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .btn-secondary {
+        background: #9ca3af;
+        color: var(--white);
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background: #6b7280;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     @keyframes slideUp {

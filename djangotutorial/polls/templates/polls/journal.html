@@ -21,35 +21,38 @@
 
 	<section class="page-content">
 		<div class="container">
+			<!-- Statistiques principales -->
 			<div class="stats-grid">
 				<div class="stat-card">
-					<span class="stat-icon">🌙</span>
 					<span class="stat-number">{{ total_reves|default:0 }}</span>
 					<span class="stat-label">Rêves enregistrés</span>
 				</div>
-				<div class="stat-card">
-					<span class="stat-icon">💭</span>
-					<span class="stat-number">
-						{% if emotions_stats %}
-							{{ emotions_stats|length }}
-						{% else %}
-							0
-						{% endif %}
-					</span>
-					<span class="stat-label">Émotions uniques</span>
-				</div>
-				<div class="stat-card">
-					<span class="stat-icon">🏷️</span>
-					<span class="stat-number">
-						{% if tags_stats %}
-							{{ tags_stats|length }}
-						{% else %}
-							0
-						{% endif %}
-					</span>
-					<span class="stat-label">Tags uniques</span>
-				</div>
 			</div>
+
+			{% if total_reves > 0 %}
+				<!-- Graphiques -->
+				<div class="charts-grid">
+					{% if emotions_labels %}
+						<!-- Camembert des émotions -->
+						<div class="chart-card">
+							<h3 class="chart-title">Émotions ressenties</h3>
+							<div class="chart-container">
+								<canvas id="emotionsChart" width="300" height="300"></canvas>
+							</div>
+						</div>
+					{% endif %}
+
+					{% if etendue_labels %}
+						<!-- Bar chart des souvenirs -->
+						<div class="chart-card">
+							<h3 class="chart-title">Étendue du souvenir</h3>
+							<div class="chart-container">
+								<canvas id="etendueChart" width="300" height="200"></canvas>
+							</div>
+						</div>
+					{% endif %}
+				</div>
+			{% endif %}
 
 			<div class="journal-grid journal-full-width">
 				<div class="journal-column">
@@ -67,25 +70,29 @@
 													<span>Heure {{ reve.created_at|date:"H:i" }}</span>
 												</div>
 											</div>
-											<div class="dream-intensity">Type {{ reve.get_type_reve_display }}</div>
+											<div class="dream-intensity">{{ reve.get_type_reve_display }}</div>
 										</div>
-										<div class="dream-card-actions">
-											<a href="{% url 'polls:reve_detail' reve.id %}" class="btn btn-small btn-primary">
-												Voir le rêve
-											</a>
-											{% if reve.audio %}
-												<a href="{{ reve.audio.url }}" class="btn btn-small btn-muted" target="_blank" rel="noopener">
-													Écouter l'audio
-												</a>
-											{% endif %}
-										</div>
-										{% if reve.tags.exists %}
-											<div class="tag-cloud">
-												{% for tag in reve.tags.all %}
-													<span class="tag-chip">#{{ tag.libelle }}</span>
+
+										<!-- Émotions ressenties -->
+										{% if reve.emotions_reve.exists %}
+											<div class="dream-emotions">
+												<span class="emotions-label">Émotions:</span>
+												{% for emotion in reve.emotions_reve.all %}
+													<span class="emotion-badge">{{ emotion.libelle }}</span>
 												{% endfor %}
 											</div>
 										{% endif %}
+
+										<div class="dream-card-actions">
+											<button class="btn btn-small btn-primary" onclick="openDreamModal({{ reve.id }}, '{{ reve.date|date:'d M Y' }}', '{{ reve.transcription|escapejs }}', `{% for tag in reve.tags.all %}{{ tag.libelle }}{% if not forloop.last %}, {% endif %}{% endfor %}`)">
+												Voir le rêve
+											</button>
+											{% if reve.audio %}
+												<a href="{{ reve.audio.url }}" class="btn btn-small btn-muted" target="_blank" rel="noopener">
+													Écouter
+												</a>
+											{% endif %}
+										</div>
 									</div>
 								{% endfor %}
 							</div>
@@ -95,16 +102,484 @@
 								<h3>Commencez votre journal</h3>
 								<p>Enregistrez votre premier rêve pour obtenir des statistiques personnalisées.</p>
 								<a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
-									Écrire un rêve
+									Enregistrer un rêve
 								</a>
 							</div>
 						{% endif %}
 					</div>
 				</div>
 			</div>
-			</div>
 		</div>
 	</section>
 </div>
+
+<!-- Modal pour voir un rêve en détail -->
+<div class="dream-modal" id="dreamModal">
+	<div class="dream-modal-content">
+		<button type="button" class="dream-modal-close" onclick="closeDreamModal()">✕</button>
+		
+		<div class="dream-modal-header">
+			<h2>Détail du rêve</h2>
+			<p id="dreamDate" class="dream-modal-date"></p>
+		</div>
+
+		<div class="dream-modal-body">
+			<div class="dream-section">
+				<h3>Transcription</h3>
+				<div id="dreamTranscription" class="transcription-text"></div>
+			</div>
+
+			<div class="dream-section">
+				<h3>Tags</h3>
+				<div id="dreamTags" class="tags-container"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.stats-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 1.5rem;
+		margin-bottom: 3rem;
+	}
+
+	.stat-card {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		padding: 2rem;
+		border-radius: 12px;
+		text-align: center;
+		box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+	}
+
+	.stat-number {
+		display: block;
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+	}
+
+	.stat-label {
+		display: block;
+		font-size: 0.95rem;
+		opacity: 0.95;
+	}
+
+	/* Graphiques */
+	.charts-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 2rem;
+		margin-bottom: 3rem;
+	}
+
+	.chart-card {
+		background: white;
+		border: 1px solid #e0e0e0;
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	}
+
+	.chart-title {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #333;
+		margin-bottom: 1.5rem;
+		text-align: center;
+	}
+
+	.chart-container {
+		position: relative;
+		height: 300px;
+		width: 100%;
+	}
+
+	/* Rêves récents */
+	.dreams-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.dream-card {
+		background: white;
+		border: 1px solid #e0e0e0;
+		border-radius: 12px;
+		padding: 1.5rem;
+		transition: all 0.3s ease;
+	}
+
+	.dream-card:hover {
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+		transform: translateY(-2px);
+	}
+
+	.dream-card-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		margin-bottom: 1rem;
+	}
+
+	.dream-date {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #333;
+		margin-bottom: 0.25rem;
+	}
+
+	.dream-meta {
+		display: flex;
+		gap: 1rem;
+		font-size: 0.875rem;
+		color: #666;
+	}
+
+	.dream-intensity {
+		background: #f0f0f0;
+		padding: 0.5rem 1rem;
+		border-radius: 8px;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #333;
+	}
+
+	/* Émotions dans la card */
+	.dream-emotions {
+		margin-bottom: 1rem;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.emotions-label {
+		font-weight: 600;
+		color: #333;
+		margin-right: 0.5rem;
+	}
+
+	.emotion-badge {
+		background: #e8f3ff;
+		color: #2c5aa0;
+		padding: 0.4rem 0.8rem;
+		border-radius: 20px;
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+
+	.dream-card-actions {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-top: 1rem;
+	}
+
+	.btn-muted {
+		background: #f0f0f0;
+		color: #666;
+		border: none;
+	}
+
+	.btn-muted:hover {
+		background: #e0e0e0;
+		color: #333;
+	}
+
+	/* Modal */
+	.dream-modal {
+		display: none;
+		position: fixed;
+		z-index: 1000;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.5);
+		animation: fadeIn 0.3s ease;
+	}
+
+	.dream-modal.active {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.dream-modal-content {
+		background-color: white;
+		border-radius: 16px;
+		max-width: 600px;
+		width: 90%;
+		max-height: 80vh;
+		overflow-y: auto;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		animation: slideUp 0.3s ease;
+		position: relative;
+	}
+
+	.dream-modal-close {
+		position: absolute;
+		right: 20px;
+		top: 20px;
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: #666;
+		z-index: 10;
+	}
+
+	.dream-modal-close:hover {
+		color: #333;
+	}
+
+	.dream-modal-header {
+		padding: 2rem 2rem 1rem;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	.dream-modal-header h2 {
+		font-size: 1.5rem;
+		color: #333;
+		margin-bottom: 0.5rem;
+	}
+
+	.dream-modal-date {
+		color: #666;
+		font-size: 0.95rem;
+	}
+
+	.dream-modal-body {
+		padding: 2rem;
+	}
+
+	.dream-section {
+		margin-bottom: 2rem;
+	}
+
+	.dream-section:last-child {
+		margin-bottom: 0;
+	}
+
+	.dream-section h3 {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #333;
+		margin-bottom: 1rem;
+	}
+
+	.transcription-text {
+		background: #f9f9f9;
+		padding: 1.5rem;
+		border-radius: 8px;
+		line-height: 1.6;
+		color: #333;
+		font-size: 0.95rem;
+		border-left: 4px solid #667eea;
+	}
+
+	.tags-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.tag-chip {
+		background: #f0f0f0;
+		color: #333;
+		padding: 0.5rem 1rem;
+		border-radius: 20px;
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+
+	.empty-state {
+		text-align: center;
+		padding: 3rem 1.5rem;
+	}
+
+	.empty-icon {
+		font-size: 3rem;
+		display: block;
+		margin-bottom: 1rem;
+	}
+
+	.empty-state h3 {
+		font-size: 1.5rem;
+		color: #333;
+		margin-bottom: 0.5rem;
+	}
+
+	.empty-state p {
+		color: #666;
+		margin-bottom: 1.5rem;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes slideUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (max-width: 768px) {
+		.charts-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.dream-card-header {
+			flex-direction: column;
+		}
+
+		.dream-card-actions {
+			justify-content: space-between;
+		}
+
+		.btn {
+			flex: 1;
+		}
+	}
+</style>
+
+<script>
+	// Initialiser les graphiques Chart.js
+	document.addEventListener('DOMContentLoaded', function() {
+		initializeCharts();
+	});
+
+	function initializeCharts() {
+		// Données depuis le template
+		const emotionsLabels = {{ emotions_labels|safe }};
+		const emotionsCounts = {{ emotions_counts|safe }};
+		const etendueLabels = {{ etendue_labels|safe }};
+		const etendueeCounts = {{ etendue_counts|safe }};
+
+		// Couleurs pour les graphiques
+		const colors = [
+			'#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b',
+			'#fa709a', '#fee140', '#30cfd0', '#a8edea', '#fed6e3'
+		];
+
+		// Camembert des émotions
+		if (emotionsLabels.length > 0) {
+			const emotionsCanvas = document.getElementById('emotionsChart');
+			if (emotionsCanvas) {
+				new Chart(emotionsCanvas, {
+					type: 'doughnut',
+					data: {
+						labels: emotionsLabels,
+						datasets: [{
+							data: emotionsCounts,
+							backgroundColor: colors.slice(0, emotionsLabels.length),
+							borderColor: '#fff',
+							borderWidth: 2,
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						plugins: {
+							legend: {
+								position: 'bottom',
+								labels: {
+									padding: 15,
+									font: {
+										size: 12
+									}
+								}
+							}
+						}
+					}
+				});
+			}
+		}
+
+		// Bar chart de l'étendue
+		if (etendueLabels.length > 0) {
+			const etendueCanvas = document.getElementById('etendueChart');
+			if (etendueCanvas) {
+				new Chart(etendueCanvas, {
+					type: 'bar',
+					data: {
+						labels: etendueLabels,
+						datasets: [{
+							label: 'Nombre de rêves',
+							data: etendueeCounts,
+							backgroundColor: '#667eea',
+							borderRadius: 8,
+							borderSkipped: false,
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						indexAxis: 'y',
+						plugins: {
+							legend: {
+								display: false
+							}
+						},
+						scales: {
+							x: {
+								beginAtZero: true,
+								ticks: {
+									stepSize: 1
+								}
+							}
+						}
+					}
+				});
+			}
+		}
+	}
+
+	// Gestion du modal
+	function openDreamModal(reveId, date, transcription, tags) {
+		const modal = document.getElementById('dreamModal');
+		document.getElementById('dreamDate').textContent = date;
+		document.getElementById('dreamTranscription').textContent = transcription || 'Transcription en cours...';
+		
+		// Afficher les tags
+		const tagsContainer = document.getElementById('dreamTags');
+		if (tags.trim()) {
+			tagsContainer.innerHTML = tags.split(', ').map(tag => 
+				`<span class="tag-chip">#${tag}</span>`
+			).join('');
+		} else {
+			tagsContainer.innerHTML = '<span style="color: #999;">Aucun tag</span>';
+		}
+
+		modal.classList.add('active');
+	}
+
+	function closeDreamModal() {
+		const modal = document.getElementById('dreamModal');
+		modal.classList.remove('active');
+	}
+
+	// Fermer le modal en cliquant en dehors
+	window.onclick = function(event) {
+		const modal = document.getElementById('dreamModal');
+		if (event.target === modal) {
+			modal.classList.remove('active');
+		}
+	}
+</script>
 {% endblock %}
 

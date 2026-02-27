@@ -25,6 +25,10 @@ urlpatterns = [
     path("journal/reve/<int:pk>/", views.ReveDetailView.as_view(), name="reve_detail"),
     # Télécharger l'audio d'un rêve (sécurisé)
     path("journal/reve/<int:reve_id>/audio/", views.ReveAudioDownloadView.as_view(), name="reve_audio"),
+    
+    # Inscription avec consentement
+    path("signup/", views.SignUpView.as_view(), name="signup"),
+    
     # Auth Django
     path("accounts/", include("django.contrib.auth.urls")),
 

@@ -52,6 +52,30 @@ class Profil(models.Model):
     )
     deja_ecrit_reve = models.BooleanField(default=True)
     email = models.EmailField()
+    
+    # Champs de consentement pour l'enquête
+    consent_data_processing = models.BooleanField(
+        default=False,
+        verbose_name="Accepte le traitement des données",
+        help_text="J'accepte que mes données soient traitées par l'équipe de recherche"
+    )
+    consent_password_account = models.BooleanField(
+        default=False,
+        verbose_name="Accepte un compte protégé par mot de passe",
+        help_text="Je souscris à un compte spécialisé protégé par un mot de passe"
+    )
+    consent_quote_expressions = models.BooleanField(
+        default=False,
+        verbose_name="Autorize la citation d'expressions",
+        help_text="J'autorise qu'une partie de mes expressions puisse être citée"
+    )
+    
+    # Date d'acceptation des consentements
+    consent_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date d'acceptation du consentement"
+    )
 
     def __str__(self):
         return self.name

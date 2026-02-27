@@ -25,7 +25,11 @@
                     {% for field in form %}
                         <div class="form-group">
                             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field.as_widget(attrs={'class': 'form-input'}) }}
+                            {% if field.field.widget.input_type == "password" %}
+                                <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input" required>
+                            {% else %}
+                                <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input" required>
+                            {% endif %}
                             {% if field.errors %}
                                 <div class="error-message">{{ field.errors|striptags }}</div>
                             {% endif %}
@@ -40,9 +44,38 @@
                         <button type="submit" class="btn btn-primary btn-large">Se connecter</button>
                         <a href="{% url 'polls:index' %}" class="btn btn-outline btn-large">Retour a l'accueil</a>
                     </div>
+                    
+                    <div class="signup-link">
+                        <p>Pas encore membre ? <a href="{% url 'polls:signup' %}">Créer un compte</a></p>
+                    </div>
                 </form>
             </div>
         </div>
     </section>
 </div>
+
+<style>
+    .signup-link {
+        margin-top: 24px;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 24px;
+    }
+    
+    .signup-link p {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .signup-link a {
+        color: #4a90e2;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    
+    .signup-link a:hover {
+        text-decoration: underline;
+    }
+</style>
 {% endblock %}
