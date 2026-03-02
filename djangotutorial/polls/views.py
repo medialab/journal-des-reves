@@ -90,8 +90,11 @@ class ProfilView(LoginRequiredMixin, View):
                 'message': f'Erreur: {str(e)}'
             }, status=400)
 
-class DescriptionView(generic.DetailView):
+class DescriptionView(View):
     template_name = "polls/description.html"
+    
+    def get(self, request):
+        return render(request, self.template_name)
 
 
 class IndexView(generic.ListView):
@@ -123,14 +126,16 @@ class EnregistrerView(LoginRequiredMixin, View):
             return HttpResponseRedirect(reverse("polls:index"))
         
         # Récupérer les émotions pour le formulaire
-        from .models import Emotion, EmotionCustom
+        from .models import Emotion, EmotionCustom, ImageModalite
         emotions = Emotion.objects.all().order_by('ordre')
         custom_emotions = EmotionCustom.objects.filter(profil=profil).order_by('libelle')
+        images_modalites = ImageModalite.objects.all().order_by('ordre')
         
         context = {
             "title": "Enregistrer un rêve",
             "emotions": emotions,
             "custom_emotions": custom_emotions,
+            "images_modalites": images_modalites,
         }
         return render(request, "polls/enregistrer.html", context)
 
@@ -153,6 +158,7 @@ class EnregistrerView(LoginRequiredMixin, View):
             sens = request.POST.get('sens', '')
             emotions_ids = request.POST.getlist('emotions_reve')
             emotions_custom = request.POST.getlist('emotions_custom')
+            images_modalites_ids = request.POST.getlist('images_modalites')
 
             # Validation
             if not audio_file:
@@ -198,6 +204,12 @@ class EnregistrerView(LoginRequiredMixin, View):
                     ))
                 if custom_objects:
                     reve.emotions_custom.set(custom_objects)
+
+            # Ajouter les modalités d'images
+            if images_modalites_ids:
+                from .models import ImageModalite
+                images_modalites = ImageModalite.objects.filter(id__in=images_modalites_ids)
+                reve.images_modalites.set(images_modalites)
 
             # Lancer la transcription en arrière-plan de manière asynchrone et non-bloquante
             start_transcription_async(reve.id)
@@ -287,6 +299,48 @@ class ReveAudioDownloadView(LoginRequiredMixin, View):
         except Exception as error:
             messages.error(request, f"Erreur lors du téléchargement: {error}")
             return HttpResponseRedirect(reverse("polls:journal"))
+
+
+class ReveTranscriptionUpdateView(LoginRequiredMixin, View):
+    """Mettre a jour la transcription d'un reve depuis le journal."""
+
+    def post(self, request, reve_id):
+        try:
+            reve = Reve.objects.get(id=reve_id, profil=request.user.profil)
+        except Reve.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Reve non trouve'
+            }, status=404)
+
+        transcription = None
+        if request.content_type and 'application/json' in request.content_type:
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Donnees invalides'
+                }, status=400)
+            transcription = data.get('transcription', '')
+        else:
+            transcription = request.POST.get('transcription', '')
+
+        if transcription is None:
+            return JsonResponse({
+                'success': False,
+                'message': 'Transcription manquante'
+            }, status=400)
+
+        transcription = transcription.strip()
+        reve.transcription = transcription
+        reve.transcription_ready = bool(transcription)
+        reve.save(update_fields=['transcription', 'transcription_ready'])
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Transcription mise a jour'
+        })
 
 
 def vote(request, question_id):

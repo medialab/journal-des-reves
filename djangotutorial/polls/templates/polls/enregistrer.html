@@ -53,66 +53,36 @@
 				</div>
 
 				<div class="questions-grid">
-					<!-- Section 2: Type de Reve -->
-					<div class="form-section">
-						<div class="form-group">
-							<label class="form-label">Quel type de reve etait-ce ? *</label>
-							
-							<div class="radio-group">
-								<label class="radio-label choice-label">
-									<input type="radio" name="type_reve" value="tres_positif" required>
-									<span class="radio-text">Reve tres positif</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="type_reve" value="positif">
-									<span class="radio-text">Reve positif</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="type_reve" value="neutre">
-									<span class="radio-text">Reve neutre</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="type_reve" value="mauvais">
-									<span class="radio-text">Mauvais reve</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="type_reve" value="cauchemar">
-									<span class="radio-text">Cauchemar</span>
-								</label>
-							</div>
-						</div>
-					</div>
-
 					<!-- Section 3: Etendue du Reve -->
 					<div class="form-section">
-						<div class="form-group">
-							<label class="form-label">Je me souviens plutot... *</label>
-							
-							<div class="radio-group">
-								<label class="radio-label choice-label">
-									<input type="radio" name="etendue_reve" value="1" required>
-									<span class="radio-text">D'un instant precis</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="etendue_reve" value="2">
-									<span class="radio-text">Moins de la moitie</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="etendue_reve" value="3">
-									<span class="radio-text">Plus de la moitie</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="etendue_reve" value="4">
-									<span class="radio-text">Integralite</span>
-								</label>
+							<div class="form-group">
+								<label class="form-label">Je me souviens plutôt... </label>
+								
+								<div class="radio-group">
+									<label class="radio-label choice-label">
+										<input type="radio" name="etendue_reve" value="1" required>
+										<span class="radio-text">D'un instant précis</span>
+									</label>
+									<label class="radio-label choice-label">
+										<input type="radio" name="etendue_reve" value="2">
+										<span class="radio-text">Moins de la moitié</span>
+									</label>
+									<label class="radio-label choice-label">
+										<input type="radio" name="etendue_reve" value="3">
+										<span class="radio-text">Plus de la moitié</span>
+									</label>
+									<label class="radio-label choice-label">
+										<input type="radio" name="etendue_reve" value="4">
+										<span class="radio-text">L'intégralité</span>
+									</label>
+								</div>
 							</div>
-						</div>
 					</div>
 
 					<!-- Section 4: Sens Dominants -->
 					<div class="form-section">
 						<div class="form-group">
-							<label class="form-label">Je me souviens surtout des... *</label>
+							<label class="form-label">Je me souviens surtout des... </label>
 							
 							<div class="radio-group">
 								<label class="radio-label choice-label">
@@ -121,7 +91,7 @@
 								</label>
 								<label class="radio-label choice-label">
 									<input type="radio" name="sens" value="2">
-									<span class="radio-text">Sons, des voix</span>
+									<span class="radio-text">Sons,voix</span>
 								</label>
 								<label class="radio-label choice-label">
 									<input type="radio" name="sens" value="3">
@@ -129,21 +99,72 @@
 								</label>
 								<label class="radio-label choice-label">
 									<input type="radio" name="sens" value="4">
-									<span class="radio-text">Emotions ressenties</span>
+									<span class="radio-text">Émotions ressenties</span>
 								</label>
 								<label class="radio-label choice-label">
 									<input type="radio" name="sens" value="5">
-									<span class="radio-text">Pensees ou idees</span>
+									<span class="radio-text">Pensées ou idées</span>
 								</label>
 							</div>
 						</div>
 					</div>
 
-					<!-- Section 5: Emotions Ressenties -->
+<!-- Section 4.5: Modalités des Images (conditionnelle) -->
+				<div class="form-section" id="imagesModalitesSection" style="display: none;">
+						<div class="form-group">
+							<label class="form-label">Modalités des images :</label>
+							
+							<div class="checkbox-group">
+								{% for modalite in images_modalites %}
+									<label class="checkbox-label choice-label">
+										<input type="checkbox" name="images_modalites" value="{{ modalite.id }}">
+										<span class="checkbox-text">{{ modalite.libelle }}</span>
+									</label>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+
+					<!-- Section 5: Type de Reve -->
 					<div class="form-section">
 						<div class="form-group">
-							<label class="form-label">Emotions ressenties *</label>
-							<p class="field-help">Vous pouvez selectionner plusieurs emotions</p>
+							<label class="form-label">C'était plutôt un... </label>
+							<p class="field-help">Un cauchemar est un mauvais rêve qui occasionne un réveil. </p>
+							
+							<div class="radio-group">
+								<label class="radio-label choice-label">
+									<input type="radio" name="type_reve" value="tres_positif" required>
+									<span class="radio-text">Rêve très positif</span>
+								</label>
+								<label class="radio-label choice-label">
+									<input type="radio" name="type_reve" value="positif">
+									<span class="radio-text">Rêve positif</span>
+								</label>
+								<label class="radio-label choice-label">
+									<input type="radio" name="type_reve" value="neutre">
+									<span class="radio-text">Rêve neutre</span>
+								</label>
+								<label class="radio-label choice-label">
+									<input type="radio" name="type_reve" value="mauvais">
+									<span class="radio-text">Mauvais rêve</span>
+								</label>
+								<label class="radio-label choice-label">
+									<input type="radio" name="type_reve" value="cauchemar">
+									<span class="radio-text">Cauchemar</span>
+								</label>
+							</div>
+						</div>
+					</div>
+					</div>
+
+			
+
+
+
+					<div class="form-section">
+						<div class="form-group">
+							<label class="form-label">Émotions ressenties :</label>
+							<span class="field-help"> Vous pouvez selectionner plusieurs émotions et en ajouter des émotions</span>
 							
 							<div class="checkbox-group" id="emotionsGroup">
 								{% for emotion in emotions %}
@@ -172,7 +193,7 @@
 				<!-- Boutons d'action -->
 				<div class="form-actions">
 					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" disabled>
-						Enregistrer le reve
+						Enregistrer son rêve
 					</button>
 					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large">
 						Retour au journal
@@ -319,38 +340,58 @@ function initFormHandlers() {
 		submitBtn.disabled = !isValid;
 	};
 
-		const updateChoiceStyles = () => {
-			const groups = {};
-			form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
-				const groupName = input.name;
-				if (!groups[groupName]) {
-					groups[groupName] = [];
-				}
-				groups[groupName].push(input);
-			});
+	const updateChoiceStyles = () => {
+		const groups = {};
+		form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+			const groupName = input.name;
+			if (!groups[groupName]) {
+				groups[groupName] = [];
+			}
+			groups[groupName].push(input);
+		});
 
-			Object.values(groups).forEach(inputs => {
-				const anyChecked = inputs.some(input => input.checked);
-				inputs.forEach(input => {
-					const label = input.closest('label');
-					if (!label) {
-						return;
-					}
-					label.classList.toggle('is-selected', input.checked);
-					label.classList.toggle('is-dim', anyChecked && !input.checked);
-				});
+		Object.values(groups).forEach(inputs => {
+			const anyChecked = inputs.some(input => input.checked);
+			inputs.forEach(input => {
+				const label = input.closest('label');
+				if (!label) {
+					return;
+				}
+				label.classList.toggle('is-selected', input.checked);
+				label.classList.toggle('is-dim', anyChecked && !input.checked);
 			});
-		};
+		});
+	};
+
+	// Gérer l'affichage des modalités d'images
+	const handleImagesModalites = () => {
+		const imagesRadio = form.querySelector('input[name="sens"][value="1"]');
+		const imagesSection = document.getElementById('imagesModalitesSection');
+		
+		if (imagesRadio && imagesRadio.checked) {
+			imagesSection.style.display = 'block';
+		} else {
+			imagesSection.style.display = 'none';
+			// Décocher les modalités quand Images n'est plus sélectionné
+			imagesSection.querySelectorAll('input[type="checkbox"]').forEach(input => {
+				input.checked = false;
+			});
+		}
+	};
 
 		form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(field => {
 			field.addEventListener('change', () => {
-				checkForm();
-				updateChoiceStyles();
-			});
+			// Mettre à jour l'affichage des modalités d'images si c'est le champ "sens"
+			if (field.name === 'sens') {
+				handleImagesModalites();
+			}
+			checkForm();
+			updateChoiceStyles();
 		});
+	});
 
-		updateChoiceStyles();
-
+	// Initialiser l'affichage des modalités
+	handleImagesModalites();
 		const normalizeEmotion = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
 		const existingEmotionValues = () => {
 			return Array.from(emotionsGroup.querySelectorAll('input[name="emotions_reve"], input[name="emotions_custom"]'))
@@ -440,13 +481,13 @@ function initFormHandlers() {
 			} else {
 				alert('Erreur: ' + data.message);
 				submitBtn.disabled = false;
-				submitBtn.textContent = 'Enregistrer le reve';
+				submitBtn.textContent = 'Enregistrer son rêve';
 			}
 		} catch (error) {
 			console.error('Erreur:', error);
 			alert('Une erreur est survenue');
 			submitBtn.disabled = false;
-			submitBtn.textContent = 'Enregistrer le reve';
+			submitBtn.textContent = 'Enregistrer son rêve';
 		}
 	});
 }
@@ -460,7 +501,7 @@ function initFormHandlers() {
 }
 
 .form-section {
-	margin-bottom: 1.75rem;
+	margin-bottom: 0;
 }
 
 .section-audio {
@@ -468,13 +509,13 @@ function initFormHandlers() {
 }
 
 .questions-grid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(260px, 1fr));
-	gap: 2rem 2.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
 }
 
 .recorder-box {
-	background: linear-gradient(135deg, #5b6ee7, #1e2a6d);
+	background: linear-gradient(135deg, #5b6ee7, #3f4d9c);
 	border-radius: 12px;
 	padding: 2rem;
 	color: white;
@@ -534,18 +575,18 @@ function initFormHandlers() {
 	display: inline-flex;
 	align-items: center;
 	padding: 0.5rem 0.75rem;
-	border: 1px solid var(--gray-200);
+	border: 1px solid var(--gray-300);
 	border-radius: 999px;
 	cursor: pointer;
 	transition: all 0.2s ease;
-	background: rgba(30, 42, 109, 0.08);
+	background: var(--white);
 	position: relative;
 }
 
 .radio-label:hover,
 .checkbox-label:hover {
-	border-color: var(--primary-light);
-	background: rgba(30, 42, 109, 0.16);
+	border-color: var(--primary);
+	background: var(--gray-50);
 }
 
 .choice-label input[type="radio"],
@@ -556,8 +597,8 @@ function initFormHandlers() {
 }
 
 .choice-label.is-selected {
-	background: var(--primary-dark);
-	border-color: var(--primary-dark);
+	background: var(--primary);
+	border-color: var(--primary);
 }
 
 .choice-label.is-selected .radio-text,
@@ -574,7 +615,7 @@ function initFormHandlers() {
 .checkbox-text {
 	margin-left: 0;
 	font-weight: 600;
-	color: var(--primary-dark);
+	color: var(--gray-700);
 }
 
 .tag-badge {
@@ -595,13 +636,16 @@ function initFormHandlers() {
 }
 
 .form-actions {
-	display: flex;
-	gap: 1rem;
-	margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
 .form-actions .btn {
-	flex: 1;
+    flex: 1;
+    max-width: 300px;
 }
 
 .card-info {
@@ -618,8 +662,8 @@ function initFormHandlers() {
 .field-help {
 	color: var(--gray-600);
 	font-size: 0.9rem;
-	margin-top: 0.5rem;
-	margin-bottom: 1rem;
+	margin-top: 0.1rem;
+	margin-bottom: 0.9rem;
 }
 
 .custom-emotion-row {

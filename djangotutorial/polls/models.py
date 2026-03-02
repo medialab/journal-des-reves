@@ -155,6 +155,15 @@ class Reve(models.Model):
         help_text="Le sens principal dont vous vous souvenez"
     )
 
+    # Modalités des images (si Images sélectionné)
+    images_modalites = models.ManyToManyField(
+        'ImageModalite',
+        blank=True,
+        related_name="reves",
+        verbose_name="Modalités des images",
+        help_text="Les modalités des images dont vous vous souvenez (couleur, netteté, etc.)"
+    )
+
     # Émotions ressenties (peut avoir plusieurs)
     emotions_reve = models.ManyToManyField(
         'Emotion',
@@ -183,6 +192,27 @@ class Reve(models.Model):
 
     def __str__(self):
         return f"Rêve de {self.profil.name} - {self.date}"
+
+
+class ImageModalite(models.Model):
+    """Modalités d'images que la personne peut se souvenir (couleur, netteté, etc.)"""
+    libelle = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Modalité d'image"
+    )
+    ordre = models.IntegerField(
+        default=0,
+        verbose_name="Ordre d'affichage"
+    )
+
+    class Meta:
+        ordering = ['ordre', 'libelle']
+        verbose_name = "Modalité d'image"
+        verbose_name_plural = "Modalités d'images"
+
+    def __str__(self):
+        return self.libelle
 
 
 class Emotion(models.Model):

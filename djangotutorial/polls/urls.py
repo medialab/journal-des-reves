@@ -25,6 +25,8 @@ urlpatterns = [
     path("journal/reve/<int:pk>/", views.ReveDetailView.as_view(), name="reve_detail"),
     # Télécharger l'audio d'un rêve (sécurisé)
     path("journal/reve/<int:reve_id>/audio/", views.ReveAudioDownloadView.as_view(), name="reve_audio"),
+    # Mise a jour de la transcription d'un reve
+    path("journal/reve/<int:reve_id>/transcription/", views.ReveTranscriptionUpdateView.as_view(), name="reve_transcription_update"),
     
     # Inscription avec consentement
     path("signup/", views.SignUpView.as_view(), name="signup"),

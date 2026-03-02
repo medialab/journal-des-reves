@@ -65,6 +65,22 @@
     --z-tooltip: 1070;
 }
 
+
+.navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.demi_titre {
+    font-size: 1.5rem; 
+    color: var(--primary); 
+    margin-top: 0;
+}
+
 /* ============================================
    FONTS
    ============================================ */
