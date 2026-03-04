@@ -5,11 +5,14 @@ from . import views
 app_name = "polls"
 
 urlpatterns = [
-    # Page d’accueil des polls
-    path("", views.IndexView.as_view(), name="index"),
+    # Page d'accueil publique
+    path("", views.AccueilView.as_view(), name="index"),
 
-    # Journal principal
+    # Journal principal (protection LoginRequiredMixin)
     path("journal/", views.JournalView.as_view(), name="journal"),
+
+    # Page de bienvenue
+    path("welcome/", views.WelcomeView.as_view(), name="welcome"),
 
     #Enregistrement des rêves 
     path("enregistrer/", views.EnregistrerView.as_view(), name="enregistrer"),
@@ -33,9 +36,4 @@ urlpatterns = [
     
     # Auth Django
     path("accounts/", include("django.contrib.auth.urls")),
-
-    # Polls existants
-    path("<int:pk>/", views.DetailView.as_view(), name="detail"),
-    path("<int:pk>/results/", views.ResultsView.as_view(), name="results"),
-    path("<int:question_id>/vote/", views.vote, name="vote"),
 ]

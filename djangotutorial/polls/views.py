@@ -13,7 +13,7 @@ import uuid
 import os
 import json
 
-from .models import Choice, Question, Reve, Profil, Questionnaire
+from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveImageModalite
 from .services.journal_service import get_journal_data
 from .services.transcription_service import start_transcription_async
 from .forms import ReveForm, QuestionnaireForm, SignUpForm
@@ -60,23 +60,6 @@ class ProfilView(LoginRequiredMixin, View):
         if 'email' in data:
             profil.email = data['email']
         
-        if 'birth_year' in data:
-            try:
-                birth_year = int(data['birth_year'])
-                if 1900 <= birth_year <= 2025:
-                    profil.birth_year = birth_year
-            except (ValueError, TypeError):
-                pass
-        
-        if 'genre' in data and data['genre']:
-            profil.genre = data['genre']
-        
-        if 'biography' in data:
-            profil.biography = data['biography']
-        
-        if 'deja_ecrit_reve' in data:
-            profil.deja_ecrit_reve = data['deja_ecrit_reve']
-        
         try:
             profil.save()
             messages.success(request, "Profil mis à jour avec succès !")
@@ -97,19 +80,6 @@ class DescriptionView(View):
         return render(request, self.template_name)
 
 
-class IndexView(generic.ListView):
-    template_name = "polls/index.html"
-    context_object_name = "latest_question_list"
-
-    def get_queryset(self):
-        return Question.objects.filter(
-            pub_date__lte=timezone.now()
-        ).order_by("-pub_date")[:5]
-
-
-class DetailView(generic.DetailView):
-    model = Question
-    template_name = "polls/detail.html"
 
 class EnregistrerView(LoginRequiredMixin, View):
     """
@@ -126,10 +96,9 @@ class EnregistrerView(LoginRequiredMixin, View):
             return HttpResponseRedirect(reverse("polls:index"))
         
         # Récupérer les émotions pour le formulaire
-        from .models import Emotion, EmotionCustom, ImageModalite
-        emotions = Emotion.objects.all().order_by('ordre')
-        custom_emotions = EmotionCustom.objects.filter(profil=profil).order_by('libelle')
-        images_modalites = ImageModalite.objects.all().order_by('ordre')
+        emotions = ReveEmotion.objects.all().order_by('ordre')
+        custom_emotions = ReveEmotionCustom.objects.filter(profil=profil).order_by('libelle')
+        images_modalites = ReveImageModalite.objects.all().order_by('ordre')
         
         context = {
             "title": "Enregistrer un rêve",
@@ -151,6 +120,25 @@ class EnregistrerView(LoginRequiredMixin, View):
                     'message': 'Profil utilisateur introuvable'
                 }, status=400)
 
+            # Récupérer existence_souvenir (par défaut True)
+            existence_souvenir_str = request.POST.get('existence_souvenir', '1')
+            existence_souvenir = existence_souvenir_str == '1'
+
+            # Si la personne n'a aucun souvenir, créer un rêve vide
+            if not existence_souvenir:
+                reve = Reve.objects.create(
+                    profil=profil,
+                    existence_souvenir=False,
+                    transcription_ready=True  # Pas de transcription nécessaire
+                )
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Entrée enregistrée : aucun souvenir de rêve cette nuit',
+                    'reve_id': reve.id,
+                })
+
+            # Sinon, traitement normal avec audio
             # Récupérer les données du formulaire
             audio_file = request.FILES.get('audio')
             type_reve = request.POST.get('type_reve', '').strip()
@@ -174,31 +162,30 @@ class EnregistrerView(LoginRequiredMixin, View):
                 type_reve=type_reve if type_reve else None,
                 etendue_reve=int(etendue_reve) if etendue_reve else None,
                 sens=int(sens) if sens else None,
+                existence_souvenir=True,
                 transcription_ready=False
             )
 
             # Ajouter les émotions
             if emotions_ids:
-                from .models import Emotion
-                emotions = Emotion.objects.filter(id__in=emotions_ids)
+                emotions = ReveEmotion.objects.filter(id__in=emotions_ids)
                 reve.emotions_reve.set(emotions)
 
             # Ajouter les émotions personnalisées
             if emotions_custom:
-                from .models import EmotionCustom
                 custom_objects = []
                 for raw_value in emotions_custom:
                     cleaned_value = (raw_value or '').strip()
                     if not cleaned_value:
                         continue
-                    existing = EmotionCustom.objects.filter(
+                    existing = ReveEmotionCustom.objects.filter(
                         profil=profil,
                         libelle__iexact=cleaned_value
                     ).first()
                     if existing:
                         custom_objects.append(existing)
                         continue
-                    custom_objects.append(EmotionCustom.objects.create(
+                    custom_objects.append(ReveEmotionCustom.objects.create(
                         profil=profil,
                         libelle=cleaned_value
                     ))
@@ -207,8 +194,7 @@ class EnregistrerView(LoginRequiredMixin, View):
 
             # Ajouter les modalités d'images
             if images_modalites_ids:
-                from .models import ImageModalite
-                images_modalites = ImageModalite.objects.filter(id__in=images_modalites_ids)
+                images_modalites = ReveImageModalite.objects.filter(id__in=images_modalites_ids)
                 reve.images_modalites.set(images_modalites)
 
             # Lancer la transcription en arrière-plan de manière asynchrone et non-bloquante
@@ -228,10 +214,6 @@ class EnregistrerView(LoginRequiredMixin, View):
                 'success': False,
                 'message': f'Erreur: {str(error)}'
             }, status=500)
-
-class ResultsView(generic.DetailView):
-    model = Question
-    template_name = "polls/results.html"
 
 
 class JournalView(LoginRequiredMixin, View):
@@ -343,43 +325,41 @@ class ReveTranscriptionUpdateView(LoginRequiredMixin, View):
         })
 
 
-def vote(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-
-    try:
-        selected_choice = question.choice_set.get(pk=request.POST["choice"])
-    except (KeyError, Choice.DoesNotExist):
-        return render(
-            request,
-            "polls/detail.html",
-            {
-                "question": question,
-                "error_message": "You didn't select a choice.",
-            },
-        )
-    else:
-        selected_choice.votes = F("votes") + 1
-        selected_choice.save()
-
-        return HttpResponseRedirect(
-            reverse("polls:results", args=(question.id,))
-        )
-
-
 class QuestionnaireView(View):
     """
     Vue pour gérer le questionnaire sur les rêves
     Affiche le formulaire et traite la soumission
+    Restriction : accessible uniquement 1 semaine après la création du profil
     """
     template_name = "polls/questionnaire.html"
+    waiting_template_name = "polls/questionnaire_waiting.html"
     
     def get(self, request):
-        """Afficher le formulaire de questionnaire"""
+        """Afficher le formulaire de questionnaire ou la page d'attente"""
+        # Vérifier si l'utilisateur est connecté
+        if not request.user.is_authenticated:
+            messages.warning(request, "Vous devez être connecté pour accéder au questionnaire.")
+            return HttpResponseRedirect(reverse("login"))
+        
+        # Vérifier si l'utilisateur peut accéder au questionnaire
+        profil = request.user.profil
+        
+        if not profil.can_access_questionnaire():
+            # Afficher la page d'attente
+            from django.utils import timezone
+            access_date = profil.created_at + timezone.timedelta(days=7)
+            context = {
+                'days_remaining': profil.days_until_questionnaire_access(),
+                'access_date': access_date,
+                'is_authenticated': True
+            }
+            return render(request, self.waiting_template_name, context)
+        
+        # L'utilisateur peut accéder au questionnaire
         form = QuestionnaireForm()
-        # Passer l'état de connexion au template
         context = {
             'form': form,
-            'is_authenticated': request.user.is_authenticated
+            'is_authenticated': True
         }
         return render(request, self.template_name, context)
     
@@ -390,11 +370,18 @@ class QuestionnaireView(View):
             messages.error(request, "Vous devez être connecté pour soumettre le questionnaire.")
             return HttpResponseRedirect(reverse("login"))
         
+        # Vérifier si l'utilisateur peut accéder au questionnaire
+        profil = request.user.profil
+        if not profil.can_access_questionnaire():
+            messages.error(request, "Vous devez attendre 1 semaine après la création de votre compte pour remplir le questionnaire.")
+            return HttpResponseRedirect(reverse("polls:questionnaire"))
+        
         form = QuestionnaireForm(request.POST)
         
         if form.is_valid():
             questionnaire = form.save(commit=False)
             questionnaire.profil = request.user.profil
+            questionnaire.user = request.user
             questionnaire.save()
             
             messages.success(request, "Merci d'avoir complété le questionnaire ! Vos réponses ont été enregistrées.")
@@ -406,6 +393,19 @@ class QuestionnaireView(View):
                 'is_authenticated': request.user.is_authenticated
             }
             return render(request, self.template_name, context)
+
+
+class WelcomeView(LoginRequiredMixin, View):
+    """
+    Vue d'accueil après création de compte
+    Affiche une page de bienvenue avec un modal élégant
+    """
+    template_name = "polls/welcome.html"
+    
+    def get(self, request):
+        """Afficher la page de bienvenue"""
+        return render(request, self.template_name)
+
 
 class SignUpView(View):
     """
@@ -451,7 +451,7 @@ class SignUpView(View):
                         request,
                         f'Bienvenue {user.username} ! Votre compte a été créé avec succès.'
                     )
-                    return redirect('polls:questionnaire')
+                    return redirect('polls:welcome')
                 else:
                     messages.error(
                         request,
@@ -468,3 +468,18 @@ class SignUpView(View):
         else:
             # Le formulaire contient des erreurs
             return render(request, self.template_name, {'form': form})
+
+
+class AccueilView(View):
+    """
+    Page d'accueil publique
+    Visible pour tous les utilisateurs (connectés ou non)
+    """
+    template_name = "polls/index.html"
+    
+    def get(self, request):
+        """Afficher la page d'accueil"""
+        context = {
+            'is_authenticated': request.user.is_authenticated,
+        }
+        return render(request, self.template_name, context)

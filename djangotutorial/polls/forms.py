@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils import timezone
-from .models import Reve, Questionnaire, Emotion, Tag, Profil
+from .models import Reve, Questionnaire, Profil
 
 
 class ReveForm(forms.ModelForm):
@@ -186,10 +186,18 @@ class SignUpForm(UserCreationForm):
             self.fields['password1'].help_text = 'Votre mot de passe doit contenir au moins 8 caractères et ne pas être uniquement numérique.'
     
     def clean_email(self):
-        """Vérifier que l'email n'existe pas déjà"""
+        """Vérifier que l'email n'existe pas déjà (dans User et Profil)"""
         email = self.cleaned_data.get('email')
+        
+        # Vérifier dans le modèle User
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('Un compte avec cet email existe déjà.')
+        
+        # Vérifier dans le modèle Profil (double protection)
+        from .models import Profil
+        if Profil.objects.filter(email=email).exists():
+            raise forms.ValidationError('Un profil avec cet email existe déjà.')
+        
         return email
     
     def clean(self):
@@ -216,16 +224,12 @@ class SignUpForm(UserCreationForm):
             profil = Profil.objects.create(
                 user=user,
                 email=user.email,
-                name=user.username,  # Utiliser le username comme nom par défaut
-                genre='A',  # Autre par défaut, à compléter dans le questionnaire
-                biography='',
-                birth_year=2000,  # Valeur par défaut, à compléter dans le questionnaire
-                deja_ecrit_reve=True,
                 # Enregistrer les consentements
                 consent_data_processing=self.cleaned_data['consent_data_processing'],
                 consent_password_account=self.cleaned_data['consent_password_account'],
                 consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
-                consent_date=timezone.now()
+                consent_date=timezone.now(),
+                welcome_email_sent=False  # L'email sera envoyé à la première connexion
             )
         
         return user

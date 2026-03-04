@@ -4,33 +4,9 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
-# Create your models here.
 
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField("date published")
-    def __str__(self):
-        return self.question_text
-    def was_published_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=1) <= self.pub_date <= now
-    @admin.display(
-        boolean=True,
-        ordering="pub_date",
-        description="Published recently?",
-)
-    def was_published_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=1) <= self.pub_date <= now
-    
-# On définit une classe, qu'on nomme choice, on a différent attribut de cette classe, question, voices.? 
-class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE) # C'est lié à question
-    choice_text = models.CharField(max_length=200) #  CHARFIELD = stocke les données de type caractère/texte/chaîne
-    # On fixe aussi la longueur maximale des données. 
-    votes = models.IntegerField(default=0)
-    def __str__(self):
-        return self.choice_text
+
+# PROFIL USER ------------------------
 
 class Profil(models.Model):
     user = models.OneToOneField(
@@ -38,21 +14,13 @@ class Profil(models.Model):
         on_delete=models.CASCADE
     )
 
-    class Genre(models.TextChoices):
-        Femme = 'F'
-        Homme = 'H'
-        Non_binaire = 'NB'
-        Autre = 'A'
-
-    name = models.CharField(max_length=100)
-    genre = models.CharField(choices=Genre.choices, max_length=15)
-    biography = models.TextField()  # mieux que CharField pour long texte
-    birth_year = models.IntegerField(
-        validators=[MinValueValidator(1900), MaxValueValidator(2025)]
+    email = models.EmailField(
+        unique=True,
+        error_messages={
+            'unique': "Un profil avec cet email existe déjà."
+        }
     )
-    deja_ecrit_reve = models.BooleanField(default=True)
-    email = models.EmailField()
-    
+
     # Champs de consentement pour l'enquête
     consent_data_processing = models.BooleanField(
         default=False,
@@ -77,11 +45,151 @@ class Profil(models.Model):
         verbose_name="Date d'acceptation du consentement"
     )
 
-    def __str__(self):
-        return self.name
+    # Suivi de l'email de bienvenue
+    welcome_email_sent = models.BooleanField(
+        default=False,
+        verbose_name="Email de bienvenue envoyé",
+        help_text="Indique si l'email de bienvenue a été envoyé à la première connexion"
+    )
 
+    # Date de création du profil
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Date de création du profil"
+    )
+
+    def can_access_questionnaire(self):
+        """Vérifie si l'utilisateur peut accéder au questionnaire (1 semaine après création)"""
+        if not self.created_at:
+            return False
+        from django.utils import timezone
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        return self.created_at <= one_week_ago
+
+    def days_until_questionnaire_access(self):
+        """Retourne le nombre de jours restants avant l'accès au questionnaire"""
+        if not self.created_at:
+            return 7
+        from django.utils import timezone
+        one_week_after_creation = self.created_at + timezone.timedelta(days=7)
+        days_remaining = (one_week_after_creation - timezone.now()).days
+        return max(0, days_remaining)
+
+
+# MODELES POUR LES REVES ========================
+
+class ReveImageModalite(models.Model):
+    """Modalités d'images que la personne peut se souvenir (couleur, netteté, etc.)"""
+    libelle = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Modalité d'image"
+    )
+    ordre = models.IntegerField(
+        default=0,
+        verbose_name="Ordre d'affichage"
+    )
+
+    class Meta:
+        ordering = ['ordre', 'libelle']
+        verbose_name = "Modalité d'image"
+        verbose_name_plural = "Modalités d'images"
+
+    def __str__(self):
+        return self.libelle
+
+
+class ReveEmotion(models.Model):
+    """Émotions prédéfinies par les chercheurs"""
+    libelle = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Émotion"
+    )
+    emoji = models.CharField(
+        max_length=10,
+        default='😐',
+        verbose_name="Emoji représentant"
+    )
+    ordre = models.IntegerField(
+        default=0,
+        verbose_name="Ordre d'affichage"
+    )
+
+    class Meta:
+        ordering = ['ordre', 'libelle']
+        verbose_name = "Émotion"
+        verbose_name_plural = "Émotions"
+
+    def __str__(self):
+        return f"{self.emoji} {self.libelle}"
+
+
+class ReveEmotionCustom(models.Model):
+    """Émotions personnalisées par profil"""
+    profil = models.ForeignKey(
+        Profil,
+        on_delete=models.CASCADE,
+        related_name="emotions_custom"
+    )
+    libelle = models.CharField(
+        max_length=100,
+        verbose_name="Émotion"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['libelle']
+        verbose_name = "Émotion personnalisée"
+        verbose_name_plural = "Émotions personnalisées"
+        unique_together = ('profil', 'libelle')
+
+    def __str__(self):
+        return f"{self.libelle} ({self.profil.user.username})"
+
+
+class ReveTag(models.Model):
+    """Tags personnalisés créés par les utilisateurs"""
+    profil = models.ForeignKey(
+        Profil,
+        on_delete=models.CASCADE,
+        related_name="tags"
+    )
+    libelle = models.CharField(
+        max_length=100,
+        verbose_name="Tag"
+    )
+    couleur = models.CharField(
+        max_length=7,
+        default='#3245bd',
+        verbose_name="Couleur du tag",
+        help_text="Couleur en format hex (#RRGGBB)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Tag"
+        verbose_name_plural = "Tags"
+        unique_together = ('profil', 'libelle')
+
+    def __str__(self):
+        return f"{self.libelle} ({self.profil.user.username})"
+
+
+# BASE DE DONNEES REVES ========================
 
 class Reve(models.Model):
+    """Modèle pour les rêves enregistrés"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reves",
+        null=True,
+        blank=True
+    )
+    
     profil = models.ForeignKey(
         Profil,
         on_delete=models.CASCADE,
@@ -90,8 +198,17 @@ class Reve(models.Model):
 
     date = models.DateField(auto_now_add=True)
 
+    # Indique si la personne a un souvenir de son rêve (True) ou non (False)
+    existence_souvenir = models.BooleanField(
+        default=True,
+        verbose_name="A un souvenir du rêve",
+        help_text="False si l'utilisateur n'a aucun souvenir de son rêve cette nuit"
+    )
+
     audio = models.FileField(
         upload_to="reves_audio/",
+        blank=True,
+        null=True,
         help_text="Enregistrement audio du rêve (WAV)"
     )
 
@@ -157,7 +274,7 @@ class Reve(models.Model):
 
     # Modalités des images (si Images sélectionné)
     images_modalites = models.ManyToManyField(
-        'ImageModalite',
+        ReveImageModalite,
         blank=True,
         related_name="reves",
         verbose_name="Modalités des images",
@@ -166,14 +283,14 @@ class Reve(models.Model):
 
     # Émotions ressenties (peut avoir plusieurs)
     emotions_reve = models.ManyToManyField(
-        'Emotion',
+        ReveEmotion,
         blank=True,
         related_name="reves",
         verbose_name="Émotions ressenties"
     )
 
     emotions_custom = models.ManyToManyField(
-        'EmotionCustom',
+        ReveEmotionCustom,
         blank=True,
         related_name="reves",
         verbose_name="Émotions personnalisées"
@@ -181,7 +298,7 @@ class Reve(models.Model):
 
     # Tags personnalisés (peut en ajouter plusieurs)
     tags = models.ManyToManyField(
-        'Tag',
+        ReveTag,
         blank=True,
         related_name="reves",
         verbose_name="Tags personnalisés"
@@ -191,110 +308,21 @@ class Reve(models.Model):
         ordering = ['-date', '-created_at']
 
     def __str__(self):
-        return f"Rêve de {self.profil.name} - {self.date}"
+        return f"Rêve de {self.profil.user.username} - {self.date}"
 
 
-class ImageModalite(models.Model):
-    """Modalités d'images que la personne peut se souvenir (couleur, netteté, etc.)"""
-    libelle = models.CharField(
-        max_length=100,
-        unique=True,
-        verbose_name="Modalité d'image"
-    )
-    ordre = models.IntegerField(
-        default=0,
-        verbose_name="Ordre d'affichage"
-    )
-
-    class Meta:
-        ordering = ['ordre', 'libelle']
-        verbose_name = "Modalité d'image"
-        verbose_name_plural = "Modalités d'images"
-
-    def __str__(self):
-        return self.libelle
-
-
-class Emotion(models.Model):
-    """Émotions prédéfinies par les chercheurs"""
-    libelle = models.CharField(
-        max_length=100,
-        unique=True,
-        verbose_name="Émotion"
-    )
-    emoji = models.CharField(
-        max_length=10,
-        default='😐',
-        verbose_name="Emoji représentant"
-    )
-    ordre = models.IntegerField(
-        default=0,
-        verbose_name="Ordre d'affichage"
-    )
-
-    class Meta:
-        ordering = ['ordre', 'libelle']
-        verbose_name = "Émotion"
-        verbose_name_plural = "Émotions"
-
-    def __str__(self):
-        return f"{self.emoji} {self.libelle}"
-
-
-class EmotionCustom(models.Model):
-    """Émotions personnalisées par profil"""
-    profil = models.ForeignKey(
-        Profil,
-        on_delete=models.CASCADE,
-        related_name="emotions_custom"
-    )
-    libelle = models.CharField(
-        max_length=100,
-        verbose_name="Émotion"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['libelle']
-        verbose_name = "Émotion personnalisée"
-        verbose_name_plural = "Émotions personnalisées"
-        unique_together = ('profil', 'libelle')
-
-    def __str__(self):
-        return f"{self.libelle} ({self.profil.name})"
-
-
-class Tag(models.Model):
-    """Tags personnalisés créés par les utilisateurs"""
-    profil = models.ForeignKey(
-        Profil,
-        on_delete=models.CASCADE,
-        related_name="tags"
-    )
-    libelle = models.CharField(
-        max_length=100,
-        verbose_name="Tag"
-    )
-    couleur = models.CharField(
-        max_length=7,
-        default='#3245bd',
-        verbose_name="Couleur du tag",
-        help_text="Couleur en format hex (#RRGGBB)"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Tag"
-        verbose_name_plural = "Tags"
-        unique_together = ('profil', 'libelle')
-
-    def __str__(self):
-        return f"{self.libelle} ({self.profil.name})"
-
+# QUESTIONNAIRE ------------------------
 
 class Questionnaire(models.Model):
     """Modèle pour stocker les réponses au questionnaire sur les rêves"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="questionnaires",
+        null=True,
+        blank=True
+    )
     
     profil = models.ForeignKey(
         Profil,
@@ -460,5 +488,5 @@ class Questionnaire(models.Model):
         verbose_name_plural = "Questionnaires"
     
     def __str__(self):
-        return f"Questionnaire de {self.profil.name} - {self.created_at.strftime('%d/%m/%Y')}"
+        return f"Questionnaire de {self.profil.user.username} - {self.created_at.strftime('%d/%m/%Y')}"
 

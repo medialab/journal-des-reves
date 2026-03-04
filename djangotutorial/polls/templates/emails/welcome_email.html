@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue dans notre étude sur les rêves</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #6366f1;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #6366f1;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #4f46e5;
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .feature {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-left: 4px solid #6366f1;
+            border-radius: 4px;
+        }
+        .feature strong {
+            color: #6366f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌙 Bienvenue {{ first_name }} !</h1>
+        </div>
+        
+        <div class="content">
+            <p>Merci de vous être inscrit(e) à notre étude sur les rêves.</p>
+            
+            <p>Nous sommes heureux de vous accueillir dans notre communauté dédiée à l'exploration et à la compréhension des rêves.</p>
+            
+            <h2>Pour commencer :</h2>
+            
+            <div class="features">
+                <div class="feature">
+                    <strong>📝 Enregistrer votre premier rêve</strong><br>
+                    Partagez vos expériences oniriques et explorez leurs significations.
+                </div>
+                
+                <div class="feature">
+                    <strong>📚 Consulter votre journal</strong><br>
+                    Accédez à tous vos rêves enregistrés et suivez vos expériences au fil du temps.
+                </div>
+                
+                <div class="feature">
+                    <strong>📋 Remplir un questionnaire</strong><br>
+                    Aidez-nous à mieux comprendre votre expérience personnelle des rêves.
+                </div>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">
+                <strong>Note :</strong> Vous recevrez des mises à jour hebdomadaires avec des conseils et des informations intéressantes sur les rêves.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 Étude sur les rêves - Tous droits réservés</p>
+            <p>Cette étude est réalisée en conformité avec les directives éthiques de la recherche.</p>
+        </div>
+    </div>
+</body>
+</html>

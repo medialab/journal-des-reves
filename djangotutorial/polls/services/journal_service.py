@@ -1,6 +1,6 @@
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
-from ..models import Reve, Emotion
+from ..models import Reve
 
 
 def get_journal_data(profil):

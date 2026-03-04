@@ -1,49 +1,148 @@
 {% extends 'polls/base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
-</head>
+{% block title %}Description du projet – Journal des Rêves{% endblock %}
 
 {% block content %}
-<section class="page-content">
-	<section class="page-hero page-hero-small">
-		<div class="container-small journal-hero">
-			<h1 class="page-title"> Description du projet</h1>
-			<div class="hero-buttons">
-				<a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
-					Ajouter un rêve
-					<span class="btn-arrow">→</span>
-				</a>
-				<a href="{% url 'polls:profil' %}" class="btn btn-outline btn-large">
-					Mettre à jour le profil
-				</a>
-			</div>
-		</div>
-	</section>
-        
-        <div class="description-content">
-            <h2>À propos de ce projet</h2>
-             <div class="consent-content">
-                        <p>L’enquête étudie  les récits de rêves et les liens avec la position sociale du rêveur (classe sociale, métier, niveau d’études, et de revenu, genre, âge et d'autres caractéristiques sociales). Cette collecte comprend vos récits audio, ainsi qu’un questionnaire permettant de comprendre vos caractéristiques sociales. Les seules personnes qui auront accès aux données brutes sont Maud Yaïche et ses directeurs de thèse, Jean-Philippe Cointet et Nicolas Duvoux.</p>
-
-                        <p>Les traitements statistiques portent sur des données audio, la transcription de ces enregistrements et le croisement avec les réponses au questionnaire. Aucune donnée ne sortira des serveurs de Sciences Po ni d'un ordinateur sécurisé en local. Les données brutes seront supprimées 10 ans après la collecte.</p>
-
-                        <p>L'enquête fera l'objet d'une thèse, de publications scientifiques sous forme de chapitres d'ouvrages, d'un livre et d'articles scientifiques. Pour les publications, vous ne pourrez pas être identifié individuellement. Si vous y consentez, des extraits de texte de vos rêves pourront être publiées.</p>
-
-                        <p>La base légale de ce projet est le consentement. Vous pouvez retirer votre consentement sur le site si vous changez d'avis et, après cette période, vous pouvez adresser un mail à <a href="mailto:maud.yaiche@sciencespo.fr">maud.yaiche@sciencespo.fr</a></p>
-             </div>
-            
-            <h2 class =".demi_titre">Comment ça marche ?</h2>
-            <p>Vous pouvez enregistrer vos rêves de manière audio ou écrite...</p>
-            
-            <h2>Mentions légales</h2>
-            <p>Vos données sont protégées et utilisées uniquement dans le cadre de cette recherche...</p>
+<!-- Section Hero -->
+<section class="page-hero page-hero-small">
+    <div class="container-small">
+        <h1 class="page-title">Description du projet</h1>
+        <div class="hero-buttons">
+            <a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
+                Ajouter un rêve
+                <span class="btn-arrow">→</span>
+            </a>
+            <a href="{% url 'polls:profil' %}" class="btn btn-outline btn-large">
+                Mettre à jour le profil
+            </a>
         </div>
     </div>
 </section>
+
+<!-- Contenu principal -->
+<div class="page-content">
+    <div class="container-small">
+        <!-- À propos du projet -->
+        <article class="content-section">
+            <h2>À propos de ce projet</h2>
+            
+            <section class="content-block">
+                <p>L'enquête étudie les récits de rêves et les liens avec la position sociale du rêveur (classe sociale, métier, niveau d'études, et de revenu, genre, âge et d'autres caractéristiques sociales). Cette collecte comprend vos récits audio, ainsi qu'un questionnaire permettant de comprendre vos caractéristiques sociales.</p>
+                
+                <p>Les seules personnes qui auront accès aux données brutes sont Maud Yaïche et ses directeurs de thèse, Jean-Philippe Cointet et Nicolas Duvoux.</p>
+            </section>
+        </article>
+
+        <!-- Traitement des données -->
+        <article class="content-section">
+            <h2>Traitement des données</h2>
+            
+            <section class="content-block">
+                <p>Les traitements statistiques portent sur des données audio, la transcription de ces enregistrements et le croisement avec les réponses au questionnaire. Aucune donnée ne sortira des serveurs de Sciences Po ni d'un ordinateur sécurisé en local.</p>
+                
+                <p><strong>Conservation :</strong> Les données brutes seront supprimées 10 ans après la collecte.</p>
+            </section>
+        </article>
+
+        <!-- Utilisation des résultats -->
+        <article class="content-section">
+            <h2>Utilisation des résultats</h2>
+            
+            <section class="content-block">
+                <p>L'enquête fera l'objet d'une thèse, de publications scientifiques sous forme de chapitres d'ouvrages, d'un livre et d'articles scientifiques.</p>
+                
+                <p><strong>Confidentialité :</strong> Pour les publications, vous ne pourrez pas être identifié individuellement. Si vous y consentez, des extraits de texte de vos rêves pourront être publiés.</p>
+            </section>
+        </article>
+
+        <!-- Comment ça marche -->
+        <article class="content-section">
+            <h2 class="demi_titre">Comment ça marche ?</h2>
+            
+            <section class="content-block">
+                <p>Vous pouvez enregistrer vos rêves de deux manières grâce aux enregistrements audio. </p>
+                <p>Chaque rêve enregistré contribue à notre compréhension collective des rêves et de leurs liens avec le contexte social.</p>
+            </section>
+        </article>
+
+        <!-- Conditions d'utilisation & Consentement -->
+        <article class="content-section">
+            <h2 class="demi_titre">Conditions d'utilisation</h2>
+            
+            <section class="content-block">
+                <p>La base légale de ce projet est le consentement. Vous pouvez retirer votre consentement sur le site si vous changez d'avis.
+                
+                Pour toute question ou demande, vous pouvez adresser un mail à <a href="mailto:maud.yaiche@sciencespo.fr">maud.yaiche@sciencespo.fr</a> </p> 
+            </section>
+        </article>
+
+        <!-- Mentions légales -->
+        <article class="content-section">
+            <h2 class="demi_titre">Mentions légales</h2>
+            
+            <section class="content-block">
+                <p><strong>Base légale :</strong> Consentement à l'inscription sur le site</p>
+                <p><strong>Responsable de l'étude :</strong> Maud Yaïche</p>
+                <p><strong>Institution :</strong> Sciences Po</p>
+                <p><strong>Directeurs de thèse :</strong> Jean-Philippe Cointet et Nicolas Duvoux</p>
+                
+                <p>Vos données sont protégées et utilisées uniquement dans le cadre de cette recherche scientifique.</p>
+            </section>
+        </article>
+    </div>
+</div>
+
+<style>
+    .content-section {
+        margin-bottom: 3rem;
+    }
+
+    .content-section h2 {
+        color: var(--primary);
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+        margin-top: 2rem;
+    }
+
+    .content-section h2:first-child {
+        margin-top: 0;
+    }
+
+    .content-block {
+        line-height: 1.8;
+        color: var(--gray-700);
+    }
+
+    .content-block p {
+        margin-bottom: 1.25rem;
+    }
+
+    .content-block p:last-child {
+        margin-bottom: 0;
+    }
+
+    .content-block ul {
+        margin: 1.25rem 0;
+        padding-left: 2rem;
+    }
+
+    .content-block li {
+        margin-bottom: 0.75rem;
+        color: var(--gray-700);
+    }
+
+    .content-block a {
+        color: var(--primary);
+        text-decoration: none;
+        border-bottom: 2px solid var(--accent);
+        transition: all var(--transition-base);
+        padding-bottom: 2px;
+    }
+
+    .content-block a:hover {
+        color: var(--primary-light);
+        border-bottom-color: var(--primary-light);
+    }
+</style>
 {% endblock %}

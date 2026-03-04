@@ -808,11 +808,13 @@ img {
 /* ============================================
    DREAMS LIST
    ============================================ */
+/* APRÈS */
 .dreams-container {
-    background: var(--white);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
-    box-shadow: var(--shadow-md);
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    width: 100%;
 }
 
 .dreams-list {
@@ -821,19 +823,24 @@ img {
     gap: 1rem;
 }
 
+/* APRÈS */
 .dream-card {
-    background: var(--gray-50);
-    padding: var(--spacing-lg);
-    border-radius: var(--radius-lg);
-    border-left: 4px solid var(--primary-light);
-    transition: all var(--transition-base);
+    background: #ffffff;
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
     cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* APRÈS */
 .dream-card:hover {
-    transform: translateX(4px);
-    box-shadow: var(--shadow-md);
-    border-left-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
 }
 
 .empty-state {
@@ -1250,15 +1257,12 @@ select:focus {
 
 .journal-grid {
     display: grid;
-    grid-template-columns: minmax(280px, 1.1fr) 2fr;
-    gap: var(--spacing-xl);
-    align-items: start;
+	grid-template-columns: 1fr;
 }
 
 .journal-column {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xl);
+    display: block;
+    width: 100%;
 }
 
 .panel {

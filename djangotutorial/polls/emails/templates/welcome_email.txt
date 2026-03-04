@@ -1,0 +1,40 @@
+Bonjour {{ first_name }},
+
+Merci de faire partie de notre étude sur les rêves  !
+
+Votre contribution est précieuse pour nous permettre de mieux comprendre les mécanismes du rêve.
+
+CADRE DE L'ÉTUDE :
+================
+
+Cette étude vise à explorer :
+- La fréquence et le contenu des rêves
+- Les émotions associées aux rêves
+- La relation entre la qualité du sommeil et la mémorisation des rêves
+- Les facteurs socio-démographiques influençant les rêves
+
+VOS RESPONSABILITÉS :
+====================
+
+1. Enregistrer régulièrement vos rêves via notre plateforme
+2. Transcrire ou relater vos rêves aussi précisément que possible
+3. Répondre aux questionnaires sur votre sommeil et vos rêves
+4. Respecter les engagements de confidentialité
+
+CONFIDENTIALITÉ :
+================
+
+- Vos données seront traitées de manière anonyme et confidentielle
+- Seule l'équipe de recherche y aura accès
+- Vous pouvez vous retirer de l'étude à tout moment
+- Vos données seront supprimées si vous le demandez
+
+SUPPORT :
+=========
+
+Si vous avez des questions ou besoin d'aide, n'hésitez pas à nous contacter.
+
+Merci encore de votre participation !
+
+Cordialement,
+L'équipe de recherche

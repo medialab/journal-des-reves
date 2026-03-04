@@ -135,3 +135,21 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+
+# Email Configuration
+# https://docs.djangoproject.com/en/6.0/topics/email/
+
+# En développement, afficher les emails dans la console
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # En production, configurer un serveur SMTP réel
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'your-email-host'  # À configurer
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = 'your-email@example.com'  # À configurer
+    EMAIL_HOST_PASSWORD = 'your-password'  # À configurer
+
+DEFAULT_FROM_EMAIL = 'noreply@reves-etude.fr'
+

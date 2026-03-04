@@ -1,0 +1,16 @@
+Bienvenue {{ first_name }} !
+
+Merci de vous être inscrit(e) à notre étude sur les rêves.
+
+Nous sommes heureux de vous accueillir dans notre communauté dédiée à l'exploration et à la compréhension des rêves.
+
+Pour commencer, vous pouvez :
+- Enregistrer votre premier rêve
+- Consulter votre journal des rêves
+- Remplir un questionnaire pour nous aider à mieux comprendre votre expérience
+
+Vous recevrez un email de bienvenue une fois par semaine avec des conseils et des mises à jour.
+
+Bonne chance et à bientôt !
+
+L'équipe d'étude

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Journal des Rêves{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=3">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 
@@ -69,6 +69,29 @@
 
     </div>
 </header>
+
+<!-- Messages de notification -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+        <span class="alert-icon">
+            {% if message.tags == 'success' %}
+                ✓
+            {% elif message.tags == 'error' %}
+                ✕
+            {% elif message.tags == 'warning' %}
+                ⚠
+            {% else %}
+                ℹ
+            {% endif %}
+        </span>
+        <span class="alert-message">{{ message }}</span>
+        <button type="button" class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 {% block content %}
 {% endblock %}
@@ -236,6 +259,115 @@
             opacity: 1;
         }
     }
+
+    /* Messages de notification */
+    .messages-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .alert {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        animation: slideInRight 0.4s ease, fadeOut 0.5s ease 4.5s forwards;
+        font-size: 16px;
+        font-weight: 500;
+        position: relative;
+    }
+
+    .alert-icon {
+        font-size: 24px;
+        margin-right: 12px;
+        font-weight: bold;
+    }
+
+    .alert-message {
+        flex: 1;
+        line-height: 1.4;
+    }
+
+    .alert-close {
+        background: none;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        margin-left: 12px;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .alert-close:hover {
+        opacity: 1;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .alert-error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .alert-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .messages-container {
+            top: 70px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+
+        .alert {
+            font-size: 14px;
+            padding: 12px 16px;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+        }
+    }
 </style>
 
 <script>
@@ -276,6 +408,16 @@
         } else {
             navbar.classList.remove("scrolled");
         }
+    });
+
+    // Auto-fermeture des messages après 5 secondes
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                alert.remove();
+            }, 5000);
+        });
     });
 </script>
 

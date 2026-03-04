@@ -22,6 +22,9 @@
 
 			<form method="post" id="reve-form" enctype="multipart/form-data" class="form-card">
 				{% csrf_token %}
+				
+				<!-- Champ caché pour existence_souvenir -->
+				<input type="hidden" id="existenceSouvenir" name="existence_souvenir" value="1">
 
 				<!-- Section 1: Enregistrement Audio -->
 				<div class="form-section section-audio">
@@ -47,6 +50,13 @@
 							<audio id="audioPlayer" controls style="width: 100%; border-radius: 8px;"></audio>
 							<button type="button" id="rerecordBtn" class="btn btn-outline" style="margin-top: 1rem; width: 100%;">
 								Reenregistrer
+							</button>
+						</div>
+
+						<!-- Bouton "Aucun souvenir" -->
+						<div style="margin-top: 1.5rem; padding-top: 1.5rem;">
+							<button type="button" id="noMemoryBtn" class="btn btn-outline-light" style="width: 100%;">
+								Aucun souvenir de mon/mes rêve(s) cette nuit
 							</button>
 						</div>
 					</div>
@@ -161,7 +171,7 @@
 
 
 
-					<div class="form-section">
+					<div class="form-section" id="emotionsSection">
 						<div class="form-group">
 							<label class="form-label">Émotions ressenties :</label>
 							<span class="field-help"> Vous pouvez selectionner plusieurs émotions et en ajouter des émotions</span>
@@ -191,8 +201,8 @@
 				</div>
 
 				<!-- Boutons d'action -->
-				<div class="form-actions">
-					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" disabled>
+				<div class="form-actions" id="formActions">
+					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" style="min-height: 60px; padding: 1rem 1.5rem; white-space: normal; line-height: 1.4;" disabled>
 						Enregistrer son rêve
 					</button>
 					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large">
@@ -201,11 +211,24 @@
 				</div>
 			</form>
 
-			<!-- Message de succès -->
-			<div id="successMessage" class="alert alert-success" style="display: none; margin-top: 2rem;">
-				<h3>Reve enregistre avec succes</h3>
-				<p>La transcription arrivera dans quelques minutes. Vous la verrez apparaitre automatiquement dans votre journal.</p>
-				<a href="{% url 'polls:journal' %}" class="btn btn-primary" style="margin-top: 1rem;">Aller au journal</a>
+			<!-- Message de succès - Rêve avec audio -->
+			<div id="successMessageWithAudio" class="success-card" style="display: none;">
+				<div class="success-icon">✓</div>
+				<h2 class="success-title">Rêve enregistré avec succès !</h2>
+				<p class="success-text">Votre enregistrement audio a été sauvegardé. La transcription arrivera dans quelques minutes et apparaîtra automatiquement dans votre journal.</p>
+				<div class="success-actions">
+					<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">Aller au journal</a>
+				</div>
+			</div>
+
+			<!-- Message de succès - Aucun souvenir -->
+			<div id="successMessageNoMemory" class="success-card" style="display: none;">
+				<div class="success-icon">✓</div>
+				<h2 class="success-title">Entrée enregistrée</h2>
+				<p class="success-text">Nous avons bien noté que vous n'aviez pas de souvenir de rêve cette nuit. Merci pour votre participation continue.</p>
+				<div class="success-actions">
+					<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">Aller au journal</a>
+				</div>
 			</div>
 		</div>
 	</section>
@@ -315,13 +338,101 @@ function initRecorder() {
 function initFormHandlers() {
 	const form = document.getElementById('reve-form');
 	const submitBtn = document.getElementById('submitBtn');
-	const successMessage = document.getElementById('successMessage');
+	const successMessageWithAudio = document.getElementById('successMessageWithAudio');
+	const successMessageNoMemory = document.getElementById('successMessageNoMemory');
 	const emotionsGroup = document.getElementById('emotionsGroup');
 	const addEmotionBtn = document.getElementById('addEmotionBtn');
 	const customEmotionInput = document.getElementById('customEmotionInput');
+	const noMemoryBtn = document.getElementById('noMemoryBtn');
+	const existenceSouvenirInput = document.getElementById('existenceSouvenir');
+	const questionsGrid = document.querySelector('.questions-grid');
+	const emotionsSection = document.getElementById('emotionsSection');
+	const audioInput = document.getElementById('audioInput');
+
+	// Mode "Aucun souvenir"
+	let noMemoryMode = false;
+
+	noMemoryBtn.addEventListener('click', function() {
+		noMemoryMode = !noMemoryMode;
+		
+		if (noMemoryMode) {
+			// Activer le mode "Aucun souvenir"
+			existenceSouvenirInput.value = '0';
+			
+			// Cacher les questions
+			if (questionsGrid) {
+				questionsGrid.style.display = 'none';
+			}
+			
+			// Cacher la section des émotions
+			if (emotionsSection) {
+				emotionsSection.style.display = 'none';
+			}
+			
+			// Retirer le required sur l'audio
+			audioInput.removeAttribute('required');
+			
+			// Retirer le required sur tous les champs radio
+			form.querySelectorAll('input[type="radio"][required]').forEach(radio => {
+				radio.removeAttribute('required');
+			});
+			
+			// Changer le texte du bouton submit
+			submitBtn.textContent = 'Je valide que je n\'ai aucun souvenir de mon rêve de cette nuit';
+			submitBtn.disabled = false;
+			
+			// Changer le style du bouton "Aucun souvenir"
+			noMemoryBtn.textContent = 'Annuler - Je veux enregistrer mon rêve';
+			noMemoryBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+		} else {
+			// Désactiver le mode "Aucun souvenir"
+			existenceSouvenirInput.value = '1';
+			
+			// Réafficher les questions
+			if (questionsGrid) {
+				questionsGrid.style.display = 'flex';
+			}
+			
+			// Réafficher la section des émotions
+			if (emotionsSection) {
+				emotionsSection.style.display = 'block';
+			}
+			
+			// Remettre le required sur l'audio
+			audioInput.setAttribute('required', 'required');
+			
+			// Remettre le required sur les champs radio
+			form.querySelectorAll('input[type="radio"][name="etendue_reve"]').forEach(radio => {
+				radio.setAttribute('required', 'required');
+			});
+			form.querySelectorAll('input[type="radio"][name="sens"]').forEach(radio => {
+				radio.setAttribute('required', 'required');
+			});
+			form.querySelectorAll('input[type="radio"][name="type_reve"]').forEach(radio => {
+				radio.setAttribute('required', 'required');
+			});
+			
+			// Restaurer le texte du bouton submit
+			submitBtn.textContent = 'Enregistrer son rêve';
+			submitBtn.disabled = true;
+			
+			// Restaurer le style du bouton "Aucun souvenir"
+			noMemoryBtn.textContent = 'Aucun souvenir de mon/mes rêve(s) cette nuit';
+			noMemoryBtn.style.background = 'transparent';
+			
+			// Revérifier le formulaire
+			checkForm();
+		}
+	});
 
 	// Activer le bouton soumettre quand les champs requis sont remplis
 	const checkForm = () => {
+		// Si mode "aucun souvenir", activer le bouton
+		if (noMemoryMode) {
+			submitBtn.disabled = false;
+			return;
+		}
+
 		let isValid = true;
 
 		// Vérifier que l'audio est enregistré
@@ -448,16 +559,36 @@ function initFormHandlers() {
 	form.addEventListener('submit', async function(e) {
 		e.preventDefault();
 
-		if (!currentAudioBlob) {
+		// Si mode "aucun souvenir", pas besoin de vérifier l'audio
+		if (!noMemoryMode && !currentAudioBlob) {
 			alert('Veuillez enregistrer un audio');
 			return;
 		}
 
 		const formData = new FormData(form);
+		const formActions = document.getElementById('formActions');
 
 		try {
-			submitBtn.disabled = true;
-			submitBtn.textContent = 'Enregistrement en cours...';
+			// Cacher complètement le formulaire et les boutons d'action
+			form.style.display = 'none';
+			if (formActions) {
+				formActions.style.display = 'none';
+			}
+			
+			// S'assurer que tous les messages de succès sont cachés
+			successMessageWithAudio.style.display = 'none';
+			successMessageNoMemory.style.display = 'none';
+			
+			// Afficher un message de chargement (adapté selon le mode)
+			const loadingMessage = document.createElement('div');
+			loadingMessage.id = 'loadingMessage';
+			loadingMessage.className = 'success-card';
+			loadingMessage.innerHTML = `
+				<div class="success-icon" style="background: linear-gradient(135deg, #94a3b8, #64748b);">⏳</div>
+				<h2 class="success-title">${noMemoryMode ? 'Validation en cours...' : 'Enregistrement en cours...'}</h2>
+				<p class="success-text">Veuillez patienter un instant.</p>
+			`;
+			form.parentElement.appendChild(loadingMessage);
 
 			const response = await fetch('{% url "polls:enregistrer" %}', {
 				method: 'POST',
@@ -470,24 +601,48 @@ function initFormHandlers() {
 			const data = await response.json();
 
 			if (data.success) {
-				// Afficher le message de succès
-				form.style.display = 'none';
-				successMessage.style.display = 'block';
+				// Retirer le message de chargement du DOM
+				if (loadingMessage && loadingMessage.parentNode) {
+					loadingMessage.parentNode.removeChild(loadingMessage);
+				}
+				
+				// Petit délai pour s'assurer que le DOM est mis à jour
+				setTimeout(() => {
+					// Afficher le message de succès approprié
+					if (noMemoryMode) {
+						successMessageNoMemory.style.display = 'block';
+					} else {
+						successMessageWithAudio.style.display = 'block';
+					}
+				}, 100);
 				
 				// Redirection après 5 secondes
 				setTimeout(() => {
 					window.location.href = '{% url "polls:journal" %}';
 				}, 5000);
 			} else {
+				// En cas d'erreur, retirer le loading et réafficher le formulaire
+				if (loadingMessage && loadingMessage.parentNode) {
+					loadingMessage.parentNode.removeChild(loadingMessage);
+				}
+				form.style.display = 'block';
+				if (formActions) {
+					formActions.style.display = 'flex';
+				}
 				alert('Erreur: ' + data.message);
-				submitBtn.disabled = false;
-				submitBtn.textContent = 'Enregistrer son rêve';
 			}
 		} catch (error) {
 			console.error('Erreur:', error);
+			// En cas d'erreur, retirer le loading et réafficher le formulaire
+			const loadingMsg = document.getElementById('loadingMessage');
+			if (loadingMsg && loadingMsg.parentNode) {
+				loadingMsg.parentNode.removeChild(loadingMsg);
+			}
+			form.style.display = 'block';
+			if (formActions) {
+				formActions.style.display = 'flex';
+			}
 			alert('Une erreur est survenue');
-			submitBtn.disabled = false;
-			submitBtn.textContent = 'Enregistrer son rêve';
 		}
 	});
 }
@@ -498,6 +653,77 @@ function initFormHandlers() {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0 2rem;
+}
+
+.success-card {
+	background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+	border: 2px solid #3b82f6;
+	border-radius: 20px;
+	padding: 3rem 2rem;
+	text-align: center;
+	max-width: 600px;
+	margin: 3rem auto;
+	box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+	animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.success-icon {
+	width: 80px;
+	height: 80px;
+	background: linear-gradient(135deg, #3b82f6, #2563eb);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 1.5rem;
+	font-size: 3rem;
+	color: white;
+	font-weight: bold;
+	animation: scaleIn 0.5s ease-out 0.2s both;
+}
+
+@keyframes scaleIn {
+	from {
+		transform: scale(0);
+	}
+	to {
+		transform: scale(1);
+	}
+}
+
+.success-title {
+	color: #1e40af;
+	font-size: 1.75rem;
+	font-weight: 700;
+	margin: 0 0 1rem 0;
+}
+
+.success-text {
+	color: #475569;
+	font-size: 1.1rem;
+	line-height: 1.6;
+	margin: 0 0 2rem 0;
+}
+
+.success-actions {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+}
+
+.success-actions .btn {
+	min-width: 200px;
 }
 
 .form-section {
@@ -560,6 +786,26 @@ function initFormHandlers() {
 	flex: 1;
 	max-width: 200px;
 	min-width: 150px;
+}
+
+.btn-outline-light {
+	background: transparent;
+	color: white;
+	border: 2px solid rgba(255, 255, 255, 0.6);
+	padding: 0.75rem 1.5rem;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+	background: rgba(255, 255, 255, 0.2);
+	border-color: white;
+}
+
+.questions-section-hidden {
+	display: none !important;
 }
 
 .radio-group,
@@ -689,6 +935,34 @@ function initFormHandlers() {
 @media (max-width: 640px) {
 	.container-wide {
 		padding: 0 1.25rem;
+	}
+
+	.success-card {
+		padding: 2rem 1.5rem;
+		margin: 2rem 1rem;
+	}
+
+	.success-icon {
+		width: 60px;
+		height: 60px;
+		font-size: 2rem;
+	}
+
+	.success-title {
+		font-size: 1.5rem;
+	}
+
+	.success-text {
+		font-size: 1rem;
+	}
+
+	.success-actions {
+		flex-direction: column;
+	}
+
+	.success-actions .btn {
+		width: 100%;
+		min-width: auto;
 	}
 
 	.questions-grid {
