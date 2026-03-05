@@ -379,12 +379,12 @@
     color: var(--primary);
 }
 
-.form-section {
+.questionnaire-form .form-section {
     display: none;
     animation: fadeIn 0.5s ease;
 }
 
-.form-section.active {
+.questionnaire-form .form-section.active {
     display: block;
 }
 
@@ -551,14 +551,14 @@
 }
 
 .btn-primary {
-    background: var(--primary);
-    color: var(--white);
+    background: var(--accent);
+    color: var(--primary-dark);
 }
 
 .btn-primary:hover {
-    background: var(--primary-dark);
+    background: #ffd700;
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 6px 20px rgba(239, 212, 61, 0.5);
 }
 
 .btn-success {

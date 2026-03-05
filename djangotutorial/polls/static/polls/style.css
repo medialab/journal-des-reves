@@ -91,7 +91,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-300.woff2') format('woff2');
+    src: url('./fonts/inter-v20-latin-300.woff2') format('woff2');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -99,7 +99,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-400.woff2') format('woff2');
+    src: url('./fonts/inter-v20-latin-regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -107,7 +107,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-500.woff2') format('woff2');
+    src: url('./fonts/inter-v20-latin-500.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
     font-display: swap;
@@ -115,7 +115,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-600.woff2') format('woff2');
+    src: url('./fonts/inter-v20-latin-600.woff2') format('woff2');
     font-weight: 600;
     font-style: normal;
     font-display: swap;
@@ -123,7 +123,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-700.woff2') format('woff2');
+    src: url('./fonts/inter-v20-latin-700.woff2') format('woff2');
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -131,7 +131,7 @@
 
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-800.woff2') format('woff2');
+    src: url('./fonts/inter-v20-latin-800.woff2') format('woff2');
     font-weight: 800;
     font-style: normal;
     font-display: swap;
@@ -143,7 +143,7 @@
 
 @font-face {
     font-family: 'Playfair Display';
-    src: url('../fonts/playfair-display-400.woff2') format('woff2');
+    src: url('./fonts/playfair-display-v40-latin-regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -151,7 +151,7 @@
 
 @font-face {
     font-family: 'Playfair Display';
-    src: url('../fonts/playfair-display-500.woff2') format('woff2');
+    src: url('./fonts/playfair-display-v40-latin-500.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
     font-display: swap;
@@ -159,7 +159,7 @@
 
 @font-face {
     font-family: 'Playfair Display';
-    src: url('../fonts/playfair-display-600.woff2') format('woff2');
+    src: url('./fonts/playfair-display-v40-latin-600.woff2') format('woff2');
     font-weight: 600;
     font-style: normal;
     font-display: swap;
@@ -167,7 +167,7 @@
 
 @font-face {
     font-family: 'Playfair Display';
-    src: url('../fonts/playfair-display-700.woff2') format('woff2');
+    src: url('./fonts/playfair-display-v40-latin-700.woff2') format('woff2');
     font-weight: 700;
     font-style: normal;
     font-display: swap;
