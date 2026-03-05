@@ -1,0 +1,756 @@
+/* ============================================
+   FORMS.CSS - Styles spécifiques aux formulaires
+   ============================================ */
+
+/* ============================================
+   CONSENT & FORM SECTIONS (signup.html)
+   ============================================ */
+.consent-section {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 32px;
+}
+
+.consent-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.consent-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666;
+}
+
+.consent-content p {
+    margin-bottom: 12px;
+}
+
+.consent-content a {
+    color: #4a90e2;
+    text-decoration: none;
+}
+
+.consent-content a:hover {
+    text-decoration: underline;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.checkbox-item {
+    margin-bottom: 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-input {
+    margin-top: 4px;
+    margin-right: 0;
+    flex-shrink: 0;
+}
+
+.checkbox-label span {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: 4px;
+    background-color: #ffebee;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+/* ============================================
+   SIGNUP LINK (login.html)
+   ============================================ */
+.signup-link {
+    margin-top: 24px;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 24px;
+}
+
+.signup-link p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.signup-link a {
+    color: #4a90e2;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   LOGIN MODAL (base.html)
+   ============================================ */
+.login-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.login-modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-modal-content {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--radius-xl);
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+.login-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-500);
+    transition: color var(--transition-base);
+}
+
+.login-modal-close:hover {
+    color: var(--primary);
+}
+
+.login-modal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-modal-header h2 {
+    font-size: 1.75rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.login-modal-header p {
+    color: var(--gray-600);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 0.95rem;
+}
+
+.form-input {
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all var(--transition-base);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(50, 69, 189, 0.1);
+}
+
+.btn-full {
+    width: 100%;
+}
+
+.login-modal-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.btn-secondary {
+    background: #9ca3af;
+    color: var(--white);
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #6b7280;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   QUESTIONNAIRE SPECIFIC STYLES
+   ============================================ */
+
+/* Modal d'authentification du questionnaire */
+.auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.auth-modal-content {
+    background: var(--white);
+    padding: 3rem;
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+}
+
+.auth-modal-header h2 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.auth-modal-header p {
+    font-size: 1.1rem;
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+}
+
+.auth-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auth-modal-body .btn {
+    width: 100%;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.questionnaire-intro {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.questionnaire-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--gray-800);
+}
+
+.questionnaire-title strong {
+    color: var(--gray-800);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-weight: 700;
+}
+
+.questionnaire-title strong:hover {
+    color: var(--primary);
+}
+
+.questionnaire-description {
+    font-size: 1rem;
+    color: var(--gray-600);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.progress-bar {
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    transition: width 0.3s ease;
+}
+
+.step-indicator {
+    text-align: center;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.step-number {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.form-section {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.form-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.section-title {
+    font-size: 1.75rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.section-description {
+    color: var(--gray-600);
+    font-size: 0.95rem;
+}
+
+.form-card {
+    background: var(--white);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.75rem;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 1rem;
+    font-family: var(--font-sans);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    background: var(--white);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(50, 69, 189, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+}
+
+.radio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.radio-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.radio-card,
+.checkbox-card {
+    position: relative;
+    cursor: pointer;
+}
+
+.radio-card input,
+.checkbox-card input {
+    position: absolute;
+    opacity: 0;
+}
+
+.radio-content,
+.checkbox-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    text-align: center;
+}
+
+.radio-card:hover .radio-content,
+.checkbox-card:hover .checkbox-content {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.radio-card input:checked ~ .radio-content,
+.checkbox-card input:checked ~ .checkbox-content {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+}
+
+.radio-icon,
+.checkbox-icon {
+    font-size: 2rem;
+}
+
+.radio-label,
+.checkbox-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--gray-200);
+}
+
+.btn {
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    border: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-success {
+    background: #10b981;
+    color: var(--white);
+}
+
+.btn-success:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* ============================================
+   ENREGISTRER FORMS (enregistrer.html)
+   ============================================ */
+.recorder-box {
+    background: linear-gradient(135deg, #5b6ee7, #3f4d9c);
+    border-radius: 12px;
+    padding: 2rem;
+    color: white;
+    text-align: center;
+}
+
+.recorder-status {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.status-indicator.recording {
+    background-color: #ff4444;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.recorder-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.recorder-buttons .btn {
+    flex: 1;
+    max-width: 200px;
+    min-width: 150px;
+}
+
+.btn-outline-light {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+}
+
+.radio-group,
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.radio-label,
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--white);
+    position: relative;
+}
+
+.radio-label:hover,
+.checkbox-label:hover {
+    border-color: var(--primary);
+    background: var(--gray-50);
+}
+
+.choice-label input[type="radio"],
+.choice-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.choice-label.is-selected {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.choice-label.is-selected .radio-text,
+.choice-label.is-selected .checkbox-text {
+    color: var(--white);
+    font-weight: 600;
+}
+
+.choice-label.is-dim {
+    opacity: 0.45;
+}
+
+.radio-text,
+.checkbox-text {
+    margin-left: 0;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.custom-emotion-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.custom-emotion-input {
+    flex: 1;
+    border: 1px solid var(--gray-300);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   RESPONSIVE FOR FORMS
+   ============================================ */
+@media (max-width: 768px) {
+    .radio-grid,
+    .checkbox-grid,
+    .radio-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .recorder-buttons {
+        flex-direction: column;
+    }
+
+    .recorder-buttons .btn {
+        max-width: 100%;
+        width: 100%;
+    }
+}
