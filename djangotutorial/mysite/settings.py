@@ -153,3 +153,34 @@ else:
 
 DEFAULT_FROM_EMAIL = 'noreply@reves-etude.fr'
 
+
+# SESSION & COOKIES CONFIGURATION
+# https://docs.djangoproject.com/en/6.0/topics/http/sessions/
+
+# Durée de la session : 30 jours (en secondes)
+SESSION_COOKIE_AGE = 30 * 24 * 60 * 60  # 30 days
+
+# Les cookies persistent même après la fermeture du navigateur
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Nom du cookie de session
+SESSION_COOKIE_NAME = 'reves_sessionid'
+
+# Le cookie n'est accessible que via HTTP (protection contre XSS)
+SESSION_COOKIE_HTTPONLY = True
+
+# S'assurer que le cookie est envoyé seulement en HTTPS en production
+SESSION_COOKIE_SECURE = not DEBUG  # True en production, False en développement
+
+# SameSite protection contre les attaques CSRF
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Sauvegarder la session en base de données
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Mettre à jour la session à chaque requête
+SESSION_SAVE_EVERY_REQUEST = False
+
+# Se souvenir de l'utilisateur lors de la connexion (remember me)
+# Les utilisateurs peuvent cocher "Remember me" lors de la connexion
+REMEMBER_ME_DURATION = 30 * 24 * 60 * 60  # 30 days

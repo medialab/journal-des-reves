@@ -490,3 +490,66 @@ class Questionnaire(models.Model):
     def __str__(self):
         return f"Questionnaire de {self.profil.user.username} - {self.created_at.strftime('%d/%m/%Y')}"
 
+
+# MODELE POUR LES NOTIFICATIONS ========================
+
+class Notification(models.Model):
+    """Modèle pour tracer les notifications envoyées aux utilisateurs"""
+    
+    class NotificationType(models.TextChoices):
+        DAILY_REMINDER = 'daily_reminder', 'Rappel quotidien - Enregistrer un rêve'
+        QUESTIONNAIRE_REMINDER = 'questionnaire_reminder', 'Rappel - Remplir le questionnaire'
+        GENERAL = 'general', 'Notification générale'
+    
+    profil = models.ForeignKey(
+        Profil,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    
+    notification_type = models.CharField(
+        max_length=50,
+        choices=NotificationType.choices,
+        verbose_name="Type de notification"
+    )
+    
+    title = models.CharField(
+        max_length=255,
+        verbose_name="Titre de la notification"
+    )
+    
+    message = models.TextField(
+        verbose_name="Message de la notification"
+    )
+    
+    is_read = models.BooleanField(
+        default=False,
+        verbose_name="Notification lue"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Date de création"
+    )
+    
+    read_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date de lecture"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.profil.user.username}"
+    
+    def mark_as_read(self):
+        """Marquer la notification comme lue"""
+        from django.utils import timezone
+        self.is_read = True
+        self.read_at = timezone.now()
+        self.save()
+

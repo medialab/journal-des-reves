@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Profil, Reve, Questionnaire
+from .models import Profil, Reve, Questionnaire, Notification
 
 
 # Profil Admin
@@ -38,6 +38,19 @@ class QuestionnaireAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at']
 
 
+# Notification Admin
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['profil', 'notification_type', 'title', 'is_read', 'created_at']
+    search_fields = ['profil__user__username', 'title']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    readonly_fields = ['created_at', 'read_at']
+    fieldsets = [
+        ("Information", {"fields": ["profil", "notification_type", "title", "message"]}),
+        ("Statut", {"fields": ["is_read", "created_at", "read_at"]}),
+    ]
+
+
 admin.site.register(Profil, ProfilAdmin)
 admin.site.register(Reve, ReveAdmin)
 admin.site.register(Questionnaire, QuestionnaireAdmin)
+admin.site.register(Notification, NotificationAdmin)

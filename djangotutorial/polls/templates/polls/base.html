@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=11">
     <link rel="stylesheet" href="{% static 'polls/forms.css' %}?v=11">
     <link rel="stylesheet" href="{% static 'polls/pages.css' %}?v=11">
+    <link rel="stylesheet" href="{% static 'polls/notifications.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 
@@ -51,6 +52,11 @@
             </li>
  
             {% if user.is_authenticated %}
+                <!-- Cloche de notifications -->
+                <li class="notification-bell">
+                    🔔
+                </li>
+                
                 <li class="nav-user">
                     <span class="nav-username"> {{ user.username }}</span>
                 </li>
@@ -127,6 +133,8 @@
     </div>
 </div>
 
+<script src="{% static 'polls/notifications.js' %}"></script>
+
 <script>
     // Gestion du modal de connexion
     function openLoginModal(event) {
@@ -175,6 +183,43 @@
                 alert.remove();
             }, 5000);
         });
+    });
+
+    // Gestion de la modal du questionnaire après 7 jours
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if user.is_authenticated %}
+            // Passer le statut admin au NotificationManager
+            window.notificationManager.isAdmin = {{ user.is_staff|lower }};
+            
+            // Ne pas afficher la modal si on est déjà sur la page questionnaire
+            if (window.location.pathname === '/polls/questionnaire/') {
+                return;
+            }
+            
+            const profilData = {
+                created_at: '{{ user.profil.created_at|date:"Y-m-dTH:i:s" }}',
+                has_questionnaire: '{{ has_questionnaire }}' === 'True'
+            };
+            
+            if (!profilData.has_questionnaire && profilData.created_at) {
+                const createdDate = new Date(profilData.created_at);
+                const now = new Date();
+                const daysEllapsed = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+                
+                // Vérifier si 7 jours sont écoulés et que celui-ci n'a pas été rejeté
+                if (daysEllapsed >= 7) {
+                    const dismissedTime = localStorage.getItem('questionnaire_modal_dismissed');
+                    const shouldShow = !dismissedTime || (now - new Date(parseInt(dismissedTime))) > (24 * 60 * 60 * 1000);
+                    
+                    if (shouldShow) {
+                        // Attendre que le DOM soit complètement chargé
+                        setTimeout(() => {
+                            notificationManager.showQuestionnaireModal(daysEllapsed);
+                        }, 1000);
+                    }
+                }
+            }
+        {% endif %}
     });
 </script>
 

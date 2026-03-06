@@ -13,10 +13,18 @@ import uuid
 import os
 import json
 
-from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveImageModalite
+from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveImageModalite, Notification
 from .services.journal_service import get_journal_data
 from .services.transcription_service import start_transcription_async
 from .forms import ReveForm, QuestionnaireForm, SignUpForm
+
+
+# Helper functions
+def add_questionnaire_context(context, profil):
+    """Ajouter les informations de questionnaire au contexte"""
+    has_questionnaire = Questionnaire.objects.filter(profil=profil).exists()
+    context['has_questionnaire'] = has_questionnaire
+    return context
 
 
 class ProfilView(LoginRequiredMixin, View):
@@ -34,6 +42,9 @@ class ProfilView(LoginRequiredMixin, View):
             "user": request.user,
             **journal_data
         }
+        
+        # Ajouter les infos questionnaire
+        context = add_questionnaire_context(context, profil)
 
         return render(request, "polls/profil.html", context)
     
@@ -106,6 +117,10 @@ class EnregistrerView(LoginRequiredMixin, View):
             "custom_emotions": custom_emotions,
             "images_modalites": images_modalites,
         }
+        
+        # Ajouter les infos questionnaire
+        context = add_questionnaire_context(context, profil)
+        
         return render(request, "polls/enregistrer.html", context)
 
     def post(self, request):
@@ -238,6 +253,9 @@ class JournalView(LoginRequiredMixin, View):
             "etendue_labels": json.dumps(journal_data['etendue_labels'], ensure_ascii=False),
             "etendue_counts": json.dumps(journal_data['etendue_counts']),
         }
+        
+        # Ajouter les infos questionnaire
+        context = add_questionnaire_context(context, profil)
 
         return render(request, "polls/journal.html", context)
 
@@ -483,3 +501,134 @@ class AccueilView(View):
             'is_authenticated': request.user.is_authenticated,
         }
         return render(request, self.template_name, context)
+
+
+# VUES POUR LES NOTIFICATIONS ========================
+
+class NotificationsListView(LoginRequiredMixin, View):
+    """Récupérer toutes les notifications de l'utilisateur (API)"""
+    
+    def get(self, request):
+        """Retourner les notifications au format JSON"""
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Profil non trouvé'
+            }, status=400)
+        
+        # Récupérer les notifications (non lues en priorité)
+        notifications = Notification.objects.filter(
+            profil=profil
+        ).order_by('-created_at')[:50]  # Limiter à 50 dernières
+        
+        data = {
+            'success': True,
+            'notifications': [
+                {
+                    'id': notif.id,
+                    'type': notif.notification_type,
+                    'title': notif.title,
+                    'message': notif.message,
+                    'is_read': notif.is_read,
+                    'created_at': notif.created_at.isoformat(),
+                    'read_at': notif.read_at.isoformat() if notif.read_at else None,
+                }
+                for notif in notifications
+            ],
+            'unread_count': Notification.objects.filter(
+                profil=profil,
+                is_read=False
+            ).count()
+        }
+        
+        return JsonResponse(data)
+
+
+class NotificationMarkAsReadView(LoginRequiredMixin, View):
+    """Marquer une notification comme lue"""
+    
+    @require_http_methods(["POST"])
+    def post(self, request, notification_id):
+        """Marquer une notification comme lue"""
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Profil non trouvé'
+            }, status=400)
+        
+        try:
+            notification = Notification.objects.get(
+                id=notification_id,
+                profil=profil
+            )
+            notification.mark_as_read()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Notification marquée comme lue'
+            })
+        except Notification.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Notification non trouvée'
+            }, status=404)
+
+
+class NotificationUnreadCountView(LoginRequiredMixin, View):
+    """Obtenir le nombre de notifications non lues"""
+    
+    def get(self, request):
+        """Retourner le nombre de notifications non lues"""
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Profil non trouvé'
+            }, status=400)
+        
+        unread_count = Notification.objects.filter(
+            profil=profil,
+            is_read=False
+        ).count()
+        
+        return JsonResponse({
+            'success': True,
+            'unread_count': unread_count
+        })
+
+
+class NotificationDeleteView(LoginRequiredMixin, View):
+    """Supprimer une notification"""
+    
+    @require_http_methods(["DELETE"])
+    def delete(self, request, notification_id):
+        """Supprimer une notification"""
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Profil non trouvé'
+            }, status=400)
+        
+        try:
+            notification = Notification.objects.get(
+                id=notification_id,
+                profil=profil
+            )
+            notification.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Notification supprimée'
+            })
+        except Notification.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Notification non trouvée'
+            }, status=404)

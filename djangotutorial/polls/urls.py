@@ -36,4 +36,10 @@ urlpatterns = [
     
     # Auth Django
     path("accounts/", include("django.contrib.auth.urls")),
+    
+    # Notifications API
+    path("api/notifications/", views.NotificationsListView.as_view(), name="notifications_list"),
+    path("api/notifications/<int:notification_id>/read/", views.NotificationMarkAsReadView.as_view(), name="notification_mark_read"),
+    path("api/notifications/<int:notification_id>/delete/", views.NotificationDeleteView.as_view(), name="notification_delete"),
+    path("api/notifications/unread-count/", views.NotificationUnreadCountView.as_view(), name="notification_unread_count"),
 ]
