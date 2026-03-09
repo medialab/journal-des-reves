@@ -40,7 +40,7 @@
 }
 
 .form-section {
-    margin-bottom: 32px;
+    margin-bottom: 0.75rem;
 }
 
 .form-section h3 {
@@ -583,6 +583,17 @@
     color: var(--white);
 }
 
+/* Bouton outline blanc dans le recorder-box */
+.recorder-box .btn-outline {
+    color: var(--white);
+    border: 2px solid var(--white);
+}
+
+.recorder-box .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--white);
+}
+
 .error-message {
     color: #ef4444;
     font-size: 0.875rem;
@@ -595,13 +606,16 @@
 .recorder-box {
     background: linear-gradient(135deg, #5b6ee7, #3f4d9c);
     border-radius: 12px;
-    padding: 2rem;
+    padding: 2.5rem;
     color: white;
     text-align: center;
+    width: min(100%, 920px);
+    margin: 0 auto;
 }
 
 .recorder-status {
-    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -628,16 +642,63 @@
 
 .recorder-buttons {
     display: flex;
-    gap: 1rem;
+    gap: 0.85rem;
     justify-content: center;
-    margin-top: 1.5rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
 }
 
-.recorder-buttons .btn {
-    flex: 1;
-    max-width: 200px;
+.recorder-secondary-controls .btn {
+    max-width: 220px;
     min-width: 150px;
+    min-height: 54px;
+    font-size: 1rem;
+}
+
+.recorder-start-cta {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.85rem 2rem;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--primary-dark);
+    border: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(239, 212, 61, 0.35);
+    transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.recorder-start-cta:hover:not(:disabled) {
+    transform: scale(1.05);
+    filter: brightness(1.03);
+    box-shadow: 0 18px 34px rgba(239, 212, 61, 0.55);
+}
+
+.recorder-start-cta:disabled {
+    opacity: 0.65;
+}
+
+.recorder-secondary-controls {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.audio-preview-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+#rerecordBtn {
+    width: auto;
+    min-width: 260px;
 }
 
 .btn-outline-light {
@@ -646,6 +707,7 @@
     border: 2px solid rgba(255, 255, 255, 0.6);
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -661,6 +723,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+}
+
+#emotionsGroup {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    flex-direction: row !important;
 }
 
 .radio-label,
@@ -715,7 +784,7 @@
     display: flex;
     gap: 0.75rem;
     align-items: center;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 .custom-emotion-input {
@@ -724,6 +793,84 @@
     border-radius: 999px;
     padding: 0.55rem 0.9rem;
     font-size: 0.95rem;
+}
+
+.optional-questions-grid {
+    margin-top: 0.8rem;
+    gap: 0.3rem;
+    padding: 0;
+    width: min(100%, 920px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#reve-form .questions-grid.optional-questions-grid {
+    gap: 0.2rem;
+}
+
+.optional-hint {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--gray-500);
+}
+
+.optional-section {
+    padding: 0.75rem;
+}
+
+#emotionsSection {
+    margin-top: 0;
+}
+
+.optional-section .radio-group,
+.optional-section .checkbox-group {
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.optional-section .radio-label,
+.optional-section .checkbox-label {
+    padding: 0.32rem 0.55rem;
+}
+
+.optional-section .radio-text,
+.optional-section .checkbox-text {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--gray-600);
+}
+
+.form-label-inline-help {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.form-label-inline-help .inline-help {
+    font-size: 0.84rem;
+    font-style: italic;
+    font-weight: 400 !important;
+    color: var(--gray-500);
+}
+
+#emotionsSection .form-label-inline-help .inline-help {
+    font-weight: 400 !important;
+    font-style: italic !important;
+}
+
+#reve-form .form-actions {
+    padding-top: 0;
+    margin-top: 1rem;
+    border-top: none;
+    width: min(100%, 920px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#reve-form .form-actions .btn {
+    flex: 1;
+    min-width: 0;
 }
 
 /* ============================================
@@ -751,7 +898,20 @@
 
     .recorder-buttons .btn {
         max-width: 100%;
-        width: 100%;
+    }
+
+    .recorder-start-cta {
+        width: min(100%, 340px);
+        max-width: 340px;
+        min-height: 56px;
+        height: auto;
+        border-radius: 10px;
+        padding: 0.75rem 1.25rem;
+    }
+
+    #rerecordBtn {
+        min-width: 100%;
+        max-width: 100%;
     }
 
     #noMemoryBtn {
@@ -761,5 +921,34 @@
         word-break: break-word;
         text-align: center;
         padding: 0.75rem 1rem;
+    }
+
+    .custom-emotion-row {
+        gap: 0.5rem;
+    }
+
+    .custom-emotion-input {
+        min-height: 48px;
+        font-size: 1rem;
+        padding: 0.7rem 1rem;
+    }
+
+    #addEmotionBtn {
+        width: auto;
+        min-width: 96px;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.88rem;
+        flex: 0 0 auto;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .recorder-start-cta {
+        max-width: 320px;
+        min-height: 56px;
+    }
+
+    #noMemoryBtn {
+        max-width: 320px !important;
     }
 }

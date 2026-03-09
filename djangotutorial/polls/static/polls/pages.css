@@ -490,7 +490,7 @@
 .questions-grid {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 .questions-section-hidden {
@@ -615,6 +615,20 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
     border-color: #d1d5db !important;
     transform: translateY(-2px) !important;
+}
+
+.dream-card.is-hidden {
+    display: none !important;
+}
+
+.load-more-container {
+    display: flex !important;
+    justify-content: center !important;
+    margin-top: 1.5rem !important;
+}
+
+.load-more-container.is-hidden {
+    display: none !important;
 }
 
 .dream-header {

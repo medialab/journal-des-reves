@@ -31,14 +31,23 @@
 
 					<!-- Enregistreur Audio -->
 					<div class="recorder-box" id="recorderBox">
-						<div class="recorder-status">
+						<div class="recorder-buttons">
+							<button type="button" id="startBtn" class="btn btn-primary recorder-start-cta">Démarrer</button>
+							
+							<!-- Bouton "Aucun souvenir" -->
+							<button type="button" id="noMemoryBtn" class="btn btn-outline-light" style="width: 100%; max-width: 400px;">
+								Aucun souvenir de mon/mes rêve(s) cette nuit
+							</button>
+						</div>
+
+						<div class="recorder-status" id="recorderStatus" style="display: none;">
 							<div class="status-indicator" id="statusIndicator"></div>
 							<span id="statusText">Prêt à enregistrer</span>
 							<span id="recordingTime">00:00</span>
 						</div>
 
-						<div class="recorder-buttons">
-							<button type="button" id="startBtn" class="btn btn-primary">Démarrer</button>
+						<div class="recorder-secondary-controls" id="recorderSecondaryControls" style="display: none;">
+							<button type="button" id="pauseBtn" class="btn btn-outline-light" disabled>Pause</button>
 							<button type="button" id="stopBtn" class="btn btn-danger" disabled>Arrêter</button>
 						</div>
 
@@ -48,102 +57,27 @@
 						<!-- Prévisualisation audio -->
 						<div id="audioPreview" style="display: none; margin-top: 1.5rem;">
 							<audio id="audioPlayer" controls style="width: 100%; border-radius: 8px;"></audio>
-							<button type="button" id="rerecordBtn" class="btn btn-outline" style="margin-top: 1rem; width: 100%;">
-								Reenregistrer
-							</button>
-						</div>
-
-						<!-- Bouton "Aucun souvenir" -->
-						<div style="margin-top: 1.5rem; padding-top: 1.5rem;">
-							<button type="button" id="noMemoryBtn" class="btn btn-outline-light" style="width: 100%;">
-								Aucun souvenir de mon/mes rêve(s) cette nuit
-							</button>
+							<div class="audio-preview-actions">
+								<button type="button" id="rerecordBtn" class="btn btn-outline">
+									Supprimer et réenregistrer
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<div class="questions-grid">
-					<!-- Section 3: Etendue du Reve -->
-					<div class="form-section">
-							<div class="form-group">
-								<label class="form-label">Je me souviens plutôt... </label>
-								
-								<div class="radio-group">
-									<label class="radio-label choice-label">
-										<input type="radio" name="etendue_reve" value="1" required>
-										<span class="radio-text">D'un instant précis</span>
-									</label>
-									<label class="radio-label choice-label">
-										<input type="radio" name="etendue_reve" value="2">
-										<span class="radio-text">Moins de la moitié</span>
-									</label>
-									<label class="radio-label choice-label">
-										<input type="radio" name="etendue_reve" value="3">
-										<span class="radio-text">Plus de la moitié</span>
-									</label>
-									<label class="radio-label choice-label">
-										<input type="radio" name="etendue_reve" value="4">
-										<span class="radio-text">L'intégralité</span>
-									</label>
-								</div>
-							</div>
-					</div>
-
-					<!-- Section 4: Sens Dominants -->
-					<div class="form-section">
+				<div id="questionsGrid" class="questions-grid optional-questions-grid" style="display: none;">
+					<!-- Section: Type de Reve -->
+					<div class="form-section optional-section">
 						<div class="form-group">
-							<label class="form-label">Je me souviens surtout des... </label>
+							<label class="form-label form-label-inline-help">
+								<span>C'était plutôt un...</span>
+								<span class="inline-help">Un cauchemar est un mauvais rêve qui occasionne un réveil.</span>
+							</label>
 							
 							<div class="radio-group">
 								<label class="radio-label choice-label">
-									<input type="radio" name="sens" value="1" required>
-									<span class="radio-text">Images</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="sens" value="2">
-									<span class="radio-text">Sons,voix</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="sens" value="3">
-									<span class="radio-text">Sensations du corps</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="sens" value="4">
-									<span class="radio-text">Émotions ressenties</span>
-								</label>
-								<label class="radio-label choice-label">
-									<input type="radio" name="sens" value="5">
-									<span class="radio-text">Pensées ou idées</span>
-								</label>
-							</div>
-						</div>
-					</div>
-
-<!-- Section 4.5: Modalités des Images (conditionnelle) -->
-				<div class="form-section" id="imagesModalitesSection" style="display: none;">
-						<div class="form-group">
-							<label class="form-label">Modalités des images :</label>
-							
-							<div class="checkbox-group">
-								{% for modalite in images_modalites %}
-									<label class="checkbox-label choice-label">
-										<input type="checkbox" name="images_modalites" value="{{ modalite.id }}">
-										<span class="checkbox-text">{{ modalite.libelle }}</span>
-									</label>
-								{% endfor %}
-							</div>
-						</div>
-					</div>
-
-					<!-- Section 5: Type de Reve -->
-					<div class="form-section">
-						<div class="form-group">
-							<label class="form-label">C'était plutôt un... </label>
-							<p class="field-help">Un cauchemar est un mauvais rêve qui occasionne un réveil. </p>
-							
-							<div class="radio-group">
-								<label class="radio-label choice-label">
-									<input type="radio" name="type_reve" value="tres_positif" required>
+									<input type="radio" name="type_reve" value="tres_positif">
 									<span class="radio-text">Rêve très positif</span>
 								</label>
 								<label class="radio-label choice-label">
@@ -165,18 +99,15 @@
 							</div>
 						</div>
 					</div>
-					</div>
 
-			
-
-
-
-					<div class="form-section" id="emotionsSection">
+					<div class="form-section optional-section" id="emotionsSection">
 						<div class="form-group">
-							<label class="form-label">Émotions ressenties :</label>
-							<span class="field-help"> Vous pouvez selectionner plusieurs émotions et en ajouter des émotions</span>
+							<label class="form-label form-label-inline-help">
+								<span>Émotions ressenties :</span>
+								<span class="inline-help">Vous pouvez selectionner plusieurs émotions et en ajouter des émotions</span>
+							</label>
 							
-							<div class="checkbox-group" id="emotionsGroup">
+						<div class="checkbox-group" id="emotionsGroup">
 								{% for emotion in emotions %}
 									<label class="checkbox-label choice-label">
 										<input type="checkbox" name="emotions_reve" value="{{ emotion.id }}">
@@ -249,6 +180,7 @@ let currentAudioBlob = null;
 
 function initRecorder() {
 	const startBtn = document.getElementById('startBtn');
+	const pauseBtn = document.getElementById('pauseBtn');
 	const stopBtn = document.getElementById('stopBtn');
 	const rerecordBtn = document.getElementById('rerecordBtn');
 	const audioPreview = document.getElementById('audioPreview');
@@ -263,6 +195,19 @@ function initRecorder() {
 			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			mediaRecorder = new MediaRecorder(stream);
 			audioChunks = [];
+
+			// Afficher le statut et les contrôles, cacher les actions initiales
+			const recorderStatus = document.getElementById('recorderStatus');
+			const recorderSecondaryControls = document.getElementById('recorderSecondaryControls');
+			const noMemoryBtn = document.getElementById('noMemoryBtn');
+			const questionsGrid = document.getElementById('questionsGrid');
+			recorderStatus.style.display = 'flex';
+			recorderSecondaryControls.style.display = 'flex';
+			noMemoryBtn.style.display = 'none';
+			startBtn.style.display = 'none';
+			if (questionsGrid) {
+				questionsGrid.style.display = 'flex';
+			}
 
 			mediaRecorder.addEventListener('dataavailable', function(event) {
 				audioChunks.push(event.data);
@@ -289,13 +234,19 @@ function initRecorder() {
 
 				// Arrêter la minuterie
 				clearInterval(recordingTimerInterval);
+				recordingTimerInterval = null;
 
 				// Arrêter le flux audio
 				stream.getTracks().forEach(track => track.stop());
+
+				pauseBtn.disabled = true;
+				pauseBtn.textContent = 'Pause';
 			});
 
 			mediaRecorder.start();
 			startBtn.disabled = true;
+			pauseBtn.disabled = false;
+			pauseBtn.textContent = 'Pause';
 			stopBtn.disabled = false;
 			statusText.textContent = 'Enregistrement en cours...';
 			statusIndicator.classList.add('recording');
@@ -309,9 +260,39 @@ function initRecorder() {
 		}
 	});
 
+	pauseBtn.addEventListener('click', function() {
+		if (!mediaRecorder) {
+			return;
+		}
+
+		if (mediaRecorder.state === 'recording') {
+			mediaRecorder.pause();
+			statusText.textContent = 'Enregistrement en pause';
+			statusIndicator.classList.remove('recording');
+			pauseBtn.textContent = 'Reprendre';
+			if (recordingTimerInterval) {
+				clearInterval(recordingTimerInterval);
+				recordingTimerInterval = null;
+			}
+		} else if (mediaRecorder.state === 'paused') {
+			mediaRecorder.resume();
+			statusText.textContent = 'Enregistrement en cours...';
+			statusIndicator.classList.add('recording');
+			pauseBtn.textContent = 'Pause';
+			if (!recordingTimerInterval) {
+				recordingStartTime = Date.now() - (parseInt(recordingTime.textContent.split(':')[0], 10) * 60000 + parseInt(recordingTime.textContent.split(':')[1], 10) * 1000);
+				recordingTimerInterval = setInterval(updateRecordingTime, 100);
+			}
+		}
+	});
+
 	stopBtn.addEventListener('click', function() {
-		mediaRecorder.stop();
+		if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+			mediaRecorder.stop();
+		}
 		startBtn.disabled = false;
+		pauseBtn.disabled = true;
+		pauseBtn.textContent = 'Pause';
 		stopBtn.disabled = true;
 		statusText.textContent = 'Enregistrement termine';
 		statusIndicator.classList.remove('recording');
@@ -322,9 +303,26 @@ function initRecorder() {
 		audioInput.value = '';
 		currentAudioBlob = null;
 		document.getElementById('submitBtn').disabled = true;
+		pauseBtn.disabled = true;
+		pauseBtn.textContent = 'Pause';
 		statusText.textContent = 'Prêt à enregistrer';
 		statusIndicator.classList.remove('recording');
 		recordingTime.textContent = '00:00';
+		
+		// Restaurer l'état initial : cacher statut et contrôles, afficher "Aucun souvenir"
+		const recorderStatus = document.getElementById('recorderStatus');
+		const recorderSecondaryControls = document.getElementById('recorderSecondaryControls');
+		const noMemoryBtn = document.getElementById('noMemoryBtn');
+		const questionsGrid = document.getElementById('questionsGrid');
+		
+		recorderStatus.style.display = 'none';
+		recorderSecondaryControls.style.display = 'none';
+		noMemoryBtn.style.display = 'block';
+		startBtn.style.display = 'inline-flex';
+		startBtn.disabled = false;
+		if (questionsGrid) {
+			questionsGrid.style.display = 'none';
+		}
 	});
 
 	function updateRecordingTime() {
@@ -345,7 +343,7 @@ function initFormHandlers() {
 	const customEmotionInput = document.getElementById('customEmotionInput');
 	const noMemoryBtn = document.getElementById('noMemoryBtn');
 	const existenceSouvenirInput = document.getElementById('existenceSouvenir');
-	const questionsGrid = document.querySelector('.questions-grid');
+	const questionsGrid = document.getElementById('questionsGrid');
 	const emotionsSection = document.getElementById('emotionsSection');
 	const audioInput = document.getElementById('audioInput');
 
@@ -372,11 +370,6 @@ function initFormHandlers() {
 			// Retirer le required sur l'audio
 			audioInput.removeAttribute('required');
 			
-			// Retirer le required sur tous les champs radio
-			form.querySelectorAll('input[type="radio"][required]').forEach(radio => {
-				radio.removeAttribute('required');
-			});
-			
 			// Changer le texte du bouton submit
 			submitBtn.textContent = 'Je valide que je n\'ai aucun souvenir de mon rêve de cette nuit';
 			submitBtn.disabled = false;
@@ -388,29 +381,18 @@ function initFormHandlers() {
 			// Désactiver le mode "Aucun souvenir"
 			existenceSouvenirInput.value = '1';
 			
-			// Réafficher les questions
+			// Garder les questions cachées tant que Démarrer n'a pas été cliqué
 			if (questionsGrid) {
-				questionsGrid.style.display = 'flex';
+				questionsGrid.style.display = 'none';
 			}
 			
-			// Réafficher la section des émotions
+			// Garder la section des émotions cachée avec les questions
 			if (emotionsSection) {
-				emotionsSection.style.display = 'block';
+				emotionsSection.style.display = 'none';
 			}
 			
 			// Remettre le required sur l'audio
 			audioInput.setAttribute('required', 'required');
-			
-			// Remettre le required sur les champs radio
-			form.querySelectorAll('input[type="radio"][name="etendue_reve"]').forEach(radio => {
-				radio.setAttribute('required', 'required');
-			});
-			form.querySelectorAll('input[type="radio"][name="sens"]').forEach(radio => {
-				radio.setAttribute('required', 'required');
-			});
-			form.querySelectorAll('input[type="radio"][name="type_reve"]').forEach(radio => {
-				radio.setAttribute('required', 'required');
-			});
 			
 			// Restaurer le texte du bouton submit
 			submitBtn.textContent = 'Enregistrer son rêve';
@@ -474,35 +456,13 @@ function initFormHandlers() {
 		});
 	};
 
-	// Gérer l'affichage des modalités d'images
-	const handleImagesModalites = () => {
-		const imagesRadio = form.querySelector('input[name="sens"][value="1"]');
-		const imagesSection = document.getElementById('imagesModalitesSection');
-		
-		if (imagesRadio && imagesRadio.checked) {
-			imagesSection.style.display = 'block';
-		} else {
-			imagesSection.style.display = 'none';
-			// Décocher les modalités quand Images n'est plus sélectionné
-			imagesSection.querySelectorAll('input[type="checkbox"]').forEach(input => {
-				input.checked = false;
-			});
-		}
-	};
-
 		form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(field => {
 			field.addEventListener('change', () => {
-			// Mettre à jour l'affichage des modalités d'images si c'est le champ "sens"
-			if (field.name === 'sens') {
-				handleImagesModalites();
-			}
 			checkForm();
 			updateChoiceStyles();
 		});
 	});
 
-	// Initialiser l'affichage des modalités
-	handleImagesModalites();
 		const normalizeEmotion = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
 		const existingEmotionValues = () => {
 			return Array.from(emotionsGroup.querySelectorAll('input[name="emotions_reve"], input[name="emotions_custom"]'))
