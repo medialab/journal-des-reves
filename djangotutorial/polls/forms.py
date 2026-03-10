@@ -40,10 +40,13 @@ class QuestionnaireForm(forms.ModelForm):
             # PARTIE 1: Variables socio-démographiques
             'annee_naissance',
             'genre',
+            'habitat',
             'niv_diplome',
             'revenus_tranche',
             'travail_statut',
+            'a_deja_travaille',
             'profession',
+            'fonction_management',
             # PARTIE 2: Questions sur les rêves
             'frequency', 
             'dream_lucide', 
@@ -64,6 +67,7 @@ class QuestionnaireForm(forms.ModelForm):
                 'placeholder': 'AAAA'
             }),
             'genre': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'habitat': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'niv_diplome': forms.Select(attrs={
                 'class': 'form-input'
             }),
@@ -72,13 +76,15 @@ class QuestionnaireForm(forms.ModelForm):
             }),
             'travail_statut': forms.Select(attrs={
                 'class': 'form-input',
-                'id': 'travail_statut'
+                'id': 'id_travail_statut'
             }),
+            'a_deja_travaille': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'profession': forms.Textarea(attrs={
                 'class': 'form-textarea',
                 'rows': '3',
                 'placeholder': 'Décrivez votre profession'
             }),
+            'fonction_management': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'frequency': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'dream_lucide': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'dream_recurrent': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
@@ -86,7 +92,7 @@ class QuestionnaireForm(forms.ModelForm):
             'dream_pleasant': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'sleep_quality': forms.Select(attrs={
                 'class': 'form-input',
-                'id': 'sleep-quality'
+                'id': 'id_sleep_quality'
             }),
             'sleep_hours': forms.NumberInput(attrs={
                 'class': 'form-input',

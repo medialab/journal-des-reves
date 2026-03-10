@@ -502,17 +502,51 @@ class QuestionnaireView(View):
     
     def post(self, request):
         """Traiter la soumission du questionnaire"""
+        import json
+        from django.http import JsonResponse
+        
         # Vérifier si l'utilisateur est connecté
         if not request.user.is_authenticated:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Vous devez être connecté.'}, status=401)
             messages.error(request, "Vous devez être connecté pour soumettre le questionnaire.")
             return HttpResponseRedirect(reverse("login"))
         
         # Vérifier si l'utilisateur peut accéder au questionnaire
         profil = request.user.profil
         if not profil.can_access_questionnaire():
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Accès non autorisé.'}, status=403)
             messages.error(request, "Vous devez attendre 1 semaine après la création de votre compte pour remplir le questionnaire.")
             return HttpResponseRedirect(reverse("polls:questionnaire"))
         
+        # Check if this is an AJAX request (intermediate save during section navigation)
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        section = request.POST.get('section')
+        
+        if is_ajax and section:
+            # AJAX request - save section data to session for later
+            if 'questionnaire_data' not in request.session:
+                request.session['questionnaire_data'] = {}
+            
+            # Store the POST data for this section
+            section_data = request.POST.dict()
+            section_data.pop('csrfmiddlewaretoken', None)  # Remove CSRF token
+            
+            request.session['questionnaire_data'][f'section_{section}'] = section_data
+            request.session.modified = True
+            
+            # Calculate and store section timing if provided
+            section_duration = request.POST.get('section_duration')
+            if section_duration:
+                if 'section_timings' not in request.session:
+                    request.session['section_timings'] = {}
+                request.session['section_timings'][f'section_{section}'] = float(section_duration)
+                request.session.modified = True
+            
+            return JsonResponse({'success': True, 'message': 'Section enregistrée.'})
+        
+        # Regular form submission (final submit)
         form = QuestionnaireForm(request.POST)
         
         if form.is_valid():
@@ -521,9 +555,18 @@ class QuestionnaireView(View):
             questionnaire.user = request.user
             questionnaire.save()
             
+            # Clear session data
+            request.session.pop('questionnaire_data', None)
+            request.session.pop('section_timings', None)
+            
             messages.success(request, "Merci d'avoir complété le questionnaire ! Vos réponses ont été enregistrées.")
             return HttpResponseRedirect(reverse("polls:profil"))
         else:
+            if is_ajax:
+                # Return errors as JSON
+                errors = {field: str(error[0]) for field, error in form.errors.items()}
+                return JsonResponse({'success': False, 'message': 'Erreur de validation.', 'errors': errors}, status=400)
+            
             messages.error(request, "Veuillez corriger les erreurs dans le formulaire.")
             context = {
                 'form': form,

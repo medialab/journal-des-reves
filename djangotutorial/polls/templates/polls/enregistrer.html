@@ -376,7 +376,6 @@ function initFormHandlers() {
 			
 			// Changer le style du bouton "Aucun souvenir"
 			noMemoryBtn.textContent = 'Annuler - Je veux enregistrer mon rêve';
-			noMemoryBtn.style.background = 'rgba(255, 255, 255, 0.2)';
 		} else {
 			// Désactiver le mode "Aucun souvenir"
 			existenceSouvenirInput.value = '1';
@@ -400,7 +399,6 @@ function initFormHandlers() {
 			
 			// Restaurer le style du bouton "Aucun souvenir"
 			noMemoryBtn.textContent = 'Aucun souvenir de mon/mes rêve(s) cette nuit';
-			noMemoryBtn.style.background = 'transparent';
 			
 			// Revérifier le formulaire
 			checkForm();
@@ -610,20 +608,186 @@ function initFormHandlers() {
 </script>
 
 <style>
+.page-content .container-wide {
+	max-width: 1080px;
+	margin: 0 auto;
+}
+
+#reve-form.form-card {
+	padding: 2rem;
+	border: 1px solid rgba(50, 69, 189, 0.08);
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(239, 212, 61, 0.06) 100%);
+}
+
+.section-audio,
+.optional-section {
+	background: rgba(255, 255, 255, 0.85);
+	border: 1px solid rgba(50, 69, 189, 0.08);
+	border-radius: 1rem;
+	padding: 1.25rem;
+}
+
+.section-audio {
+	margin-bottom: 1.25rem;
+}
+
+#questionsGrid.optional-questions-grid {
+	min-height: 320px;
+	align-content: start;
+	gap: 1rem;
+}
+
+.recorder-box {
+	background: rgba(50, 69, 189, 0.04);
+	border: 1px dashed rgba(50, 69, 189, 0.2);
+	border-radius: 1rem;
+	padding: 1.25rem;
+}
+
+.recorder-status {
+	background: rgba(50, 69, 189, 0.06);
+	border: 1px solid rgba(50, 69, 189, 0.14);
+	border-radius: 0.75rem;
+	padding: 0.75rem 1rem;
+}
+
+.recorder-status #statusText,
+.recorder-status #recordingTime {
+	color: var(--gray-400) !important;
+	font-size: 1.05rem;
+	font-weight: 400;
+}
+
+.recorder-secondary-controls .btn {
+	border-color: rgba(50, 69, 189, 0.28) !important;
+	color: var(--primary) !important;
+	background: rgba(255, 255, 255, 0.9) !important;
+	font-size: 1.02rem;
+	font-weight: 500;
+	min-height: 48px;
+}
+
+.recorder-secondary-controls .btn:hover {
+	background: rgba(50, 69, 189, 0.08) !important;
+	color: var(--primary) !important;
+}
+
+.choice-label {
+	border-radius: 0.75rem;
+	transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.choice-label:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 6px 14px rgba(50, 69, 189, 0.08);
+}
+
+.choice-label.is-selected {
+	background: rgba(50, 69, 189, 0.09);
+	border-color: rgba(50, 69, 189, 0.35);
+}
+
+.custom-emotion-input {
+	border: 1px solid rgba(50, 69, 189, 0.2);
+	border-radius: 0.65rem;
+	background: rgba(255, 255, 255, 0.95);
+}
+
+.custom-emotion-input:focus {
+	outline: none;
+	border-color: rgba(50, 69, 189, 0.5);
+	box-shadow: 0 0 0 3px rgba(50, 69, 189, 0.12);
+}
+
+.form-actions {
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid rgba(50, 69, 189, 0.1);
+	display: grid !important;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.75rem;
+	align-items: stretch !important;
+}
+
+
+.form-actions > a,
+.form-actions > button {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	width: 100% !important;
+	height: 60px !important;
+	min-height: 60px !important;
+	padding: 0 1.5rem !important;
+	margin: 0 !important;
+	box-sizing: border-box;
+	line-height: 1.2 !important;
+	text-align: center;
+	border-width: 2px !important;
+	border-style: solid !important;
+}
+
+.form-actions #submitBtn {
+	border: 2px solid transparent !important;
+	font-weight: 600;
+	box-shadow: 0 10px 24px rgba(50, 69, 189, 0.24);
+	transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+}
+
+.form-actions #submitBtn:not(:disabled):hover {
+	transform: translateY(-2px);
+	box-shadow: 0 14px 30px rgba(50, 69, 189, 0.28);
+}
+
+.form-actions #submitBtn:disabled {
+	opacity: 0.65;
+	box-shadow: none;
+}
+
 .form-actions .btn-outline {
-	transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+	border: 2px solid rgba(50, 69, 189, 0.3) !important;
+	color: var(--primary) !important;
+	background: rgba(50, 69, 189, 0.06) !important;
+	transition: background-color var(--transition-base), color var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .form-actions .btn-outline:hover {
-	background-color: rgba(59, 130, 246, 0.2) !important;
-	color: #ffffff !important;
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+	background-color: rgba(50, 69, 189, 0.14) !important;
+	color: var(--primary) !important;
+	transform: translateY(-1px);
+	box-shadow: 0 8px 18px rgba(50, 69, 189, 0.12);
 }
 
 .form-actions .btn-outline:active {
 	transform: translateY(0);
-	box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+	box-shadow: 0 3px 8px rgba(50, 69, 189, 0.1);
+}
+
+.audio-preview-actions .btn-outline {
+	border-color: rgba(50, 69, 189, 0.28);
+	color: var(--primary);
+	background: rgba(255, 255, 255, 0.9);
+}
+
+.audio-preview-actions .btn-outline:hover {
+	background: rgba(50, 69, 189, 0.08);
+}
+
+@media (max-width: 768px) {
+	#reve-form.form-card {
+		padding: 1.25rem;
+	}
+
+	.form-actions {
+		grid-template-columns: 1fr;
+		align-items: stretch !important;
+	}
+
+	.form-actions > a,
+	.form-actions > button {
+		width: 100%;
+	}
 }
 </style>
 

@@ -417,12 +417,41 @@ class Questionnaire(models.Model):
         blank=True
     )
     
+    # Habitat
+    class HabitatChoices(models.TextChoices):
+        RURAL = 'rural', 'Rural'
+        URBAIN = 'urbain', 'Urbain'
+    
+    habitat = models.CharField(
+        max_length=10,
+        choices=HabitatChoices.choices,
+        verbose_name="Environnement d'habitat",
+        null=True,
+        blank=True
+    )
+    
+    # Avez-vous déjà travaillé à mi-temps pendant 6 mois minimum ?
+    a_deja_travaille = models.BooleanField(
+        verbose_name="A déjà travaillé (6+ mois)",
+        null=True,
+        blank=True,
+        help_text="Avez-vous déjà travaillé au moins à mi-temps pendant au moins 6 mois ?"
+    )
+    
     # Profession (texte libre pour plus de flexibilité)
     profession = models.TextField(
         verbose_name="Profession",
         blank=True,
         null=True,
         help_text="Votre profession actuelle ou dernière profession"
+    )
+    
+    # Exercez-vous une fonction de management/autorité ?
+    fonction_management = models.BooleanField(
+        verbose_name="Fonction de management/autorité",
+        null=True,
+        blank=True,
+        help_text="Exercez-vous une fonction de management ou d'autorité ?"
     )
     
     # ===== PARTIE 2: QUESTIONS SUR LES RÊVES ET LE SOMMEIL =====

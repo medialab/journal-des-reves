@@ -39,22 +39,26 @@
         {% endif %}
 
         <div class="form-card"{% if not is_authenticated %} style="opacity: 0.4; pointer-events: none;"{% endif %}>
-            <div class="questionnaire-intro">
-                <h1 class="questionnaire-title">📝 <strong>Questionnaire</strong></h1>
+            <!-- INTRO SCREEN -->
+            <div class="questionnaire-intro" id="introScreen">
+                <h1 class="questionnaire-title">📝 Questionnaire</h1>
                 <p class="questionnaire-description">
                     Ce questionnaire fait partie d'une recherche en sciences sociales visant à comprendre l'expérience des rêves et 
                     leur relation avec votre vie quotidienne. Vos réponses, entièrement confidentielles, nous aideront à approfondir 
                     notre connaissance des phénomènes oniriques. L'ensemble du questionnaire dure environ 10-15 minutes.
                 </p>
+                <button type="button" class="btn btn-primary btn-large" id="startBtn">
+                    Commencer
+                </button>
             </div>
             
-            <!-- Barre de progression -->
-            <div class="progress-bar">
+            <!-- Barre de progression (masquée au chargement) -->
+            <div class="progress-bar hidden" id="progressBarContainer">
                 <div class="progress-fill" id="progressFill" style="width: 0%"></div>
             </div>
             
-            <!-- Numéro d'étape -->
-            <div class="step-indicator">
+            <!-- Numéro d'étape (masqué au chargement) -->
+            <div class="step-indicator hidden" id="stepIndicator">
                 <span class="step-number" id="stepNumber">1</span> / <span class="step-total">3</span>
             </div>
 
@@ -62,9 +66,9 @@
                 {% csrf_token %}
                 
                 <!-- ========== SECTION 1: VARIABLES SOCIO-DÉMOGRAPHIQUES ========== -->
-                <section class="form-section active" data-section="1">
+                <section class="form-section hidden" data-section="1">
                     <div class="section-header">
-                        <h2 class="section-title">📊 Informations personnelles</h2>
+                        <h2 class="section-title">📊 Quelques infos sur moi </h2>
                         <p class="section-description">Commençons par quelques questions sur vous</p>
                     </div>
 
@@ -79,27 +83,37 @@
                     <!-- Genre -->
                     <div class="form-group">
                         <label class="form-label">Genre</label>
-                        <div class="radio-grid-2">
-                            <label class="radio-card">
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="genre" value="F" {% if form.genre.value == "F" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-label">Femme</span>
-                                </div>
+                                <span class="radio-text">Femme</span>
                             </label>
-                            <label class="radio-card">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="genre" value="H" {% if form.genre.value == "H" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-label">Homme</span>
-                                </div>
+                                <span class="radio-text">Homme</span>
                             </label>
-                            <label class="radio-card">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="genre" value="A" {% if form.genre.value == "A" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-label">Autre catégorie</span>
-                                </div>
+                                <span class="radio-text">Autre</span>
                             </label>
                         </div>
                         {% if form.genre.errors %}<div class="error-message">{{ form.genre.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Habitat -->
+                    <div class="form-group">
+                        <label class="form-label">Vous vivez plutôt dans un environnement :</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="habitat" value="rural" {% if form.habitat.value == "rural" %}checked{% endif %}>
+                                <span class="radio-text">Rural</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="habitat" value="urbain" {% if form.habitat.value == "urbain" %}checked{% endif %}>
+                                <span class="radio-text">Urbain</span>
+                            </label>
+                        </div>
+                        {% if form.habitat.errors %}<div class="error-message">{{ form.habitat.errors }}</div>{% endif %}
                     </div>
 
                     <!-- Diplôme -->
@@ -148,13 +162,13 @@
 
                     <!-- Situation de travail -->
                     <div class="form-group">
-                        <label class="form-label" for="id_travail_statut">Situation principale vis-à-vis du travail *</label>
-                        <select id="id_travail_statut" name="travail_statut" class="form-input" required onchange="updateProfessionField()">
+                        <label class="form-label" for="id_travail_statut">Actuellement, quelle est votre situation principale vis-à-vis du travail ? *</label>
+                        <select id="id_travail_statut" name="travail_statut" class="form-input" required onchange="updateConditionalFields()">
                             <option value="">Sélectionnez...</option>
-                            <option value="1" {% if form.travail_statut.value == "1" %}selected{% endif %}>En emploi</option>
+                            <option value="1" {% if form.travail_statut.value == "1" %}selected{% endif %}>En emploi (y compris congé maladie, doctorat, parental, formation &lt; 6 mois)</option>
                             <option value="2" {% if form.travail_statut.value == "2" %}selected{% endif %}>En études, formation ou stage</option>
-                            <option value="3" {% if form.travail_statut.value == "3" %}selected{% endif %}>Au chômage</option>
-                            <option value="4" {% if form.travail_statut.value == "4" %}selected{% endif %}>Retraité(e), préretraité(e)</option>
+                            <option value="3" {% if form.travail_statut.value == "3" %}selected{% endif %}>Au chômage (inscrit ou non à Pôle emploi)</option>
+                            <option value="4" {% if form.travail_statut.value == "4" %}selected{% endif %}>Retraité(e), préretraité(e) ou retiré(e) des affaires</option>
                             <option value="5" {% if form.travail_statut.value == "5" %}selected{% endif %}>Homme ou femme au foyer</option>
                             <option value="6" {% if form.travail_statut.value == "6" %}selected{% endif %}>Inactif(ve) pour invalidité</option>
                             <option value="7" {% if form.travail_statut.value == "7" %}selected{% endif %}>Autre situation d'inactivité</option>
@@ -162,53 +176,86 @@
                         {% if form.travail_statut.errors %}<div class="error-message">{{ form.travail_statut.errors }}</div>{% endif %}
                     </div>
 
+                    <!-- Avez-vous déjà travaillé ? (conditionnel) -->
+                    <div class="form-group" id="a_deja_travaille_group" style="display: none;">
+                        <label class="form-label">Avez-vous déjà travaillé au moins à mi-temps pendant au moins 6 mois ?</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="a_deja_travaille" value="true" {% if form.a_deja_travaille.value %}checked{% endif %}>
+                                <span class="radio-text">Oui</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="a_deja_travaille" value="false" {% if form.a_deja_travaille.value == False and form.a_deja_travaille.value is not None %}checked{% endif %}>
+                                <span class="radio-text">Non</span>
+                            </label>
+                        </div>
+                        {% if form.a_deja_travaille.errors %}<div class="error-message">{{ form.a_deja_travaille.errors }}</div>{% endif %}
+                    </div>
+
                     <!-- Profession (texte libre) -->
-                    <div class="form-group" id="profession_group">
-                        <label class="form-label" for="id_profession">Profession *</label>
+                    <div class="form-group" id="profession_group" style="display: none;">
+                        <label class="form-label" for="id_profession">Dans votre emploi (ou dernier emploi), quelle est/était votre profession ?</label>
                         <textarea id="id_profession" name="profession" class="form-textarea" rows="3" 
                                   placeholder="Décrivez votre profession">{{ form.profession.value|default:'' }}</textarea>
                         {% if form.profession.errors %}<div class="error-message">{{ form.profession.errors }}</div>{% endif %}
                     </div>
+
+                    <!-- Fonction de management/autorité (conditionnel) -->
+                    <div class="form-group" id="fonction_management_group" style="display: none;">
+                        <label class="form-label">Exercez-vous (ou aviez-vous) une fonction de management ou d'autorité dans votre travail ?</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="fonction_management" value="true" {% if form.fonction_management.value %}checked{% endif %}>
+                                <span class="radio-text">Oui</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="fonction_management" value="false" {% if form.fonction_management.value == False and form.fonction_management.value is not None %}checked{% endif %}>
+                                <span class="radio-text">Non</span>
+                            </label>
+                        </div>
+                        {% if form.fonction_management.errors %}<div class="error-message">{{ form.fonction_management.errors }}</div>{% endif %}
+                    </div>
                 </section>
 
-                <!-- ========== SECTION 2: QUESTIONS SUR LES RÊVES ========== -->
-                <section class="form-section" data-section="2">
+                <!-- ========== SECTION 2: VOTRE SITUATION ========== -->
+                <section class="form-section hidden" data-section="2">
                     <div class="section-header">
-                        <h2 class="section-title">💤 Vos rêves</h2>
-                        <p class="section-description">Parlez-nous de vos rêves</p>
+                        <h2 class="section-title">💼 Votre situation</h2>
+                        <p class="section-description">Cette section sera complétée prochainement.</p>
+                    </div>
+                    <div class="form-group">
+                        <p class="form-label" style="margin-bottom: 0; color: var(--gray-600); font-weight: 500;">
+                            Aucune question dans cette section pour le moment.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- ========== SECTION 3: SOMMEIL ET RÊVES ========== -->
+                <section class="form-section hidden" data-section="3">
+                    <div class="section-header">
+                        <h2 class="section-title">🛌 Sommeil et rêves</h2>
+                        <p class="section-description">Dernière étape du questionnaire</p>
                     </div>
 
                     <!-- Fréquence -->
                     <div class="form-group">
                         <label class="form-label">À quelle fréquence vous souvenez-vous de vos rêves ?</label>
-                        <div class="radio-grid">
-                            <label class="radio-card">
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="frequency" value="daily" {% if form.frequency.value == "daily" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-icon">📅</span>
-                                    <span class="radio-label">Tous les jours</span>
-                                </div>
+                                <span class="radio-text">📅 Tous les jours</span>
                             </label>
-                            <label class="radio-card">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="frequency" value="often" {% if form.frequency.value == "often" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-icon">⭐</span>
-                                    <span class="radio-label">Souvent</span>
-                                </div>
+                                <span class="radio-text">⭐ Souvent</span>
                             </label>
-                            <label class="radio-card">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="frequency" value="sometimes" {% if form.frequency.value == "sometimes" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-icon">🌙</span>
-                                    <span class="radio-label">Parfois</span>
-                                </div>
+                                <span class="radio-text">🌙 Parfois</span>
                             </label>
-                            <label class="radio-card">
+                            <label class="radio-label choice-label">
                                 <input type="radio" name="frequency" value="rarely" {% if form.frequency.value == "rarely" %}checked{% endif %}>
-                                <div class="radio-content">
-                                    <span class="radio-icon">💫</span>
-                                    <span class="radio-label">Rarement</span>
-                                </div>
+                                <span class="radio-text">💫 Rarement</span>
                             </label>
                         </div>
                         {% if form.frequency.errors %}<div class="error-message">{{ form.frequency.errors }}</div>{% endif %}
@@ -217,44 +264,24 @@
                     <!-- Types de rêves -->
                     <div class="form-group">
                         <label class="form-label">Quel type de rêves faites-vous le plus souvent ? *</label>
-                        <div class="checkbox-grid">
-                            <label class="checkbox-card">
+                        <div class="checkbox-group">
+                            <label class="checkbox-label choice-label">
                                 <input type="checkbox" name="dream_lucide" {% if form.dream_lucide.value %}checked{% endif %}>
-                                <div class="checkbox-content">
-                                    <span class="checkbox-icon">✨</span>
-                                    <span class="checkbox-label">Rêves lucides</span>
-                                </div>
+                                <span class="checkbox-text">✨ Rêves lucides</span>
                             </label>
-                            <label class="checkbox-card">
+                            <label class="checkbox-label choice-label">
                                 <input type="checkbox" name="dream_recurrent" {% if form.dream_recurrent.value %}checked{% endif %}>
-                                <div class="checkbox-content">
-                                    <span class="checkbox-icon">🔄</span>
-                                    <span class="checkbox-label">Rêves récurrents</span>
-                                </div>
+                                <span class="checkbox-text">🔄 Rêves récurrents</span>
                             </label>
-                            <label class="checkbox-card">
+                            <label class="checkbox-label choice-label">
                                 <input type="checkbox" name="dream_nightmare" {% if form.dream_nightmare.value %}checked{% endif %}>
-                                <div class="checkbox-content">
-                                    <span class="checkbox-icon">😱</span>
-                                    <span class="checkbox-label">Cauchemars</span>
-                                </div>
+                                <span class="checkbox-text">😱 Cauchemars</span>
                             </label>
-                            <label class="checkbox-card">
+                            <label class="checkbox-label choice-label">
                                 <input type="checkbox" name="dream_pleasant" {% if form.dream_pleasant.value %}checked{% endif %}>
-                                <div class="checkbox-content">
-                                    <span class="checkbox-icon">😊</span>
-                                    <span class="checkbox-label">Rêves agréables</span>
-                                </div>
+                                <span class="checkbox-text">😊 Rêves agréables</span>
                             </label>
                         </div>
-                    </div>
-                </section>
-
-                <!-- ========== SECTION 3: SOMMEIL ET COMMENTAIRES ========== -->
-                <section class="form-section" data-section="3">
-                    <div class="section-header">
-                        <h2 class="section-title">🛌 Sommeil et observations</h2>
-                        <p class="section-description">Dernière étape du questionnaire</p>
                     </div>
 
                     <!-- Qualité du sommeil -->
@@ -288,11 +315,11 @@
                 </section>
 
                 <!-- Boutons de navigation -->
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" id="prevBtn" onclick="changeSection(-1)" style="display:none;">
+                <div class="form-actions hidden" id="formActions">
+                    <button type="button" class="btn btn-outline" id="prevBtn" style="display:none;">
                         ← Précédent
                     </button>
-                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeSection(1)">
+                    <button type="button" class="btn btn-primary" id="nextBtn">
                         Suivant →
                     </button>
                     <button type="submit" class="btn btn-success" id="submitBtn" style="display:none;">
@@ -305,73 +332,46 @@
 </section>
 
 <script>
+    // ============================================
+    // QUESTIONNAIRE STATE & TIMING
+    // ============================================
     let currentSection = 1;
     const totalSections = 3;
-
-    function changeSection(direction) {
-        const nextSection = currentSection + direction;
-        
-        if (nextSection < 1 || nextSection > totalSections) {
-            return;
-        }
-
-        // Valider la section actuelle avant de continuer
-        if (!validateSection(currentSection)) {
-            return;
-        }
-
-        // Masquer la section actuelle
-        document.querySelector('.form-section.active').classList.remove('active');
-        
-        // Afficher la nouvelle section
-        currentSection = nextSection;
-        document.querySelector(`[data-section="${currentSection}"]`).classList.add('active');
-        
-        updateUI();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function updateUI() {
-        // Mettre à jour la barre de progression
-        const progress = (currentSection / totalSections) * 100;
-        document.getElementById('progressFill').style.width = progress + '%';
-        document.getElementById('stepNumber').textContent = currentSection;
-
-        // Afficher/masquer les boutons
-        document.getElementById('prevBtn').style.display = currentSection === 1 ? 'none' : 'inline-flex';
-        document.getElementById('nextBtn').style.display = currentSection === totalSections ? 'none' : 'inline-flex';
-        document.getElementById('submitBtn').style.display = currentSection === totalSections ? 'inline-flex' : 'none';
-
-        // Mettre à jour le label du bouton suivant
-        if (currentSection < totalSections) {
-            document.getElementById('nextBtn').textContent = 'Suivant →';
-        }
-    }
-
-    function validateSection(section) {
-        // Validation optionnelle - laisser passer même si les champs non remplis
-        // puisque tous les champs sont optionnels dans le modèle
-        return true;
-    }
-
-    function updateProfessionField() {
-        const status = document.getElementById('id_travail_statut').value;
-        const professionGroup = document.getElementById('profession_group');
-        
-        // Afficher le champ de profession si l'utilisateur a travaillé ou travaille
-        if (status === '1' || status === '2' || status === '3' || status === '4') {
-            professionGroup.style.display = 'block';
-        } else {
-            professionGroup.style.display = 'none';
-        }
-    }
-
-    // Initialiser l'UI au chargement
+    let questionnaireStarted = false;
+    
+    // Timing tracking
+    let startTime = null;                    // Global start time (when "Commencer" is clicked)
+    let sectionStartTime = null;             // Start time for current section
+    const sectionTimings = {};               // { section: { startTime, endTime, duration } }
+    
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
     document.addEventListener('DOMContentLoaded', function() {
-        updateUI();
-        updateProfessionField();
+        // Start button - Intro screen
+        document.getElementById('startBtn').addEventListener('click', startQuestionnaire);
         
-        // Fermer le modal du questionnaire si on ouvre le modal global
+        // Next/Previous buttons
+        document.getElementById('nextBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            saveCurrentSectionAndContinue(1);
+        });
+        document.getElementById('prevBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            changeSection(-1);
+        });
+        
+        // Form submission
+        document.getElementById('questionnaireForm').addEventListener('submit', submitQuestionnaire);
+        
+        // Conditional fields
+        document.getElementById('id_travail_statut').addEventListener('change', updateConditionalFields);
+        document.querySelectorAll('input[name="a_deja_travaille"]').forEach(radio => {
+            radio.addEventListener('change', updateConditionalFields);
+        });
+        document.getElementById('id_profession').addEventListener('input', updateManagementFieldVisibility);
+        
+        // Login modal fallback
         const questionnaireModal = document.getElementById('questionnaireLoginModal');
         if (questionnaireModal) {
             const originalOpenModal = window.openLoginModal;
@@ -380,6 +380,253 @@
                 if (originalOpenModal) originalOpenModal(event);
             };
         }
+        
+        // Initialize conditional fields
+        updateConditionalFields();
+    });
+
+    // ============================================
+    // INTRO SCREEN - QUESTIONNAIRE START
+    // ============================================
+    function startQuestionnaire() {
+        if (questionnaireStarted) return;
+        
+        questionnaireStarted = true;
+        startTime = Date.now();
+        sectionStartTime = Date.now();
+        
+        // Hide intro
+        const intro = document.getElementById('introScreen');
+        intro.classList.add('hidden');
+        
+        // Show progress indicator and first section
+        document.getElementById('progressBarContainer').classList.remove('hidden');
+        document.getElementById('stepIndicator').classList.remove('hidden');
+        document.getElementById('formActions').classList.remove('hidden');
+        
+        // Activate first section
+        currentSection = 1;
+        showSection(currentSection);
+        
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================
+    // SECTION NAVIGATION WITH AJAX
+    // ============================================
+    function saveCurrentSectionAndContinue(direction) {
+        // Validate section
+        if (!validateSection(currentSection)) {
+            return;
+        }
+        
+        // Save current section data via AJAX
+        const formData = new FormData(document.getElementById('questionnaireForm'));
+        
+        // Add timing data
+        const sectionEndTime = Date.now();
+        const sectionDuration = (sectionEndTime - sectionStartTime) / 1000; // seconds
+        
+        formData.append('section', currentSection);
+        formData.append('section_duration', sectionDuration);
+        
+        // Display loading state (optional)
+        const nextBtn = document.getElementById('nextBtn');
+        const originalText = nextBtn.textContent;
+        nextBtn.disabled = true;
+        nextBtn.textContent = '⏳ Enregistrement...';
+        
+        // Send AJAX request
+        fetch('{% url "polls:questionnaire" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Store timing data
+                sectionTimings[currentSection] = {
+                    startTime: sectionStartTime,
+                    endTime: sectionEndTime,
+                    duration: sectionDuration
+                };
+                
+                // Reset button
+                nextBtn.disabled = false;
+                nextBtn.textContent = originalText;
+                
+                // Continue navigation
+                changeSection(direction);
+                
+                // Start timer for next section
+                sectionStartTime = Date.now();
+            } else {
+                throw new Error(data.message || 'Erreur lors de l\'enregistrement');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            nextBtn.disabled = false;
+            nextBtn.textContent = originalText;
+            alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
+        });
+    }
+
+    function changeSection(direction) {
+        const nextSection = currentSection + direction;
+        
+        if (nextSection < 1 || nextSection > totalSections) {
+            if (nextSection > totalSections) {
+                // Ready to submit
+                document.getElementById('questionnaireForm').submit();
+            }
+            return;
+        }
+
+        // Show next section only
+        currentSection = nextSection;
+        showSection(currentSection);
+        
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showSection(sectionNumber) {
+        document.querySelectorAll('#questionnaireForm .form-section').forEach(section => {
+            section.classList.add('hidden');
+            section.classList.remove('active');
+        });
+
+        const targetSection = document.querySelector(`#questionnaireForm [data-section="${sectionNumber}"]`);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('active');
+        }
+    }
+
+    function updateUI() {
+        // Update progress bar
+        const progress = (currentSection / totalSections) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('stepNumber').textContent = currentSection;
+
+        // Show/hide buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        prevBtn.style.display = currentSection === 1 ? 'none' : 'inline-flex';
+        nextBtn.style.display = currentSection === totalSections ? 'none' : 'inline-flex';
+        submitBtn.style.display = currentSection === totalSections ? 'inline-flex' : 'none';
+    }
+
+    // ============================================
+    // FORM VALIDATION
+    // ============================================
+    function validateSection(section) {
+        // Optional validation - currently lets pass through
+        // Add required field validation here if needed
+        return true;
+    }
+
+    // ============================================
+    // FORM SUBMISSION WITH FINAL TIMING
+    // ============================================
+    function submitQuestionnaire(e) {
+        // Don't prevent default - let Django handle it normally
+        // But capture final timing data
+        const questEnd = Date.now();
+        const totalDuration = (questEnd - startTime) / 1000; // seconds
+        
+        // Store final timing in hidden field(s) if needed
+        console.log('Questionnaire completed in', totalDuration, 'seconds');
+        console.log('Section timings:', sectionTimings);
+        
+        // Optional: Send timing data via AJAX before submitting
+        // For now, just submit the form normally
+    }
+
+    // ============================================
+    // CONDITIONAL FIELDS VISIBILITY
+    // ============================================
+    function updateConditionalFields() {
+        const status = document.getElementById('id_travail_statut').value;
+        const adejaTravauilleGroup = document.getElementById('a_deja_travaille_group');
+        const professionGroup = document.getElementById('profession_group');
+        const fonctionManagementGroup = document.getElementById('fonction_management_group');
+        
+        // Show "A déjà travaillé" if status != 1 (not currently employed)
+        if (status === '2' || status === '3' || status === '4' || status === '5' || status === '6' || status === '7') {
+            adejaTravauilleGroup.style.display = 'block';
+        } else {
+            adejaTravauilleGroup.style.display = 'none';
+            document.querySelectorAll('input[name="a_deja_travaille"]').forEach(radio => radio.checked = false);
+        }
+        
+        // Show "Profession" if employed (status 1) OR if "a_deja_travaille" = yes
+        const adejaTravailled = document.querySelector('input[name="a_deja_travaille"]:checked');
+        const showProfession = status === '1' || (adejaTravailled && adejaTravailled.value === 'true');
+        professionGroup.style.display = showProfession ? 'block' : 'none';
+        
+        // Show "Fonction management" if profession is filled
+        const profession = document.getElementById('id_profession').value.trim();
+        fonctionManagementGroup.style.display = showProfession && profession ? 'block' : 'none';
+    }
+    
+    function updateManagementFieldVisibility() {
+        const profession = document.getElementById('id_profession').value.trim();
+        const status = document.getElementById('id_travail_statut').value;
+        const adejaTravailled = document.querySelector('input[name="a_deja_travaille"]:checked');
+        const showProfession = status === '1' || (adejaTravailled && adejaTravailled.value === 'true');
+        
+        const fonctionManagementGroup = document.getElementById('fonction_management_group');
+        fonctionManagementGroup.style.display = showProfession && profession ? 'block' : 'none';
+    }
+
+    function updateChoiceStyles() {
+        const form = document.getElementById('questionnaireForm');
+        if (!form) return;
+
+        const groups = {};
+        form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+            const groupName = input.name;
+            if (!groups[groupName]) {
+                groups[groupName] = [];
+            }
+            groups[groupName].push(input);
+        });
+
+        Object.values(groups).forEach(inputs => {
+            const anyChecked = inputs.some(input => input.checked);
+            inputs.forEach(input => {
+                const label = input.closest('label');
+                if (!label || !label.classList.contains('choice-label')) {
+                    return;
+                }
+                label.classList.toggle('is-selected', input.checked);
+                label.classList.toggle('is-dim', anyChecked && !input.checked);
+            });
+        });
+    }
+
+    document.addEventListener('change', function(event) {
+        const target = event.target;
+        if (target.matches('#questionnaireForm input[type="radio"], #questionnaireForm input[type="checkbox"]')) {
+            updateChoiceStyles();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateChoiceStyles();
     });
 </script>
 {% endblock %}
