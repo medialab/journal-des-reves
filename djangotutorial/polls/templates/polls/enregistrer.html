@@ -32,7 +32,7 @@
 					<!-- Enregistreur Audio -->
 					<div class="recorder-box" id="recorderBox">
 						<div class="recorder-buttons">
-							<button type="button" id="startBtn" class="btn btn-primary recorder-start-cta">Démarrer</button>
+							<button type="button" id="startBtn" class="btn btn-primary recorder-start-cta">Démarrer l'enregistrement</button>
 							
 							<!-- Bouton "Aucun souvenir" -->
 							<button type="button" id="noMemoryBtn" class="btn btn-outline-light" style="width: 100%; max-width: 400px;">
@@ -132,13 +132,13 @@
 				</div>
 
 				<!-- Boutons d'action -->
-				<div class="form-actions" id="formActions">
-					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" style="min-height: 60px; padding: 1rem 1.5rem; white-space: normal; line-height: 1.4;" disabled>
-						Enregistrer son rêve
-					</button>
-					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large">
+				<div class="form-actions" id="formActions" style="display: flex; justify-content: space-between; align-items: center;">
+				<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large" style="min-height: 60px; padding: 1rem 1.5rem; border: 2px solid var(--color-primary); color: var(--color-primary); background: white; white-space: normal; line-height: 1.4;">
 						Retour au journal
 					</a>
+					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" style="min-height: 60px; padding: 1rem 1.5rem; white-space: normal; line-height: 1.4;" disabled>
+						Soumettre
+					</button>
 				</div>
 			</form>
 
@@ -395,7 +395,7 @@ function initFormHandlers() {
 			audioInput.setAttribute('required', 'required');
 			
 			// Restaurer le texte du bouton submit
-			submitBtn.textContent = 'Enregistrer son rêve';
+			submitBtn.textContent = 'Soumettre';
 			submitBtn.disabled = true;
 			
 			// Restaurer le style du bouton "Aucun souvenir"
@@ -609,5 +609,22 @@ function initFormHandlers() {
 
 </script>
 
+<style>
+.form-actions .btn-outline {
+	transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-actions .btn-outline:hover {
+	background-color: rgba(59, 130, 246, 0.2) !important;
+	color: #ffffff !important;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.form-actions .btn-outline:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+}
+</style>
 
 {% endblock %}

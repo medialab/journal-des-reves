@@ -27,13 +27,17 @@ from django.core.management import CommandError
 class TranscriberService:
     """Service pour la transcription des rêves avec Whisper"""
     
-    def __init__(self):
+    def __init__(self, model_name=None):
         """Initialiser le service Whisper"""
+        self.model_name = model_name or os.getenv('WHISPER_MODEL', 'large-v3')
+        self.model = None
+
         try:
             import whisper
             self.whisper = whisper
+            self.model = self.whisper.load_model(self.model_name)
             self.is_loaded = True
-            print("✅ Modèle Whisper chargé avec succès")
+            print(f"✅ Modèle Whisper '{self.model_name}' chargé avec succès")
         except ImportError:
             self.is_loaded = False
             print("❌ Le module 'openai-whisper' n'est pas installé")
@@ -51,6 +55,8 @@ class TranscriberService:
         """
         if not self.is_loaded:
             raise Exception("Whisper n'est pas chargé. Installez openai-whisper.")
+        if not self.model:
+            raise Exception("Modèle Whisper non initialisé.")
         
         if not os.path.exists(audio_file_path):
             raise FileNotFoundError(f"Fichier audio introuvable: {audio_file_path}")
@@ -58,12 +64,8 @@ class TranscriberService:
         print(f"🎤 Transcription de: {audio_file_path}")
         
         try:
-            # Charger le modèle Whisper (tiny pour plus de rapidité)
-            # Options: tiny, base, small, medium, large
-            model = self.whisper.load_model("base")
-            
             # Transcrire l'audio
-            result = model.transcribe(audio_file_path, language="fr")
+            result = self.model.transcribe(audio_file_path, language="fr")
             
             transcription_text = result.get("text", "").strip()
             
@@ -92,7 +94,7 @@ Après installation, relancez la commande."""
             raise
 
 
-def transcribe_reve(reve_id):
+def transcribe_reve(reve_id, service=None):
     """
     Transcrire un rêve spécifique
     
@@ -121,7 +123,7 @@ def transcribe_reve(reve_id):
     audio_file_path = reve.audio.path
     
     # Transcrire
-    service = TranscriberService()
+    service = service or TranscriberService()
     try:
         transcription = service.transcribe(audio_file_path)
         
@@ -141,7 +143,7 @@ def transcribe_reve(reve_id):
         return False
 
 
-def transcribe_all_pending():
+def transcribe_all_pending(service=None):
     """
     Transcrire tous les rêves en attente de transcription
     
@@ -160,11 +162,13 @@ def transcribe_all_pending():
     if stats['total'] == 0:
         print("✅ Aucune transcription en attente")
         return stats
+
+    service = service or TranscriberService()
     
     print(f"🎤 Transcription de {stats['total']} rêve(s) en attente...")
     
     for reve in pending:
-        if transcribe_reve(reve.id):
+        if transcribe_reve(reve.id, service=service):
             stats['success'] += 1
         else:
             stats['failed'] += 1
@@ -183,6 +187,12 @@ class Command(BaseCommand):
             help='ID spécifique du rêve à transcrire'
         )
         parser.add_argument(
+            '--model',
+            type=str,
+            default=os.getenv('WHISPER_MODEL', 'large-v3'),
+            help='Modèle Whisper local à utiliser (défaut: large-v3)'
+        )
+        parser.add_argument(
             '--all',
             action='store_true',
             help='Transcrire tous les rêves en attente (défaut)'
@@ -191,15 +201,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         reve_id = options.get('reve_id')
         all_flag = options.get('all')
+        model_name = options.get('model')
+        service = TranscriberService(model_name=model_name)
+
+        if not service.is_loaded:
+            raise CommandError("Whisper n'est pas disponible. Vérifiez l'installation locale de openai-whisper.")
         
         if reve_id:
             # Transcrire un rêve spécifique
-            success = transcribe_reve(reve_id)
+            success = transcribe_reve(reve_id, service=service)
             if not success:
                 raise CommandError(f"Impossible de transcrire le rêve #{reve_id}")
         elif all_flag or not reve_id:
             # Transcrire tous les rêves en attente (par défaut)
-            stats = transcribe_all_pending()
+            stats = transcribe_all_pending(service=service)
             if stats['failed'] > 0:
                 raise CommandError(f"{stats['failed']} rêve(s) n'ont pas pu être transcrit(s)")
         
@@ -213,10 +228,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transcrire les rêves avec Whisper')
     parser.add_argument('--reve-id', type=int, help='ID spécifique du rêve')
     parser.add_argument('--all', action='store_true', help='Transcrire tous les rêves en attente')
+    parser.add_argument('--model', type=str, default=os.getenv('WHISPER_MODEL', 'large-v3'), help='Modèle Whisper local à utiliser')
     
     args = parser.parse_args()
     
+    service = TranscriberService(model_name=args.model)
+
     if args.reve_id:
-        transcribe_reve(args.reve_id)
+        transcribe_reve(args.reve_id, service=service)
     else:
-        transcribe_all_pending()
+        transcribe_all_pending(service=service)

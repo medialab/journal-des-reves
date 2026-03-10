@@ -1,0 +1,317 @@
+{% extends "polls/base.html" %}
+{% load static %}
+
+{% block title %}Modifier le rêve – Journal des Rêves{% endblock %}
+
+{% block content %}
+<div class="page active">
+	<section class="page-hero page-hero-small">
+		<div class="container-small">
+			<h1 class="page-title">Modifier ton rêve</h1>
+		</div>
+	</section>
+
+	<section class="page-content">
+		<div class="container-wide">
+			<!-- Messages -->
+			{% if messages %}
+				{% for message in messages %}
+					<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+				{% endfor %}
+			{% endif %}
+
+			<form method="post" id="reve-form" class="form-card">
+				{% csrf_token %}
+
+				<!-- Section: Transcription -->
+				<div class="form-section">
+					<div class="form-group">
+						<label class="form-label" for="transcription">
+							<span>Transcription du rêve :</span>
+						</label>
+						<textarea name="transcription" id="transcription" class="form-textarea" rows="10" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; font-family: inherit;">{{ reve.transcription }}</textarea>
+					</div>
+				</div>
+
+				<!-- Section: Type de Reve -->
+				<div class="form-section">
+					<div class="form-group">
+						<label class="form-label form-label-inline-help">
+							<span>C'était plutôt un...</span>
+							<span class="inline-help">Un cauchemar est un mauvais rêve qui occasionne un réveil.</span>
+						</label>
+						
+						<div class="radio-group">
+							<label class="radio-label choice-label {% if reve.type_reve == 'tres_positif' %}is-selected{% endif %}">
+								<input type="radio" name="type_reve" value="tres_positif" {% if reve.type_reve == 'tres_positif' %}checked{% endif %}>
+								<span class="radio-text">Rêve très positif</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.type_reve == 'positif' %}is-selected{% endif %}">
+								<input type="radio" name="type_reve" value="positif" {% if reve.type_reve == 'positif' %}checked{% endif %}>
+								<span class="radio-text">Rêve positif</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.type_reve == 'neutre' %}is-selected{% endif %}">
+								<input type="radio" name="type_reve" value="neutre" {% if reve.type_reve == 'neutre' %}checked{% endif %}>
+								<span class="radio-text">Rêve neutre</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.type_reve == 'mauvais' %}is-selected{% endif %}">
+								<input type="radio" name="type_reve" value="mauvais" {% if reve.type_reve == 'mauvais' %}checked{% endif %}>
+								<span class="radio-text">Mauvais rêve</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.type_reve == 'cauchemar' %}is-selected{% endif %}">
+								<input type="radio" name="type_reve" value="cauchemar" {% if reve.type_reve == 'cauchemar' %}checked{% endif %}>
+								<span class="radio-text">Cauchemar</span>
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<!-- Section: Émotions -->
+				<div class="form-section" id="emotionsSection">
+					<div class="form-group">
+						<label class="form-label form-label-inline-help">
+							<span>Émotions ressenties :</span>
+							<span class="inline-help">Vous pouvez sélectionner plusieurs émotions et en ajouter</span>
+						</label>
+						
+						<div class="checkbox-group" id="emotionsGroup">
+							{% for emotion in emotions %}
+								<label class="checkbox-label choice-label {% if emotion.id in reve_emotions_ids %}is-selected{% endif %}">
+									<input type="checkbox" name="emotions_reve" value="{{ emotion.id }}" {% if emotion.id in reve_emotions_ids %}checked{% endif %}>
+									<span class="checkbox-text">{{ emotion.libelle }}</span>
+								</label>
+							{% endfor %}
+							{% for emotion_custom in reve_emotions_custom %}
+								<label class="checkbox-label choice-label custom-emotion is-selected">
+									<input type="checkbox" name="emotions_custom" value="{{ emotion_custom }}" checked>
+									<span class="checkbox-text">{{ emotion_custom }}</span>
+								</label>
+							{% endfor %}
+						</div>
+						<div class="custom-emotion-row">
+							<input type="text" id="customEmotionInput" class="custom-emotion-input" placeholder="Ajouter une émotion">
+							<button type="button" id="addEmotionBtn" class="btn btn-outline btn-small">Ajouter</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Section: Modalités d'images -->
+				<div class="form-section">
+					<div class="form-group">
+						<label class="form-label form-label-inline-help">
+							<span>Dans ton rêve, il y avait :</span>
+							<span class="inline-help">Modalités sensorielles présentes dans le rêve</span>
+						</label>
+						
+						<div class="checkbox-group" id="modalitesGroup">
+							{% for modalite in images_modalites %}
+								<label class="checkbox-label choice-label {% if modalite.id in reve_modalites_ids %}is-selected{% endif %}">
+									<input type="checkbox" name="images_modalites" value="{{ modalite.id }}" {% if modalite.id in reve_modalites_ids %}checked{% endif %}>
+									<span class="checkbox-text">{{ modalite.libelle }}</span>
+								</label>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+
+				<!-- Boutons d'action -->
+				<div class="form-actions" id="formActions" style="display: flex; justify-content: space-between; align-items: center;">
+					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large" style="min-height: 60px; padding: 1rem 1.5rem; border: 2px solid var(--color-primary); color: var(--color-primary); background: white; white-space: normal; line-height: 1.4;">
+						Annuler
+					</a>
+					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" style="min-height: 60px; padding: 1rem 1.5rem; white-space: normal; line-height: 1.4;">
+						Enregistrer les modifications
+					</button>
+				</div>
+			</form>
+
+			<!-- Message de succès -->
+			<div id="successMessage" class="success-card" style="display: none;">
+				<div class="success-icon">✓</div>
+				<h2 class="success-title">Modifications enregistrées !</h2>
+				<p class="success-text">Votre rêve a été mis à jour avec succès.</p>
+				<div class="success-actions">
+					<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">Retour au journal</a>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<!-- Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	initFormHandlers();
+});
+
+function initFormHandlers() {
+	const form = document.getElementById('reve-form');
+	const submitBtn = document.getElementById('submitBtn');
+	const successMessage = document.getElementById('successMessage');
+	const emotionsGroup = document.getElementById('emotionsGroup');
+	const addEmotionBtn = document.getElementById('addEmotionBtn');
+	const customEmotionInput = document.getElementById('customEmotionInput');
+
+	const updateChoiceStyles = () => {
+		const groups = {};
+		form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+			const groupName = input.name;
+			if (!groups[groupName]) {
+				groups[groupName] = [];
+			}
+			groups[groupName].push(input);
+		});
+
+		Object.values(groups).forEach(inputs => {
+			const anyChecked = inputs.some(input => input.checked);
+			inputs.forEach(input => {
+				const label = input.closest('label');
+				if (!label) {
+					return;
+				}
+				label.classList.toggle('is-selected', input.checked);
+				label.classList.toggle('is-dim', anyChecked && !input.checked);
+			});
+		});
+	};
+
+	form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(field => {
+		field.addEventListener('change', () => {
+			updateChoiceStyles();
+		});
+	});
+
+	const normalizeEmotion = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+	const existingEmotionValues = () => {
+		return Array.from(emotionsGroup.querySelectorAll('input[name="emotions_reve"], input[name="emotions_custom"]'))
+			.map(input => normalizeEmotion(input.value));
+	};
+
+	const addCustomEmotion = () => {
+		const rawValue = customEmotionInput.value;
+		const cleanedValue = rawValue.trim();
+		if (!cleanedValue) {
+			return;
+		}
+
+		const normalizedValue = normalizeEmotion(cleanedValue);
+		if (existingEmotionValues().includes(normalizedValue)) {
+			customEmotionInput.value = '';
+			return;
+		}
+
+		const label = document.createElement('label');
+		label.className = 'checkbox-label choice-label custom-emotion is-selected';
+		const input = document.createElement('input');
+		input.type = 'checkbox';
+		input.name = 'emotions_custom';
+		input.value = cleanedValue;
+		input.checked = true;
+		const text = document.createElement('span');
+		text.className = 'checkbox-text';
+		text.textContent = cleanedValue;
+		label.appendChild(input);
+		label.appendChild(text);
+		emotionsGroup.appendChild(label);
+
+		input.addEventListener('change', () => {
+			updateChoiceStyles();
+		});
+
+		customEmotionInput.value = '';
+		updateChoiceStyles();
+	};
+
+	if (addEmotionBtn && customEmotionInput && emotionsGroup) {
+		addEmotionBtn.addEventListener('click', addCustomEmotion);
+		customEmotionInput.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				addCustomEmotion();
+			}
+		});
+	}
+
+	// Gestion de la soumission du formulaire
+	form.addEventListener('submit', async function(e) {
+		e.preventDefault();
+
+		const formData = new FormData(form);
+		const formActions = document.getElementById('formActions');
+
+		try {
+			// Cacher le formulaire
+			form.style.display = 'none';
+			if (formActions) {
+				formActions.style.display = 'none';
+			}
+			
+			// Afficher un message de chargement
+			const loadingMessage = document.createElement('div');
+			loadingMessage.id = 'loadingMessage';
+			loadingMessage.className = 'success-card';
+			loadingMessage.innerHTML = `
+				<div class="success-icon" style="background: linear-gradient(135deg, #94a3b8, #64748b);">⏳</div>
+				<h2 class="success-title">Enregistrement en cours...</h2>
+				<p class="success-text">Veuillez patienter un instant.</p>
+			`;
+			form.parentElement.appendChild(loadingMessage);
+
+			const response = await fetch('{% url "polls:modifier_reve" reve.id %}', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+				}
+			});
+
+			const data = await response.json();
+
+			if (data.success) {
+				// Retirer le message de chargement
+				if (loadingMessage && loadingMessage.parentNode) {
+					loadingMessage.parentNode.removeChild(loadingMessage);
+				}
+				
+				// Afficher le message de succès
+				setTimeout(() => {
+					successMessage.style.display = 'block';
+				}, 100);
+				
+				// Redirection après 3 secondes
+				setTimeout(() => {
+					window.location.href = '{% url "polls:journal" %}';
+				}, 3000);
+			} else {
+				// En cas d'erreur, retirer le loading et réafficher le formulaire
+				if (loadingMessage && loadingMessage.parentNode) {
+					loadingMessage.parentNode.removeChild(loadingMessage);
+				}
+				form.style.display = 'block';
+				if (formActions) {
+					formActions.style.display = 'flex';
+				}
+				alert('Erreur: ' + data.message);
+			}
+		} catch (error) {
+			console.error('Erreur:', error);
+			// En cas d'erreur, retirer le loading et réafficher le formulaire
+			const loadingMsg = document.getElementById('loadingMessage');
+			if (loadingMsg && loadingMsg.parentNode) {
+				loadingMsg.parentNode.removeChild(loadingMsg);
+			}
+			form.style.display = 'block';
+			if (formActions) {
+				formActions.style.display = 'flex';
+			}
+			alert('Une erreur est survenue');
+		}
+	});
+
+	// Initialiser les styles au chargement
+	updateChoiceStyles();
+}
+
+</script>
+
+{% endblock %}

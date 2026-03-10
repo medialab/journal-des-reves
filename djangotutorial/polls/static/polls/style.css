@@ -154,7 +154,8 @@
     src: url('./fonts/playfair-display-v40-latin-500.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
-    font-display: swap;
+    font-display: swap;hero-descriptionhero-description
+
 }
 
 @font-face {
@@ -462,7 +463,7 @@ img {
 }
 
 .hero-description {
-    font-size: clamp(1.135rem, 2vw, 1.385rem);
+    font-size: clamp(0.9rem, 0.95vw, 1.15rem);
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 2.5rem;
     line-height: 1.7;

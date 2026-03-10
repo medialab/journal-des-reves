@@ -40,7 +40,7 @@ start_transcription_async(reve.id)
 ### Commande de Transcription
 **Fichier**: `polls/management/commands/transcribe_dreams.py`
 
-- Charge le modèle Whisper
+- Charge le modèle Whisper local (`large-v3` par défaut)
 - Transcrit l'audio en français
 - Sauvegarde le résultat en base de données
 - Marque `transcription_ready = True`
@@ -64,7 +64,7 @@ JsonResponse: "Enregistré! Transcription en cours..."
 [UTILISATEUR REÇOIT RÉPONSE]
 
 [EN ARRIÈRE-PLAN - Thread]
-├─ Charge modèle Whisper
+├─ Charge modèle Whisper local (`large-v3`)
 ├─ Transcrit audio
 ├─ Sauvegarde résultat
 ├─ Met à jour DB: transcription_ready = True
@@ -114,6 +114,12 @@ python manage.py transcribe_dreams --reve-id 8
 # Tous les rêves en attente
 python manage.py transcribe_dreams --all
 
+# Forcer un modèle spécifique si besoin
+python manage.py transcribe_dreams --all --model medium
+
+# Configuration globale par variable d'environnement (défaut: large-v3)
+export WHISPER_MODEL=large-v3
+
 # Lister les rêves en attente
 python manage.py test_transcribe --list
 ```
@@ -131,6 +137,12 @@ start_transcription_async(8)  # True = succès
 - **Django**: 6.0.2
 - **openai-whisper**: Installé
 - **ffmpeg**: Système (Linux: `apt install ffmpeg`)
+
+## 🔧 Configuration modèle
+
+- Modèle par défaut: `large-v3`
+- Override temporaire: `--model <nom_modele>`
+- Override global: variable `WHISPER_MODEL`
 
 ## ✅ Tests Réalisés
 

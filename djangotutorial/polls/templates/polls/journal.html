@@ -13,8 +13,8 @@
 					Ajouter un rêve
 					<span class="btn-arrow">→</span>
 				</a>
-				<a href="{% url 'polls:profil' %}" class="btn btn-outline btn-large">
-					Mettre à jour le profil
+				<a href="{% url 'polls:questionnaire' %}" class="btn btn-outline btn-large">
+					Remplissez le questionnaire
 				</a>
 			</div>
 		</div>
@@ -30,9 +30,16 @@
 								{% for reve in reves %}
 									<div class="dream-card js-dream-card" data-reve-id="{{ reve.id }}">
 										<!-- Header avec date -->
-										<div class="dream-header">
+									<div class="dream-header" style="display: flex; justify-content: space-between; align-items: center;">
+										<div style="display: flex; align-items: center; gap: 0.5rem;">
 											<span class="dream-icon">🌙</span>
 											<span class="dream-date">{{ reve.date|date:"d M Y" }}</span>
+										</div>
+										<a href="{% url 'polls:modifier_reve' reve.id %}" class="dream-edit-btn" title="Modifier ce rêve" style="display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem; border-radius: 6px; transition: all 0.2s ease; text-decoration: none;">
+											<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+												<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#3b82f6" stroke="#3b82f6" stroke-width="0.5"/>
+											</svg>
+										</a>
 										</div>
 
 										<!-- Contenu -->
@@ -106,6 +113,25 @@
 		</div>
 	</section>
 </div>
+
+<style>
+.dream-edit-btn:hover {
+	background-color: rgba(59, 130, 246, 0.1);
+	transform: scale(1.1);
+}
+
+.dream-edit-btn:active {
+	transform: scale(0.95);
+}
+
+.dream-edit-btn svg {
+	transition: all 0.2s ease;
+}
+
+.dream-edit-btn:hover svg {
+	filter: brightness(1.2);
+}
+</style>
 
 <script src="{% static 'polls/js/journal.js' %}"></script>
 

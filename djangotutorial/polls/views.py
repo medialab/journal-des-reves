@@ -231,6 +231,125 @@ class EnregistrerView(LoginRequiredMixin, View):
             }, status=500)
 
 
+class ModifierReveView(LoginRequiredMixin, View):
+    """
+    Vue pour modifier un rêve existant (transcription et métadonnées)
+    """
+
+    def get(self, request, reve_id):
+        """Afficher la page de modification avec les données du rêve"""
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            messages.error(request, "Profil utilisateur introuvable")
+            return HttpResponseRedirect(reverse("polls:index"))
+        
+        # Récupérer le rêve et vérifier qu'il appartient à l'utilisateur
+        reve = get_object_or_404(Reve, id=reve_id, profil=profil)
+        
+        # Récupérer les émotions pour le formulaire
+        emotions = ReveEmotion.objects.all().order_by('ordre')
+        custom_emotions = ReveEmotionCustom.objects.filter(profil=profil).order_by('libelle')
+        images_modalites = ReveImageModalite.objects.all().order_by('ordre')
+        
+        context = {
+            "title": "Modifier le rêve",
+            "reve": reve,
+            "emotions": emotions,
+            "custom_emotions": custom_emotions,
+            "images_modalites": images_modalites,
+        }
+        
+        # Ajouter les infos questionnaire
+        context = add_questionnaire_context(context, profil)
+        
+        return render(request, "polls/modifier_reve.html", context)
+
+    def post(self, request, reve_id):
+        """Gérer la mise à jour du rêve"""
+        try:
+            # Vérifier que l'utilisateur a un profil
+            try:
+                profil = request.user.profil
+            except Profil.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Profil utilisateur introuvable'
+                }, status=400)
+
+            # Récupérer le rêve et vérifier qu'il appartient à l'utilisateur
+            reve = get_object_or_404(Reve, id=reve_id, profil=profil)
+
+            # Récupérer les données du formulaire
+            transcription = request.POST.get('transcription', '').strip()
+            type_reve = request.POST.get('type_reve', '').strip()
+            etendue_reve = request.POST.get('etendue_reve', '')
+            sens = request.POST.get('sens', '')
+            emotions_ids = request.POST.getlist('emotions_reve')
+            emotions_custom = request.POST.getlist('emotions_custom')
+            images_modalites_ids = request.POST.getlist('images_modalites')
+
+            # Mettre à jour le rêve
+            if transcription:
+                reve.transcription = transcription
+            reve.type_reve = type_reve if type_reve else None
+            reve.etendue_reve = int(etendue_reve) if etendue_reve else None
+            reve.sens = int(sens) if sens else None
+            reve.save()
+
+            # Mettre à jour les émotions
+            if emotions_ids:
+                emotions = ReveEmotion.objects.filter(id__in=emotions_ids)
+                reve.emotions_reve.set(emotions)
+            else:
+                reve.emotions_reve.clear()
+
+            # Mettre à jour les émotions personnalisées
+            if emotions_custom:
+                custom_objects = []
+                for raw_value in emotions_custom:
+                    cleaned_value = (raw_value or '').strip()
+                    if not cleaned_value:
+                        continue
+                    existing = ReveEmotionCustom.objects.filter(
+                        profil=profil,
+                        libelle__iexact=cleaned_value
+                    ).first()
+                    if existing:
+                        custom_objects.append(existing)
+                        continue
+                    custom_objects.append(ReveEmotionCustom.objects.create(
+                        profil=profil,
+                        libelle=cleaned_value
+                    ))
+                if custom_objects:
+                    reve.emotions_custom.set(custom_objects)
+            else:
+                reve.emotions_custom.clear()
+
+            # Mettre à jour les modalités d'images
+            if images_modalites_ids:
+                images_modalites = ReveImageModalite.objects.filter(id__in=images_modalites_ids)
+                reve.images_modalites.set(images_modalites)
+            else:
+                reve.images_modalites.clear()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Rêve modifié avec succès !',
+                'reve_id': reve.id,
+            })
+
+        except Exception as error:
+            print(f'❌ Erreur modification rêve: {error}')
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'message': f'Erreur: {str(error)}'
+            }, status=500)
+
+
 class JournalView(LoginRequiredMixin, View):
 
     def get(self, request):

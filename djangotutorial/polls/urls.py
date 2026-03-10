@@ -16,6 +16,9 @@ urlpatterns = [
 
     #Enregistrement des rêves 
     path("enregistrer/", views.EnregistrerView.as_view(), name="enregistrer"),
+    
+    # Modification d'un rêve
+    path("modifier-reve/<int:reve_id>/", views.ModifierReveView.as_view(), name="modifier_reve"),
 
     # Description projet et mentions légales 
       path("description/", views.DescriptionView.as_view(), name="description"),
