@@ -350,6 +350,28 @@ html.is-mobile-pwa .hamburger {
     backdrop-filter: blur(6px);
 }
 
+html.is-mobile-pwa .navbar {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+html.is-mobile-pwa .navbar-container {
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    justify-content: space-between;
+}
+
+html.is-mobile-pwa .navbar-logo {
+    margin-right: 0;
+    padding-right: 0;
+    max-width: calc(100% - 64px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.1rem;
+}
+
 html.is-mobile-pwa .hamburger span {
     width: 18px;
     height: 2.5px;
@@ -393,6 +415,10 @@ html.is-mobile-pwa .nav-link {
     width: 100%;
     padding: 1rem 0;
     font-size: 1.125rem;
+}
+
+html.is-mobile-pwa .notification-bell {
+    margin-top: 0.15rem;
 }
 
 .nav-menu {

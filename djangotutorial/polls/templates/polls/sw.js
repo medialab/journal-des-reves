@@ -64,6 +64,9 @@ self.addEventListener('fetch', function(event) {
     if (url.pathname.startsWith('/polls/api/')) return;
     if (url.pathname.startsWith('/webpush/')) return;
     if (url.pathname.startsWith('/admin/')) return;
+    // Ne JAMAIS mettre en cache les pages d'auth : le token CSRF est unique
+    // à chaque chargement ; s'il est servi depuis le cache il sera périmé
+    if (url.pathname.startsWith('/accounts/')) return;
 
     // Assets statiques → Cache-first
     if (url.pathname.startsWith('/static/')) {

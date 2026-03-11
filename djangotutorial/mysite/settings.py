@@ -187,12 +187,28 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 # Sauvegarder la session en base de données
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-# Mettre à jour la session à chaque requête
-SESSION_SAVE_EVERY_REQUEST = False
+# Mettre à jour la session à chaque requête (glisse la fenêtre de 30j à chaque visite)
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Se souvenir de l'utilisateur lors de la connexion (remember me)
 # Les utilisateurs peuvent cocher "Remember me" lors de la connexion
 REMEMBER_ME_DURATION = 30 * 24 * 60 * 60  # 30 days
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CSRF COOKIE CONFIGURATION
+# Nécessaire pour que la PWA (service worker) ne casse pas le token CSRF
+# ─────────────────────────────────────────────────────────────────────────────
+
+# False OBLIGATOIRE : le JS doit pouvoir lire le cookie CSRF pour l'injecter
+# dans les requêtes fetch/AJAX (notamment depuis le service worker)
+CSRF_COOKIE_HTTPONLY = False
+
+# HTTPS only en production (même logique que le cookie de session)
+CSRF_COOKIE_SECURE = not DEBUG
+
+# Lax = cookie envoyé pour toutes les requêtes same-site + navigations top-level
+# Compatible PWA standalone (considérée same-site par le navigateur)
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # =============================================================================
 # PWA CONFIGURATION (django-pwa)
