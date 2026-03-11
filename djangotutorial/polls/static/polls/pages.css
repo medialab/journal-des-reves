@@ -239,6 +239,24 @@
     font-weight: 600;
 }
 
+@media (display-mode: standalone) {
+    .welcome-subtitle,
+    .btn-large,
+    .feature-text,
+    .welcome-content p,
+    .welcome-hint {
+        font-size: 1.05rem;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+    }
+
+    .chart-title {
+        font-size: 1.2rem;
+    }
+}
+
 .chart-container {
     display: flex;
     justify-content: center;

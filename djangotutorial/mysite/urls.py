@@ -18,12 +18,16 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
+    path("", RedirectView.as_view(url="/polls/", permanent=False)),
     path("polls/", include("polls.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
+    path('', include('pwa.urls')),        # manifest.json + serviceworker.js + /offline
+    path('webpush/', include('webpush.urls')),  # souscriptions push
 ] + debug_toolbar_urls()
 
 # Serve media files in development

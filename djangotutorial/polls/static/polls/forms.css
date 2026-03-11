@@ -441,6 +441,31 @@
     padding: 0.875rem 1.125rem;
     font-size: 1rem;
     font-family: var(--font-sans);
+
+@media (display-mode: standalone) {
+    .consent-title,
+    .form-section h3,
+    .login-modal-header p,
+    .signup-link p,
+    .checkbox-label span {
+        font-size: 1.05rem;
+    }
+
+    .consent-content,
+    .form-help,
+    .error-message {
+        font-size: 0.98rem;
+    }
+
+    .form-label {
+        font-size: 1rem;
+    }
+
+    .form-input {
+        font-size: 1.08rem;
+        padding: 0.95rem 1.05rem;
+    }
+}
     border: 2px solid var(--gray-200);
     border-radius: var(--radius-md);
     transition: all var(--transition-base);

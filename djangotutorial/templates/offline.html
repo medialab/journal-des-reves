@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hors ligne – Journal des Rêves</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary, #1a1a2e);
+            color: var(--text-primary, #e8e8f0);
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            padding: 2rem;
+        }
+        .offline-container {
+            max-width: 400px;
+        }
+        .offline-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-12px); }
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-primary, #a78bfa);
+        }
+        p {
+            color: var(--text-secondary, #9090a0);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .btn-retry {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: var(--accent-primary, #a78bfa);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn-retry:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">🌙</div>
+        <h1>Tu es hors ligne</h1>
+        <p>
+            Pas de connexion internet pour le moment.<br>
+            Tes rêves t'attendent dès que tu seras reconnecté·e.
+        </p>
+        <button class="btn-retry" onclick="window.location.reload()">
+            🔄 Réessayer
+        </button>
+    </div>
+</body>
+</html>

@@ -27,11 +27,20 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 
+# Autoriser les domaines de tunnel HTTPS (ngrok) pour les POST CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+]
+
 
 # Application definition
 
 INSTALLED_APPS = [
     "polls.apps.PollsConfig",
+    'pwa',
+    'webpush',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -184,3 +193,62 @@ SESSION_SAVE_EVERY_REQUEST = False
 # Se souvenir de l'utilisateur lors de la connexion (remember me)
 # Les utilisateurs peuvent cocher "Remember me" lors de la connexion
 REMEMBER_ME_DURATION = 30 * 24 * 60 * 60  # 30 days
+
+# =============================================================================
+# PWA CONFIGURATION (django-pwa)
+# =============================================================================
+import os
+
+PWA_APP_NAME = 'Journal des Rêves'
+PWA_APP_DESCRIPTION = "Enregistre et explore tes rêves chaque nuit"
+PWA_APP_THEME_COLOR = '#1a1a2e'
+PWA_APP_BACKGROUND_COLOR = '#1a1a2e'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/polls/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/polls/enregistrer/'
+PWA_APP_STATUS_BAR_COLOR = 'black-translucent'
+PWA_APP_LANG = 'fr-FR'
+PWA_APP_DIR = 'ltr'
+PWA_APP_DEBUG_MODE = False
+
+PWA_APP_ICONS = [
+    {'src': '/static/polls/icons/icon-72x72.png',   'sizes': '72x72'},
+    {'src': '/static/polls/icons/icon-96x96.png',   'sizes': '96x96'},
+    {'src': '/static/polls/icons/icon-128x128.png', 'sizes': '128x128'},
+    {'src': '/static/polls/icons/icon-144x144.png', 'sizes': '144x144'},
+    {'src': '/static/polls/icons/icon-152x152.png', 'sizes': '152x152'},
+    {'src': '/static/polls/icons/icon-192x192.png', 'sizes': '192x192'},
+    {'src': '/static/polls/icons/icon-384x384.png', 'sizes': '384x384'},
+    {'src': '/static/polls/icons/icon-512x512.png', 'sizes': '512x512'},
+]
+
+PWA_APP_ICONS_APPLE = [
+    {'src': '/static/polls/icons/apple-touch-icon.png', 'sizes': '180x180'},
+]
+
+PWA_APP_SHORTCUTS = [
+    {
+        'name': 'Enregistrer un rêve',
+        'url': '/polls/enregistrer/',
+        'description': 'Enregistre ton rêve directement',
+    },
+    {
+        'name': 'Mon journal',
+        'url': '/polls/journal/',
+        'description': 'Voir tous mes rêves',
+    },
+]
+
+# Service worker personnalisé (cache les assets du site)
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'polls', 'templates', 'polls', 'sw.js')
+
+# =============================================================================
+# WEBPUSH CONFIGURATION (django-webpush)
+# =============================================================================
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BP_eLOKiWEmrMMneU-cXcqwxHhkAYkVlLmoKq7HmPelOqfVCWP9OqBfgIflLik51C2uPbLqalZMWdqg8--7d9Pc",
+    "VAPID_PRIVATE_KEY": "uHSMq-Hdu3YFNky8WpRb5x6DUxblAtLhwrZOsQvhtd0",
+    "VAPID_ADMIN_EMAIL": "contact@reves-etude.fr",
+}

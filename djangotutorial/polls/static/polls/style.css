@@ -63,6 +63,9 @@
     --z-modal: 1050;
     --z-popover: 1060;
     --z-tooltip: 1070;
+
+    /* Taille de base du texte (web classique) */
+    --base-font-size: 17px;
 }
 
 
@@ -154,8 +157,7 @@
     src: url('./fonts/playfair-display-v40-latin-500.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
-    font-display: swap;hero-descriptionhero-description
-
+    font-display: swap;
 }
 
 @font-face {
@@ -193,11 +195,42 @@ html {
 
 body {
     font-family: var(--font-sans);
-    font-size: 17px;
+    font-size: var(--base-font-size);
     line-height: 1.6;
     color: var(--gray-900);
     background: var(--white);
     overflow-x: hidden;
+}
+
+/* =====================================================
+   PWA: agrandir la typo quand l'app est installée
+   ===================================================== */
+@media (display-mode: standalone) {
+    :root {
+        --base-font-size: 18.5px;
+    }
+
+    .nav-link,
+    .nav-username,
+    .btn,
+    .hero-description,
+    .section-description,
+    .form-help,
+    .alert-message {
+        font-size: 1.05rem;
+    }
+}
+
+@media (display-mode: standalone) and (max-width: 768px) {
+    :root {
+        --base-font-size: 19px;
+    }
+
+    .nav-link,
+    .nav-username,
+    .btn {
+        font-size: 1.1rem;
+    }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -301,6 +334,65 @@ img {
 
 .hamburger.active span:nth-child(3) {
     transform: rotate(-45deg) translate(6px, -6px);
+}
+
+html.is-mobile-pwa .hamburger {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 6px 20px rgba(17, 24, 39, 0.14);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+html.is-mobile-pwa .hamburger span {
+    width: 18px;
+    height: 2.5px;
+}
+
+html.is-mobile-pwa .hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(4px, 4px);
+}
+
+html.is-mobile-pwa .hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+html.is-mobile-pwa body {
+    font-size: 19px;
+}
+
+html.is-mobile-pwa .nav-menu {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+    right: -105%;
+    width: min(86vw, 340px);
+    height: calc(100vh - env(safe-area-inset-top, 0px) - 0.5rem);
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 18px 0 0 18px;
+    background: rgba(255, 255, 255, 0.97);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    padding: 5.5rem 1.4rem 1.4rem;
+    box-shadow: var(--shadow-2xl);
+    transition: right var(--transition-base);
+    z-index: calc(var(--z-sticky) + 5);
+}
+
+html.is-mobile-pwa .nav-menu.active {
+    right: 0;
+}
+
+html.is-mobile-pwa .nav-link {
+    width: 100%;
+    padding: 1rem 0;
+    font-size: 1.125rem;
 }
 
 .nav-menu {
@@ -1820,6 +1912,22 @@ select:focus {
         padding: 6rem 2rem 2rem;
         box-shadow: var(--shadow-2xl);
         transition: right var(--transition-base);
+    }
+
+    html.is-mobile-pwa .navbar {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    html.is-mobile-pwa .nav-menu {
+        top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+        right: -105%;
+        width: min(86vw, 340px);
+        height: calc(100vh - env(safe-area-inset-top, 0px) - 0.5rem);
+        border-radius: 18px 0 0 18px;
+        background: rgba(255, 255, 255, 0.97);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        padding: 5.5rem 1.4rem 1.4rem;
     }
     
     .nav-menu.active {

@@ -9,7 +9,11 @@ Usage:
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from polls.models import Profil, Notification
-from django.contrib.auth.models import User
+try:
+    from webpush import send_user_notification
+    WEBPUSH_AVAILABLE = True
+except ImportError:
+    WEBPUSH_AVAILABLE = False
 
 
 class Command(BaseCommand):
@@ -39,7 +43,7 @@ class Command(BaseCommand):
             
             if not existing_notification:
                 # Créer la notification
-                notification = Notification.objects.create(
+                Notification.objects.create(
                     profil=profil,
                     notification_type=Notification.NotificationType.DAILY_REMINDER,
                     title="Avez-vous rêvé cette nuit ?",
@@ -47,11 +51,25 @@ class Command(BaseCommand):
                             "Plus vous documentez vos rêves, plus l'étude sera enrichie!"
                 )
                 count += 1
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f'✓ Notification créée pour {profil.user.username}'
-                    )
-                )
+                self.stdout.write(self.style.SUCCESS(f'✓ Notification BD créée pour {profil.user.username}'))
+
+                # Envoyer la push notification si django-webpush est disponible
+                if WEBPUSH_AVAILABLE:
+                    try:
+                        push_payload = {
+                            "head": "Journal des Rêves 🌙",
+                            "body": "Avez-vous rêvé cette nuit ? N'oubliez pas d'enregistrer votre rêve !",
+                            "icon": "/static/polls/icons/icon-192x192.png",
+                            "url": "/polls/enregistrer/",
+                        }
+                        send_user_notification(
+                            user=profil.user,
+                            payload=push_payload,
+                            ttl=43200  # 12 heures
+                        )
+                        self.stdout.write(self.style.SUCCESS(f'  📳 Push envoyé à {profil.user.username}'))
+                    except Exception as e:
+                        self.stdout.write(self.style.WARNING(f'  ⚠ Push échoué pour {profil.user.username}: {e}'))
         
         self.stdout.write(
             self.style.SUCCESS(
