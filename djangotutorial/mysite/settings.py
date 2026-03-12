@@ -11,28 +11,73 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+    for line in path.read_text(encoding='utf-8').splitlines():
+        raw = line.strip()
+        if not raw or raw.startswith('#') or '=' not in raw:
+            continue
+        key, value = raw.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
+
+
+env_file_override = os.getenv('DJANGO_ENV_FILE')
+if env_file_override:
+    load_env_file(Path(env_file_override))
+else:
+    load_env_file(BASE_DIR / '.env')
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_list(name: str, default: list[str] | None = None) -> list[str]:
+    raw = os.getenv(name)
+    if raw is None:
+        return default or []
+    return [item.strip() for item in raw.split(",") if item.strip()]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gz)s!op#n*v3a9#zwx3+j6hi^0-bp$u-=n=uci9n7h312#@w)9'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'dev-only-not-for-production-6f4e1f41c9a74b13b945b1d146e0cb6d9f2a5c03',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DJANGO_DEBUG', True)
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts in development
+if DEBUG:
+    ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost', 'testserver'])
+else:
+    ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', [])
 
 # Autoriser les domaines de tunnel HTTPS (ngrok) pour les POST CSRF
-CSRF_TRUSTED_ORIGINS = [
+default_csrf_trusted_origins = [
     'https://*.ngrok-free.dev',
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
 ]
+CSRF_TRUSTED_ORIGINS = env_list(
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
+    default_csrf_trusted_origins if DEBUG else [],
+)
 
 
 # Application definition
@@ -47,11 +92,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'debug_toolbar',
 ]
 
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -60,6 +106,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'mysite.urls'
 
@@ -148,19 +197,16 @@ INTERNAL_IPS = [
 # Email Configuration
 # https://docs.djangoproject.com/en/6.0/topics/email/
 
-# En développement, afficher les emails dans la console
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    # En production, configurer un serveur SMTP réel
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'your-email-host'  # À configurer
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = 'your-email@example.com'  # À configurer
-    EMAIL_HOST_PASSWORD = 'your-password'  # À configurer
-
-DEFAULT_FROM_EMAIL = 'noreply@reves-etude.fr'
+EMAIL_BACKEND = os.getenv(
+    'DJANGO_EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+)
+EMAIL_HOST = os.getenv('DJANGO_EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.getenv('DJANGO_EMAIL_PORT', '587'))
+EMAIL_USE_TLS = env_bool('DJANGO_EMAIL_USE_TLS', True)
+EMAIL_HOST_USER = os.getenv('DJANGO_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('DJANGO_EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DJANGO_DEFAULT_FROM_EMAIL', 'noreply@reves-etude.fr')
 
 
 # SESSION & COOKIES CONFIGURATION
@@ -179,7 +225,7 @@ SESSION_COOKIE_NAME = 'reves_sessionid'
 SESSION_COOKIE_HTTPONLY = True
 
 # S'assurer que le cookie est envoyé seulement en HTTPS en production
-SESSION_COOKIE_SECURE = not DEBUG  # True en production, False en développement
+SESSION_COOKIE_SECURE = env_bool('DJANGO_SESSION_COOKIE_SECURE', not DEBUG)
 
 # SameSite protection contre les attaques CSRF
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -204,16 +250,32 @@ REMEMBER_ME_DURATION = 30 * 24 * 60 * 60  # 30 days
 CSRF_COOKIE_HTTPONLY = False
 
 # HTTPS only en production (même logique que le cookie de session)
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = env_bool('DJANGO_CSRF_COOKIE_SECURE', not DEBUG)
 
 # Lax = cookie envoyé pour toutes les requêtes same-site + navigations top-level
 # Compatible PWA standalone (considérée same-site par le navigateur)
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+
+# SECURITY HARDENING
+# https://docs.djangoproject.com/en/6.0/ref/middleware/#security-middleware
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = env_bool('DJANGO_USE_X_FORWARDED_HOST', False)
+SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', not DEBUG)
+SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '0' if DEBUG else '31536000'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
+SECURE_HSTS_PRELOAD = env_bool('DJANGO_SECURE_HSTS_PRELOAD', not DEBUG)
+SECURE_CONTENT_TYPE_NOSNIFF = env_bool('DJANGO_SECURE_CONTENT_TYPE_NOSNIFF', True)
+X_FRAME_OPTIONS = os.getenv('DJANGO_X_FRAME_OPTIONS', 'DENY')
+SECURE_REFERRER_POLICY = os.getenv('DJANGO_SECURE_REFERRER_POLICY', 'strict-origin-when-cross-origin')
+SECURE_CROSS_ORIGIN_OPENER_POLICY = os.getenv('DJANGO_SECURE_CROSS_ORIGIN_OPENER_POLICY', 'same-origin')
+
+# Password reset token validity (24h)
+PASSWORD_RESET_TIMEOUT = int(os.getenv('DJANGO_PASSWORD_RESET_TIMEOUT', str(60 * 60 * 24)))
+
 # =============================================================================
 # PWA CONFIGURATION (django-pwa)
 # =============================================================================
-import os
 
 PWA_APP_NAME = 'Journal des Rêves'
 PWA_APP_DESCRIPTION = "Enregistre et explore tes rêves chaque nuit"
@@ -264,7 +326,30 @@ PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'polls', 'templates', 'polls', 
 # =============================================================================
 
 WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "BP_eLOKiWEmrMMneU-cXcqwxHhkAYkVlLmoKq7HmPelOqfVCWP9OqBfgIflLik51C2uPbLqalZMWdqg8--7d9Pc",
-    "VAPID_PRIVATE_KEY": "uHSMq-Hdu3YFNky8WpRb5x6DUxblAtLhwrZOsQvhtd0",
-    "VAPID_ADMIN_EMAIL": "contact@reves-etude.fr",
+    "VAPID_PUBLIC_KEY": os.getenv("VAPID_PUBLIC_KEY", "BP_eLOKiWEmrMMneU-cXcqwxHhkAYkVlLmoKq7HmPelOqfVCWP9OqBfgIflLik51C2uPbLqalZMWdqg8--7d9Pc"),
+    "VAPID_PRIVATE_KEY": os.getenv("VAPID_PRIVATE_KEY", "uHSMq-Hdu3YFNky8WpRb5x6DUxblAtLhwrZOsQvhtd0"),
+    "VAPID_ADMIN_EMAIL": os.getenv("VAPID_ADMIN_EMAIL", "contact@reves-etude.fr"),
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.security': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_SECURITY_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
+        'django.contrib.auth': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_AUTH_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
 }

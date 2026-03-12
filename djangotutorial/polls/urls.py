@@ -25,6 +25,7 @@ urlpatterns = [
 
     # Page profil
     path("profil/", views.ProfilView.as_view(), name="profil"),
+    path("profil/export-csv/", views.ExportRevesCsvView.as_view(), name="export_reves_csv"),
     # Questionnaire
     path("questionnaire/", views.QuestionnaireView.as_view(), name="questionnaire"),
     # Détail d’un rêve

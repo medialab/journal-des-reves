@@ -132,6 +132,26 @@
     text-decoration: underline;
 }
 
+.forgot-password-link {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.forgot-password-link p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.forgot-password-link a {
+    color: #4a90e2;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+    text-decoration: underline;
+}
+
 /* ============================================
    LOGIN MODAL (base.html)
    ============================================ */

@@ -206,21 +206,52 @@ class NotificationManager {
         }
     }
 
+    getDismissedNotificationIds() {
+        try {
+            const raw = localStorage.getItem('dismissed_notifications');
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    saveDismissedNotificationId(notificationId) {
+        if (!notificationId) return;
+        const ids = this.getDismissedNotificationIds();
+        if (!ids.includes(notificationId)) {
+            ids.push(notificationId);
+            localStorage.setItem('dismissed_notifications', JSON.stringify(ids));
+        }
+    }
+
     /**
      * Afficher une notification
      */
-    showNotification(title, message, type = 'general', duration = 5000) {
+    showNotification(title, message, type = 'general', duration = 5000, notificationId = null) {
         const notification = document.createElement('div');
         notification.className = `notification-item ${type === 'questionnaire' ? 'questionnaire' : 'daily'} unread`;
+        if (notificationId !== null && notificationId !== undefined) {
+            notification.dataset.notificationId = String(notificationId);
+        }
         
         const typeDisplay = type === 'questionnaire' ? '📋' : '🌙';
         
         notification.innerHTML = `
-            <button class="notification-close" onclick="this.parentElement.remove()">&times;</button>
+            <button class="notification-close">&times;</button>
             <div class="notification-title">${typeDisplay} ${title}</div>
             <div class="notification-message">${message}</div>
             <div class="notification-time">${this.formatTime(new Date())}</div>
         `;
+
+        const closeBtn = notification.querySelector('.notification-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                this.saveDismissedNotificationId(notificationId);
+                notification.remove();
+            });
+        }
         
         notification.onclick = (e) => {
             if (e.target.className !== 'notification-close') {
@@ -256,13 +287,19 @@ class NotificationManager {
                 this.updateNotificationsBadge(data.unread_count);
                 
                 // Afficher les notifications non lues
+                const dismissedIds = this.getDismissedNotificationIds();
                 const unreadNotifications = data.notifications.filter(n => !n.is_read);
                 unreadNotifications.forEach(notif => {
+                    if (dismissedIds.includes(notif.id)) {
+                        return;
+                    }
                     if (!document.querySelector(`[data-notification-id="${notif.id}"]`)) {
                         this.showNotification(
                             notif.title,
                             notif.message,
-                            notif.type.includes('questionnaire') ? 'questionnaire' : 'daily'
+                            notif.type.includes('questionnaire') ? 'questionnaire' : 'daily',
+                            5000,
+                            notif.id
                         );
                     }
                 });
@@ -403,7 +440,7 @@ class NotificationManager {
                     {
                         label: 'Plus tard',
                         type: 'secondary',
-                        onclick: "document.getElementById('modal-overlay').classList.remove('active'); localStorage.setItem('questionnaire_modal_dismissed', Date.now());"
+                        onclick: "document.getElementById('modal-overlay').classList.remove('active'); localStorage.setItem('questionnaire_modal_dismissed', '1');"
                     },
                     {
                         label: 'Remplir maintenant',

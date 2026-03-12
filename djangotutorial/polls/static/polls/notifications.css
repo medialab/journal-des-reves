@@ -89,12 +89,13 @@
 .notification-bell {
     position: relative;
     cursor: pointer;
-    font-size: 20px;
+    font-size: inherit;
     transition: transform 0.2s;
     padding: 8px 12px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: 0.4rem;
     border-radius: 4px;
     user-select: none;
 }

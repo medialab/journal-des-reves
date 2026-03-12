@@ -1,6 +1,6 @@
 from django.db.models import F
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseRedirect, JsonResponse, FileResponse
+from django.http import HttpResponseRedirect, JsonResponse, FileResponse, HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from django.views import generic, View
@@ -12,8 +12,9 @@ from django.contrib.auth import authenticate, login
 import uuid
 import os
 import json
+import csv
 
-from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveImageModalite, Notification
+from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite, Notification
 from .services.journal_service import get_journal_data
 from .services.transcription_service import start_transcription_async
 from .forms import ReveForm, QuestionnaireForm, SignUpForm
@@ -109,12 +110,14 @@ class EnregistrerView(LoginRequiredMixin, View):
         # Récupérer les émotions pour le formulaire
         emotions = ReveEmotion.objects.all().order_by('ordre')
         custom_emotions = ReveEmotionCustom.objects.filter(profil=profil).order_by('libelle')
+        custom_elements = ReveElementCustom.objects.filter(profil=profil).order_by('libelle')
         images_modalites = ReveImageModalite.objects.all().order_by('ordre')
         
         context = {
             "title": "Enregistrer un rêve",
             "emotions": emotions,
             "custom_emotions": custom_emotions,
+            "custom_elements": custom_elements,
             "images_modalites": images_modalites,
         }
         
@@ -161,6 +164,10 @@ class EnregistrerView(LoginRequiredMixin, View):
             sens = request.POST.get('sens', '')
             emotions_ids = request.POST.getlist('emotions_reve')
             emotions_custom = request.POST.getlist('emotions_custom')
+            elements_predefined = request.POST.getlist('elements_reve')
+            elements_custom = request.POST.getlist('elements_custom')
+            temps_reve = request.POST.get('temps_reve', '').strip()
+            commentaire_libre = request.POST.get('commentaire_libre', '').strip()
             images_modalites_ids = request.POST.getlist('images_modalites')
 
             # Validation
@@ -177,6 +184,8 @@ class EnregistrerView(LoginRequiredMixin, View):
                 type_reve=type_reve if type_reve else None,
                 etendue_reve=int(etendue_reve) if etendue_reve else None,
                 sens=int(sens) if sens else None,
+                temps_reve=temps_reve if temps_reve else None,
+                commentaire_libre=commentaire_libre if commentaire_libre else None,
                 existence_souvenir=True,
                 transcription_ready=False
             )
@@ -206,6 +215,33 @@ class EnregistrerView(LoginRequiredMixin, View):
                     ))
                 if custom_objects:
                     reve.emotions_custom.set(custom_objects)
+
+            # Ajouter les éléments liés au rêve (prédefinis + personnalisés)
+            selected_elements = []
+            for value in elements_predefined:
+                cleaned = (value or '').strip()
+                if cleaned and cleaned not in selected_elements:
+                    selected_elements.append(cleaned)
+
+            if elements_custom:
+                for raw_value in elements_custom:
+                    cleaned_value = (raw_value or '').strip()
+                    if not cleaned_value:
+                        continue
+                    existing = ReveElementCustom.objects.filter(
+                        profil=profil,
+                        libelle__iexact=cleaned_value
+                    ).first()
+                    if not existing:
+                        existing = ReveElementCustom.objects.create(
+                            profil=profil,
+                            libelle=cleaned_value
+                        )
+                    if existing.libelle not in selected_elements:
+                        selected_elements.append(existing.libelle)
+
+            reve.elements_reve = selected_elements
+            reve.save(update_fields=['elements_reve'])
 
             # Ajouter les modalités d'images
             if images_modalites_ids:
@@ -250,14 +286,28 @@ class ModifierReveView(LoginRequiredMixin, View):
         # Récupérer les émotions pour le formulaire
         emotions = ReveEmotion.objects.all().order_by('ordre')
         custom_emotions = ReveEmotionCustom.objects.filter(profil=profil).order_by('libelle')
+        custom_elements = ReveElementCustom.objects.filter(profil=profil).order_by('libelle')
         images_modalites = ReveImageModalite.objects.all().order_by('ordre')
+        predefined_elements = ['Travail', 'Famille', 'Amis']
+        reve_elements = reve.elements_reve or []
+        custom_elements_labels = [element.libelle for element in custom_elements]
+        reve_elements_custom_selected = [
+            element for element in reve_elements
+            if element not in predefined_elements and element not in custom_elements_labels
+        ]
         
         context = {
             "title": "Modifier le rêve",
             "reve": reve,
             "emotions": emotions,
             "custom_emotions": custom_emotions,
+            "custom_elements": custom_elements,
             "images_modalites": images_modalites,
+            "reve_emotions_ids": list(reve.emotions_reve.values_list('id', flat=True)),
+            "reve_emotions_custom": list(reve.emotions_custom.values_list('libelle', flat=True)),
+            "reve_modalites_ids": list(reve.images_modalites.values_list('id', flat=True)),
+            "reve_elements": reve_elements,
+            "reve_elements_custom_selected": reve_elements_custom_selected,
         }
         
         # Ajouter les infos questionnaire
@@ -287,6 +337,10 @@ class ModifierReveView(LoginRequiredMixin, View):
             sens = request.POST.get('sens', '')
             emotions_ids = request.POST.getlist('emotions_reve')
             emotions_custom = request.POST.getlist('emotions_custom')
+            elements_predefined = request.POST.getlist('elements_reve')
+            elements_custom = request.POST.getlist('elements_custom')
+            temps_reve = request.POST.get('temps_reve', '').strip()
+            commentaire_libre = request.POST.get('commentaire_libre', '').strip()
             images_modalites_ids = request.POST.getlist('images_modalites')
 
             # Mettre à jour le rêve
@@ -295,6 +349,8 @@ class ModifierReveView(LoginRequiredMixin, View):
             reve.type_reve = type_reve if type_reve else None
             reve.etendue_reve = int(etendue_reve) if etendue_reve else None
             reve.sens = int(sens) if sens else None
+            reve.temps_reve = temps_reve if temps_reve else None
+            reve.commentaire_libre = commentaire_libre if commentaire_libre else None
             reve.save()
 
             # Mettre à jour les émotions
@@ -326,6 +382,33 @@ class ModifierReveView(LoginRequiredMixin, View):
                     reve.emotions_custom.set(custom_objects)
             else:
                 reve.emotions_custom.clear()
+
+            # Mettre à jour les éléments liés au rêve
+            selected_elements = []
+            for value in elements_predefined:
+                cleaned = (value or '').strip()
+                if cleaned and cleaned not in selected_elements:
+                    selected_elements.append(cleaned)
+
+            if elements_custom:
+                for raw_value in elements_custom:
+                    cleaned_value = (raw_value or '').strip()
+                    if not cleaned_value:
+                        continue
+                    existing = ReveElementCustom.objects.filter(
+                        profil=profil,
+                        libelle__iexact=cleaned_value
+                    ).first()
+                    if not existing:
+                        existing = ReveElementCustom.objects.create(
+                            profil=profil,
+                            libelle=cleaned_value
+                        )
+                    if existing.libelle not in selected_elements:
+                        selected_elements.append(existing.libelle)
+
+            reve.elements_reve = selected_elements
+            reve.save(update_fields=['elements_reve'])
 
             # Mettre à jour les modalités d'images
             if images_modalites_ids:
@@ -418,6 +501,78 @@ class ReveAudioDownloadView(LoginRequiredMixin, View):
         except Exception as error:
             messages.error(request, f"Erreur lors du téléchargement: {error}")
             return HttpResponseRedirect(reverse("polls:journal"))
+
+
+class ExportRevesCsvView(LoginRequiredMixin, View):
+    """Exporte les rêves de l'utilisateur connecté en CSV."""
+
+    def get(self, request):
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            messages.error(request, "Profil utilisateur introuvable")
+            return HttpResponseRedirect(reverse("polls:profil"))
+
+        reves = Reve.objects.filter(profil=profil).prefetch_related(
+            'emotions_reve',
+            'emotions_custom',
+            'images_modalites',
+            'tags',
+        ).order_by('-date', '-created_at')
+
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="reves_{request.user.username}.csv"'
+        response.write('\ufeff')  # BOM for Excel UTF-8 support
+
+        writer = csv.writer(response, delimiter=';')
+        writer.writerow([
+            'id',
+            'date',
+            'created_at',
+            'existence_souvenir',
+            'type_reve',
+            'etendue_reve',
+            'sens',
+            'temps_reve',
+            'elements_reve',
+            'emotions_reve',
+            'emotions_custom',
+            'images_modalites',
+            'tags',
+            'commentaire_libre',
+            'transcription',
+            'transcription_ready',
+            'audio_url',
+        ])
+
+        for reve in reves:
+            emotions = ', '.join(reve.emotions_reve.values_list('libelle', flat=True))
+            emotions_custom = ', '.join(reve.emotions_custom.values_list('libelle', flat=True))
+            modalites = ', '.join(reve.images_modalites.values_list('libelle', flat=True))
+            tags = ', '.join(reve.tags.values_list('libelle', flat=True))
+            elements = ', '.join(reve.elements_reve or [])
+
+            writer.writerow([
+                reve.id,
+                reve.date.isoformat() if reve.date else '',
+                reve.created_at.isoformat() if reve.created_at else '',
+                'oui' if reve.existence_souvenir else 'non',
+                reve.get_type_reve_display() if reve.type_reve else '',
+                reve.get_etendue_reve_display() if reve.etendue_reve else '',
+                reve.get_sens_display() if reve.sens else '',
+                reve.get_temps_reve_display() if reve.temps_reve else '',
+                elements,
+                emotions,
+                emotions_custom,
+                modalites,
+                tags,
+                reve.commentaire_libre or '',
+                reve.transcription or '',
+                'oui' if reve.transcription_ready else 'non',
+                reve.audio.url if reve.audio else '',
+            ])
+
+        return response
 
 
 class ReveTranscriptionUpdateView(LoginRequiredMixin, View):

@@ -26,9 +26,9 @@
         })();
     </script>
     <title>{% block title %}Journal des Rêves{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=23">
-    <link rel="stylesheet" href="{% static 'polls/forms.css' %}?v=23">
-    <link rel="stylesheet" href="{% static 'polls/pages.css' %}?v=23">
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=26">
+    <link rel="stylesheet" href="{% static 'polls/forms.css' %}?v=27">
+    <link rel="stylesheet" href="{% static 'polls/pages.css' %}?v=27">
     <link rel="stylesheet" href="{% static 'polls/notifications.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
@@ -54,34 +54,91 @@
         <!-- MENU -->
         <ul class="nav-menu" id="navMenu">
             <li>
-                <a href="{% url 'polls:index' %}" class="nav-link">Accueil</a>
+                <a href="{% url 'polls:enregistrer' %}" class="nav-link">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 19v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <rect x="9" y="2" width="6" height="13" rx="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+                        </svg>
+                    </span>
+                    <span class="nav-label">Enregistrer</span>
+                </a>
             </li>
             <li>
-                <a href="{% url 'polls:enregistrer' %}" class="nav-link">Enregistrer</a>
+                <a href="{% url 'polls:journal' %}" class="nav-link">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                    <span class="nav-label">Journal</span>
+                </a>
             </li>
             <li>
-                <a href="{% url 'polls:journal' %}" class="nav-link">Journal</a>
+                <a href="{% url 'polls:profil' %}" class="nav-link">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 17V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M3 3v16a2 2 0 0 0 2 2h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M8 17v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                    <span class="nav-label">Stats</span>
+                </a>
             </li>
             <li>
-                <a href="{% url 'polls:questionnaire' %}" class="nav-link">Questionnaire</a>
+                <a href="{% url 'polls:description' %}" class="nav-link">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <line x1="12" x2="12" y1="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                            <line x1="12" x2="12.01" y1="8" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                        </svg>
+                    </span>
+                    <span class="nav-label">Projet</span>
+                </a>
             </li>
             <li>
-                <a href="{% url 'polls:profil' %}" class="nav-link">Profil</a>
+                <a href="{% url 'polls:questionnaire' %}" class="nav-link">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M12 11h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M12 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M8 11h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M8 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                    <span class="nav-label">Formulaire</span>
+                </a>
             </li>
-            <li> 
-                <a href="{% url 'polls:description' %}" class="nav-link">Description</a>
+            <li id="app-install-li" style="display:none;">
+                <button id="app-install-btn" type="button" class="nav-action-btn" title="Installer l'application">
+                    <span class="nav-icon" aria-hidden="true">⬇️</span>
+                    <span class="nav-label">Télécharger</span>
+                </button>
             </li>
  
             {% if user.is_authenticated %}
                 <!-- Cloche de notifications -->
-                <li class="notification-bell">
-                    🔔
+                <li class="notification-bell notification-bell-main" title="Notifications" aria-label="Notifications">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.268 21a2 2 0 0 0 3.464 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
                 </li>
 
                 <!-- Bouton activation push notifications -->
                 <li id="push-subscribe-li" class="notification-bell" style="display:none;" title="Activer les notifications push">
-                    <button id="push-subscribe-btn" onclick="togglePushSubscription()" style="background:none;border:none;cursor:pointer;font-size:1rem;color:inherit;padding:0.25rem 0.5rem;border-radius:6px;transition:background 0.2s;" title="Activer les notifications">
-                        📳
+                    <button id="push-subscribe-btn" type="button" class="nav-action-btn" onclick="togglePushSubscription()" title="Activer les notifications">
+                        <span class="nav-icon" aria-hidden="true"></span>
+                        <span class="nav-label">Push</span>
                     </button>
                 </li>
                 
@@ -237,7 +294,7 @@
                 // Vérifier si 7 jours sont écoulés et que celui-ci n'a pas été rejeté
                 if (daysEllapsed >= 7) {
                     const dismissedTime = localStorage.getItem('questionnaire_modal_dismissed');
-                    const shouldShow = !dismissedTime || (now - new Date(parseInt(dismissedTime))) > (24 * 60 * 60 * 1000);
+                    const shouldShow = !dismissedTime;
                     
                     if (shouldShow) {
                         // Attendre que le DOM soit complètement chargé
@@ -255,6 +312,56 @@
 // ─────────────────────────────────────────────────────────────────
 // PWA — Push Notifications
 // ─────────────────────────────────────────────────────────────────
+let deferredInstallPrompt = null;
+
+function initInstallButton() {
+    const installLi = document.getElementById('app-install-li');
+    const installBtn = document.getElementById('app-install-btn');
+    if (!installLi || !installBtn) return;
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        installLi.style.display = 'block';
+    });
+
+    window.addEventListener('appinstalled', () => {
+        installLi.style.display = 'none';
+        deferredInstallPrompt = null;
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        installLi.style.display = 'none';
+    });
+}
+
+function getBellSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M9 17a3 3 0 0 0 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+
+function getBellOffSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.3 5.3A6 6 0 0 1 18 11v3.2a2 2 0 0 0 .6 1.4L20 17h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M5 5l14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M6 14.2V11a6 6 0 0 1 .9-3.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M9 17a3 3 0 0 0 5.7 1.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M4 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+
+function setPushButtonIcon(enabled) {
+    const btn = document.getElementById('push-subscribe-btn');
+    if (!btn) return;
+    const icon = btn.querySelector('.nav-icon');
+    if (!icon) return;
+    icon.innerHTML = enabled ? getBellSvg() : getBellOffSvg();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initInstallButton();
+    if (typeof initPushNotifications === 'function') {
+        initPushNotifications();
+    }
+});
+
 {% if user.is_authenticated %}
 
 const VAPID_PUBLIC_KEY = 'BP_eLOKiWEmrMMneU-cXcqwxHhkAYkVlLmoKq7HmPelOqfVCWP9OqBfgIflLik51C2uPbLqalZMWdqg8--7d9Pc';
@@ -285,13 +392,13 @@ async function initPushNotifications() {
         // Déjà abonné
         li.style.display = 'block';
         btn.title = 'Notifications push activées (cliquer pour désactiver)';
-        btn.textContent = '🔔✓';
+        setPushButtonIcon(true);
     } else {
         // Non abonné — afficher le bouton si permission pas refusée
         if (Notification.permission !== 'denied') {
             li.style.display = 'block';
             btn.title = 'Activer les notifications push';
-            btn.textContent = '📳';
+            setPushButtonIcon(false);
         }
     }
 }
@@ -318,7 +425,7 @@ async function togglePushSubscription() {
             body: JSON.stringify({ subscription: existing.toJSON(), status_type: 'unsubscribe' }),
             credentials: 'include'
         });
-        btn.textContent = '📳';
+        setPushButtonIcon(false);
         btn.title = 'Activer les notifications push';
     } else {
         // Abonnement
@@ -337,7 +444,7 @@ async function togglePushSubscription() {
             body: JSON.stringify({ subscription: subscription.toJSON(), status_type: 'subscribe' }),
             credentials: 'include'
         });
-        btn.textContent = '🔔✓';
+        setPushButtonIcon(true);
         btn.title = 'Notifications push activées (cliquer pour désactiver)';
     }
 }
@@ -347,8 +454,6 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
-
-document.addEventListener('DOMContentLoaded', initPushNotifications);
 
 {% endif %}
 </script>

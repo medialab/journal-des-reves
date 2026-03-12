@@ -95,6 +95,94 @@
 					</div>
 				</div>
 
+				<!-- Section: Elements liés au rêve -->
+				<div class="form-section" id="elementsSection">
+					<div class="form-group">
+						<label class="form-label form-label-inline-help">
+							<span>Certains éléments du rêve (personnes, lieux, situations) étaient-ils liés à :</span>
+						</label>
+
+						<div class="checkbox-group" id="elementsGroup">
+							<label class="checkbox-label choice-label {% if 'Travail' in reve_elements %}is-selected{% endif %}">
+								<input type="checkbox" name="elements_reve" value="Travail" {% if 'Travail' in reve_elements %}checked{% endif %}>
+								<span class="checkbox-text">Travail</span>
+							</label>
+							<label class="checkbox-label choice-label {% if 'Famille' in reve_elements %}is-selected{% endif %}">
+								<input type="checkbox" name="elements_reve" value="Famille" {% if 'Famille' in reve_elements %}checked{% endif %}>
+								<span class="checkbox-text">Famille</span>
+							</label>
+							<label class="checkbox-label choice-label {% if 'Amis' in reve_elements %}is-selected{% endif %}">
+								<input type="checkbox" name="elements_reve" value="Amis" {% if 'Amis' in reve_elements %}checked{% endif %}>
+								<span class="checkbox-text">Amis</span>
+							</label>
+
+							{% for element_custom in custom_elements %}
+								<label class="checkbox-label choice-label {% if element_custom.libelle in reve_elements %}is-selected{% endif %}">
+									<input type="checkbox" name="elements_custom" value="{{ element_custom.libelle }}" {% if element_custom.libelle in reve_elements %}checked{% endif %}>
+									<span class="checkbox-text">{{ element_custom.libelle }}</span>
+								</label>
+							{% endfor %}
+
+							{% for element_custom in reve_elements_custom_selected %}
+								<label class="checkbox-label choice-label custom-element is-selected">
+									<input type="checkbox" name="elements_custom" value="{{ element_custom }}" checked>
+									<span class="checkbox-text">{{ element_custom }}</span>
+								</label>
+							{% endfor %}
+						</div>
+						<div class="custom-emotion-row">
+							<input type="text" id="customElementInput" class="custom-emotion-input" placeholder="Ajouter un élément">
+							<button type="button" id="addElementBtn" class="btn btn-outline btn-small">Ajouter</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Section: Temporalité -->
+				<div class="form-section" id="tempsSection">
+					<div class="form-group">
+						<label class="form-label form-label-inline-help">
+							<span>Les éléments du rêve semblaient-ils renvoyer plutôt à :</span>
+						</label>
+
+						<div class="radio-group">
+							<label class="radio-label choice-label {% if reve.temps_reve == 'passe_lointain' %}is-selected{% endif %}">
+								<input type="radio" name="temps_reve" value="passe_lointain" {% if reve.temps_reve == 'passe_lointain' %}checked{% endif %}>
+								<span class="radio-text">Passé lointain</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.temps_reve == 'passe_recent' %}is-selected{% endif %}">
+								<input type="radio" name="temps_reve" value="passe_recent" {% if reve.temps_reve == 'passe_recent' %}checked{% endif %}>
+								<span class="radio-text">Passé récent (dans la semaine)</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.temps_reve == 'veille' %}is-selected{% endif %}">
+								<input type="radio" name="temps_reve" value="veille" {% if reve.temps_reve == 'veille' %}checked{% endif %}>
+								<span class="radio-text">Evénements de la veille</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.temps_reve == 'futur_proche' %}is-selected{% endif %}">
+								<input type="radio" name="temps_reve" value="futur_proche" {% if reve.temps_reve == 'futur_proche' %}checked{% endif %}>
+								<span class="radio-text">Futur proche (dans la semaine)</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.temps_reve == 'futur_lointain' %}is-selected{% endif %}">
+								<input type="radio" name="temps_reve" value="futur_lointain" {% if reve.temps_reve == 'futur_lointain' %}checked{% endif %}>
+								<span class="radio-text">Futur lointain</span>
+							</label>
+							<label class="radio-label choice-label {% if reve.temps_reve == 'difficile' %}is-selected{% endif %}">
+								<input type="radio" name="temps_reve" value="difficile" {% if reve.temps_reve == 'difficile' %}checked{% endif %}>
+								<span class="radio-text">Difficile à dire / Pas liés</span>
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<!-- Section: Commentaire libre -->
+				<div class="form-section" id="commentaireSection">
+					<div class="form-group">
+						<label class="form-label" for="commentaireLibre">
+							<span>Commentaire libre</span>
+						</label>
+						<textarea id="commentaireLibre" name="commentaire_libre" class="form-textarea" rows="4" placeholder="Ajoutez un commentaire (optionnel)">{{ reve.commentaire_libre|default:'' }}</textarea>
+					</div>
+				</div>
+
 				<!-- Section: Modalités d'images -->
 				<div class="form-section">
 					<div class="form-group">
@@ -151,6 +239,9 @@ function initFormHandlers() {
 	const emotionsGroup = document.getElementById('emotionsGroup');
 	const addEmotionBtn = document.getElementById('addEmotionBtn');
 	const customEmotionInput = document.getElementById('customEmotionInput');
+	const elementsGroup = document.getElementById('elementsGroup');
+	const addElementBtn = document.getElementById('addElementBtn');
+	const customElementInput = document.getElementById('customElementInput');
 
 	const updateChoiceStyles = () => {
 		const groups = {};
@@ -185,6 +276,15 @@ function initFormHandlers() {
 	const existingEmotionValues = () => {
 		return Array.from(emotionsGroup.querySelectorAll('input[name="emotions_reve"], input[name="emotions_custom"]'))
 			.map(input => normalizeEmotion(input.value));
+	};
+
+	const normalizeElement = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+	const existingElementValues = () => {
+		if (!elementsGroup) {
+			return [];
+		}
+		return Array.from(elementsGroup.querySelectorAll('input[name="elements_reve"], input[name="elements_custom"]'))
+			.map(input => normalizeElement(input.value));
 	};
 
 	const addCustomEmotion = () => {
@@ -222,12 +322,61 @@ function initFormHandlers() {
 		updateChoiceStyles();
 	};
 
+	const addCustomElement = () => {
+		if (!elementsGroup || !customElementInput) {
+			return;
+		}
+
+		const rawValue = customElementInput.value;
+		const cleanedValue = rawValue.trim();
+		if (!cleanedValue) {
+			return;
+		}
+
+		const normalizedValue = normalizeElement(cleanedValue);
+		if (existingElementValues().includes(normalizedValue)) {
+			customElementInput.value = '';
+			return;
+		}
+
+		const label = document.createElement('label');
+		label.className = 'checkbox-label choice-label custom-element is-selected';
+		const input = document.createElement('input');
+		input.type = 'checkbox';
+		input.name = 'elements_custom';
+		input.value = cleanedValue;
+		input.checked = true;
+		const text = document.createElement('span');
+		text.className = 'checkbox-text';
+		text.textContent = cleanedValue;
+		label.appendChild(input);
+		label.appendChild(text);
+		elementsGroup.appendChild(label);
+
+		input.addEventListener('change', () => {
+			updateChoiceStyles();
+		});
+
+		customElementInput.value = '';
+		updateChoiceStyles();
+	};
+
 	if (addEmotionBtn && customEmotionInput && emotionsGroup) {
 		addEmotionBtn.addEventListener('click', addCustomEmotion);
 		customEmotionInput.addEventListener('keydown', (event) => {
 			if (event.key === 'Enter') {
 				event.preventDefault();
 				addCustomEmotion();
+			}
+		});
+	}
+
+	if (addElementBtn && customElementInput && elementsGroup) {
+		addElementBtn.addEventListener('click', addCustomElement);
+		customElementInput.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				addCustomElement();
 			}
 		});
 	}

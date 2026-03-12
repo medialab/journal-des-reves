@@ -8,7 +8,16 @@ from .models import Reve, Questionnaire, Profil
 class ReveForm(forms.ModelForm):
     class Meta:
         model = Reve
-        fields = ['audio', 'type_reve', 'etendue_reve', 'sens', 'emotions_reve', 'tags']
+        fields = [
+            'audio',
+            'type_reve',
+            'etendue_reve',
+            'sens',
+            'emotions_reve',
+            'temps_reve',
+            'commentaire_libre',
+            'tags'
+        ]
         widgets = {
             'audio': forms.FileInput(
                 attrs={
@@ -19,6 +28,8 @@ class ReveForm(forms.ModelForm):
             'etendue_reve': forms.RadioSelect(),
             'sens': forms.RadioSelect(),
             'emotions_reve': forms.CheckboxSelectMultiple(),
+            'temps_reve': forms.RadioSelect(),
+            'commentaire_libre': forms.Textarea(attrs={'rows': 4}),
             'tags': forms.CheckboxSelectMultiple(),
         }
         labels = {
@@ -27,6 +38,8 @@ class ReveForm(forms.ModelForm):
             'etendue_reve': 'Je me souviens plutôt',
             'sens': 'Sens présents dans le rêve',
             'emotions_reve': 'Émotions ressenties',
+            'temps_reve': 'Temporalité des éléments du rêve',
+            'commentaire_libre': 'Commentaire libre',
             'tags': 'Tags personnalisés',
         }
 

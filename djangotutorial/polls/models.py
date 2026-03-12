@@ -148,6 +148,29 @@ class ReveEmotionCustom(models.Model):
         return f"{self.libelle} ({self.profil.user.username})"
 
 
+class ReveElementCustom(models.Model):
+    """Elements personnalisés (personnes, lieux, situations) par profil"""
+    profil = models.ForeignKey(
+        Profil,
+        on_delete=models.CASCADE,
+        related_name="elements_custom"
+    )
+    libelle = models.CharField(
+        max_length=120,
+        verbose_name="Element"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['libelle']
+        verbose_name = "Element personnalisé"
+        verbose_name_plural = "Elements personnalisés"
+        unique_together = ('profil', 'libelle')
+
+    def __str__(self):
+        return f"{self.libelle} ({self.profil.user.username})"
+
+
 class ReveTag(models.Model):
     """Tags personnalisés créés par les utilisateurs"""
     profil = models.ForeignKey(
@@ -294,6 +317,36 @@ class Reve(models.Model):
         blank=True,
         related_name="reves",
         verbose_name="Émotions personnalisées"
+    )
+
+    # Elements liés au rêve (personnes, lieux, situations), incluant des choix personnalisés
+    elements_reve = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Elements liés au rêve",
+        help_text="Liste des éléments liés (travail, famille, amis, et personnalisés)"
+    )
+
+    class TempsReve(models.TextChoices):
+        PASSE_LOINTAIN = 'passe_lointain', 'Passé lointain'
+        PASSE_RECENT = 'passe_recent', 'Passé récent (dans la semaine)'
+        VEILLE = 'veille', 'Evénements de la veille'
+        FUTUR_PROCHE = 'futur_proche', 'Futur proche (dans la semaine)'
+        FUTUR_LOINTAIN = 'futur_lointain', 'Futur lointain'
+        DIFFICILE = 'difficile', 'Difficile à dire / Pas liés'
+
+    temps_reve = models.CharField(
+        max_length=20,
+        choices=TempsReve.choices,
+        verbose_name="Temporalité des éléments du rêve",
+        null=True,
+        blank=True
+    )
+
+    commentaire_libre = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Commentaire libre"
     )
 
     # Tags personnalisés (peut en ajouter plusieurs)

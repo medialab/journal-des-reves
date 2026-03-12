@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Profil, Reve, Questionnaire, Notification
+from .models import Profil, Reve, Questionnaire, Notification, ReveElementCustom
 
 
 # Profil Admin
@@ -25,6 +25,10 @@ class ReveAdmin(admin.ModelAdmin):
         }),
         ("Rêve - Émotions et Tags", {
             "fields": ["emotions_reve", "emotions_custom", "tags"],
+            "classes": ["collapse"]
+        }),
+        ("Rêve - Contexte et commentaire", {
+            "fields": ["elements_reve", "temps_reve", "commentaire_libre"],
             "classes": ["collapse"]
         }),
     ]
@@ -54,3 +58,4 @@ admin.site.register(Profil, ProfilAdmin)
 admin.site.register(Reve, ReveAdmin)
 admin.site.register(Questionnaire, QuestionnaireAdmin)
 admin.site.register(Notification, NotificationAdmin)
+admin.site.register(ReveElementCustom)

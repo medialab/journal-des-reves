@@ -52,6 +52,10 @@
                         <button type="submit" class="btn btn-primary btn-large">Se connecter</button>
                         <a href="{% url 'polls:index' %}" class="btn btn-outline btn-large">Retour à l'accueil</a>
                     </div>
+
+                    <div class="forgot-password-link">
+                        <p><a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p>
+                    </div>
                     
                     <div class="signup-link">
                         <p>Pas encore membre ? <a href="{% url 'polls:signup' %}">Créer un compte</a></p>
