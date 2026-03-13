@@ -683,14 +683,14 @@ class QuestionnaireView(View):
             # AJAX request - save section data to session for later
             if 'questionnaire_data' not in request.session:
                 request.session['questionnaire_data'] = {}
-            
+
             # Store the POST data for this section
             section_data = request.POST.dict()
             section_data.pop('csrfmiddlewaretoken', None)  # Remove CSRF token
-            
+
             request.session['questionnaire_data'][f'section_{section}'] = section_data
             request.session.modified = True
-            
+
             # Calculate and store section timing if provided
             section_duration = request.POST.get('section_duration')
             if section_duration:
@@ -698,11 +698,100 @@ class QuestionnaireView(View):
                     request.session['section_timings'] = {}
                 request.session['section_timings'][f'section_{section}'] = float(section_duration)
                 request.session.modified = True
-            
+
+            # --- Sauvegarde partielle en base de données ---
+            # Champs par section (checkboxes booléennes vs radios True/False vs autres)
+            BOOL_CHECKBOX_FIELDS = {
+                'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
+                'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
+                'aide_medic', 'aide_tisane', 'aide_autre',
+                'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
+                'pens_autre', 'pens_rien',
+                'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
+                'cont_livres', 'cont_rien', 'cont_autre',
+                'dream_lucide', 'dream_recurrent', 'dream_nightmare', 'dream_pleasant',
+            }
+            BOOL_RADIO_FIELDS = {
+                'a_deja_travaille', 'fonction_management', 'reveil_nuit', 'aide_sommeil',
+            }
+            INT_FIELDS = {
+                'annee_naissance', 'niv_diplome', 'revenus_tranche', 'travail_statut',
+                'genre', 'habitat', 'profession',
+                'freq_reves_not', 'etendue_souvenir_reve', 'temps_du_reve',
+                'latence_som', 'besoin_som', 'nuits_reveil', 'duree_eveil', 'sleep_hours',
+            }
+            TIME_FIELDS = {'heure_coucher', 'heure_reveil'}
+
+            SECTION_FIELDS = {
+                '1': [
+                    'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
+                    'travail_statut', 'a_deja_travaille', 'profession', 'fonction_management',
+                ],
+                '2': [],
+                '3': [
+                    'freq_reves_not', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
+                    'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
+                    'etendue_souvenir_reve', 'temps_du_reve',
+                    'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
+                    'reveil_nuit', 'nuits_reveil', 'duree_eveil',
+                    'aide_sommeil', 'aide_medic', 'aide_tisane', 'aide_autre',
+                    'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
+                    'pens_autre', 'pens_rien', 'pens_autre_txt',
+                    'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
+                    'cont_livres', 'cont_rien', 'cont_autre',
+                ],
+            }
+
+            questionnaire_id = request.session.get('questionnaire_id')
+            q = None
+            if questionnaire_id:
+                try:
+                    q = Questionnaire.objects.get(id=questionnaire_id, profil=profil)
+                except Questionnaire.DoesNotExist:
+                    q = None
+            if q is None:
+                q = Questionnaire(profil=profil, user=request.user)
+
+            for field_name in SECTION_FIELDS.get(str(section), []):
+                if field_name in BOOL_CHECKBOX_FIELDS:
+                    setattr(q, field_name, field_name in request.POST)
+                elif field_name in BOOL_RADIO_FIELDS:
+                    val = request.POST.get(field_name)
+                    if val is not None:
+                        setattr(q, field_name, val == 'True')
+                elif field_name in INT_FIELDS:
+                    val = request.POST.get(field_name)
+                    if val:
+                        try:
+                            setattr(q, field_name, int(val))
+                        except (ValueError, TypeError):
+                            pass
+                elif field_name in TIME_FIELDS:
+                    val = request.POST.get(field_name)
+                    if val:
+                        setattr(q, field_name, val)
+                else:
+                    val = request.POST.get(field_name)
+                    if val is not None:
+                        setattr(q, field_name, val)
+
+            q.save()
+            request.session['questionnaire_id'] = q.id
+            request.session.modified = True
+            # --- Fin sauvegarde partielle ---
+
             return JsonResponse({'success': True, 'message': 'Section enregistrée.'})
         
         # Regular form submission (final submit)
-        form = QuestionnaireForm(request.POST)
+        questionnaire_id = request.session.get('questionnaire_id')
+        instance = None
+        if questionnaire_id:
+            try:
+                instance = Questionnaire.objects.get(id=questionnaire_id, profil=profil)
+            except Questionnaire.DoesNotExist:
+                instance = None
+
+        form = QuestionnaireForm(request.POST, instance=instance)
         
         if form.is_valid():
             questionnaire = form.save(commit=False)
@@ -713,6 +802,7 @@ class QuestionnaireView(View):
             # Clear session data
             request.session.pop('questionnaire_data', None)
             request.session.pop('section_timings', None)
+            request.session.pop('questionnaire_id', None)
             
             messages.success(request, "Merci d'avoir complété le questionnaire ! Vos réponses ont été enregistrées.")
             return HttpResponseRedirect(reverse("polls:profil"))

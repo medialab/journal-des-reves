@@ -44,8 +44,7 @@
                 <h1 class="questionnaire-title">📝 Questionnaire</h1>
                 <p class="questionnaire-description">
                     Ce questionnaire fait partie d'une recherche en sciences sociales visant à comprendre l'expérience des rêves et 
-                    leur relation avec votre vie quotidienne. Vos réponses, entièrement confidentielles, nous aideront à approfondir 
-                    notre connaissance des phénomènes oniriques. L'ensemble du questionnaire dure environ 10-15 minutes.
+                    leur relation avec votre vie quotidienne. L'ensemble du questionnaire dure seulement 10 à 15 minutes.
                 </p>
                 <button type="button" class="btn btn-primary btn-large" id="startBtn">
                     Commencer
@@ -64,6 +63,167 @@
 
             <form method="post" id="questionnaireForm" class="modern-form">
                 {% csrf_token %}
+
+                <!-- ========== SECTION 3: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL ========== -->
+                <section class="form-section hidden" data-section="3">
+                    <div class="section-header">
+                        <h2 class="section-title">🌙 Conditions sociales du rêve et du sommeil</h2>
+                        <p class="section-description">Troisième page du questionnaire</p>
+                    </div>
+
+                    <h3 class="subsection-violet">Vos rêves</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Avant cette enquête, vous est-il arrivé de noter vos rêves ?</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="freq_reves_not" value="1" {% if form.freq_reves_not.value == "1" %}checked{% endif %}>
+                                <span class="radio-text">Oui souvent</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="freq_reves_not" value="2" {% if form.freq_reves_not.value == "2" %}checked{% endif %}>
+                                <span class="radio-text">Quelques fois</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="freq_reves_not" value="3" {% if form.freq_reves_not.value == "3" %}checked{% endif %}>
+                                <span class="radio-text">Jamais</span>
+                            </label>
+                        </div>
+                        {% if form.freq_reves_not.errors %}<div class="error-message">{{ form.freq_reves_not.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Dans vos rêves, vous vous souvenez de :</label>
+                        <div class="checkbox-group inline-boolean-group">
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="mod_img" id="id_mod_img" {% if form.mod_img.value %}checked{% endif %}><span class="checkbox-text">Images</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="mod_son" {% if form.mod_son.value %}checked{% endif %}><span class="checkbox-text">Sons, voix</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="mod_sens" {% if form.mod_sens.value %}checked{% endif %}><span class="checkbox-text">Sensations du corps</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="mod_emot" {% if form.mod_emot.value %}checked{% endif %}><span class="checkbox-text">Émotions ressenties</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="mod_pens" {% if form.mod_pens.value %}checked{% endif %}><span class="checkbox-text">Pensées ou idées</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="images_options_group" style="display: none;">
+                        <label class="form-label">Les images dans vos rêves sont plutôt :</label>
+                        <div class="checkbox-group inline-boolean-group">
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="img_coul" {% if form.img_coul.value %}checked{% endif %}><span class="checkbox-text">En couleur</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="img_nb" {% if form.img_nb.value %}checked{% endif %}><span class="checkbox-text">En noir et blanc</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="img_net" {% if form.img_net.value %}checked{% endif %}><span class="checkbox-text">Nettes</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="img_flou" {% if form.img_flou.value %}checked{% endif %}><span class="checkbox-text">Floues</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="img_ns" {% if form.img_ns.value %}checked{% endif %}><span class="checkbox-text">Ne sait pas</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Vous vous souvenez plutôt :</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="1" {% if form.etendue_souvenir_reve.value == "1" %}checked{% endif %}><span class="radio-text">Une sensation</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="2" {% if form.etendue_souvenir_reve.value == "2" %}checked{% endif %}><span class="radio-text">Un instant précis</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="3" {% if form.etendue_souvenir_reve.value == "3" %}checked{% endif %}><span class="radio-text">Moins de la moitié de mon rêve</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="4" {% if form.etendue_souvenir_reve.value == "4" %}checked{% endif %}><span class="radio-text">Plus de la moitié de mon rêve</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="5" {% if form.etendue_souvenir_reve.value == "5" %}checked{% endif %}><span class="radio-text">L'intégralité</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Vous avez l'impression de rêver davantage :</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="1" {% if form.temps_du_reve.value == "1" %}checked{% endif %}><span class="radio-text">Du passé lointain</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="2" {% if form.temps_du_reve.value == "2" %}checked{% endif %}><span class="radio-text">Du passé proche</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="3" {% if form.temps_du_reve.value == "3" %}checked{% endif %}><span class="radio-text">Du présent (de la veille)</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="4" {% if form.temps_du_reve.value == "4" %}checked{% endif %}><span class="radio-text">Du futur (de ce qui pourrait arriver)</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="5" {% if form.temps_du_reve.value == "5" %}checked{% endif %}><span class="radio-text">Pas de lien avec votre vie</span></label>
+                        </div>
+                    </div>
+
+                    <h3 class="subsection-violet">Votre sommeil</h3>
+
+                    <div class="form-group">
+                        <label class="form-label" for="id_heure_coucher">Le plus souvent, en semaine, à quelle heure éteignez-vous votre lampe pour dormir ?</label>
+                        <input type="time" id="id_heure_coucher" name="heure_coucher" class="form-input" value="{{ form.heure_coucher.value|default:'' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="id_heure_reveil">Le plus souvent en semaine à quelle heure vous réveillez-vous ?</label>
+                        <input type="time" id="id_heure_reveil" name="heure_reveil" class="form-input" value="{{ form.heure_reveil.value|default:'' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="id_latence_som">Le plus souvent, combien de temps vous faut-il pour vous endormir ? Si immédiatement ou quelques secondes, saisir 0 minute.</label>
+                        <input type="number" id="id_latence_som" name="latence_som" min="0" max="1440" class="form-input" value="{{ form.latence_som.value|default:'' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="id_besoin_som">En moyenne, de combien de temps de sommeil avez-vous besoin pour être en forme le lendemain ?</label>
+                        <input type="number" id="id_besoin_som" name="besoin_som" min="0" max="1440" class="form-input" value="{{ form.besoin_som.value|default:'' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Vous arrive-t-il de vous réveiller la nuit avec des difficultés pour vous rendormir ?</label>
+                        <div class="radio-group inline-boolean-group">
+                            <label class="radio-label choice-label"><input type="radio" name="reveil_nuit" value="True" {% if form.reveil_nuit.value == True or form.reveil_nuit.value == 'True' %}checked{% endif %}><span class="radio-text">Oui</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="reveil_nuit" value="False" {% if form.reveil_nuit.value == False or form.reveil_nuit.value == 'False' %}checked{% endif %}><span class="radio-text">Non</span></label>
+                        </div>
+                    </div>
+
+                    <div id="reveil_nuit_details" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="id_nuits_reveil">Combien de nuits par semaine cela vous arrive-t-il ?</label>
+                            <input type="number" id="id_nuits_reveil" name="nuits_reveil" min="0" max="7" class="form-input" value="{{ form.nuits_reveil.value|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="id_duree_eveil">En général, combien de temps restez-vous éveillé(e) au cours de la nuit ?</label>
+                            <input type="number" id="id_duree_eveil" name="duree_eveil" min="0" max="1440" class="form-input" value="{{ form.duree_eveil.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Utilisez-vous des aides pour dormir (médicaments, tisane, application de méditation, etc.) ?</label>
+                        <div class="radio-group inline-boolean-group">
+                            <label class="radio-label choice-label"><input type="radio" name="aide_sommeil" value="True" {% if form.aide_sommeil.value == True or form.aide_sommeil.value == 'True' %}checked{% endif %}><span class="radio-text">Oui</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="aide_sommeil" value="False" {% if form.aide_sommeil.value == False or form.aide_sommeil.value == 'False' %}checked{% endif %}><span class="radio-text">Non</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="aide_sommeil_options" style="display: none;">
+                        <div class="checkbox-group inline-boolean-group">
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="aide_medic" {% if form.aide_medic.value %}checked{% endif %}><span class="checkbox-text">Médicaments</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="aide_tisane" {% if form.aide_tisane.value %}checked{% endif %}><span class="checkbox-text">Tisane</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="aide_autre" {% if form.aide_autre.value %}checked{% endif %}><span class="checkbox-text">Autre</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Avant de vous endormir, pensez-vous souvent à… (plusieurs réponses possibles)</label>
+                        <div class="checkbox-group inline-boolean-group">
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_trav" class="pens-option" {% if form.pens_trav.value %}checked{% endif %}><span class="checkbox-text">Travail / études</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_fin" class="pens-option" {% if form.pens_fin.value %}checked{% endif %}><span class="checkbox-text">Situation financière</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_fam" class="pens-option" {% if form.pens_fam.value %}checked{% endif %}><span class="checkbox-text">Famille</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_proch" class="pens-option" {% if form.pens_proch.value %}checked{% endif %}><span class="checkbox-text">Proches</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_actu" class="pens-option" {% if form.pens_actu.value %}checked{% endif %}><span class="checkbox-text">Actualité</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_autre" id="id_pens_autre" class="pens-option" {% if form.pens_autre.value %}checked{% endif %}><span class="checkbox-text">Autre</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_rien" id="id_pens_rien" {% if form.pens_rien.value %}checked{% endif %}><span class="checkbox-text">Je ne pense pas à des choses en particulier</span></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="pens_autre_txt_group" style="display: none;">
+                        <label class="form-label" for="id_pens_autre_txt">Précisez si autre</label>
+                        <textarea id="id_pens_autre_txt" name="pens_autre_txt" class="form-textarea" rows="3">{{ form.pens_autre_txt.value|default:'' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Parmi les contenus ou activités suivants, lesquels consultez-vous, regardez-vous ou pratiquez-vous le plus souvent avant de vous endormir ?</label>
+                        <div class="checkbox-group inline-boolean-group">
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_tv" class="cont-option" {% if form.cont_tv.value %}checked{% endif %}><span class="checkbox-text">Télévision</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_series_films" class="cont-option" {% if form.cont_series_films.value %}checked{% endif %}><span class="checkbox-text">Séries / films</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_rs" class="cont-option" {% if form.cont_rs.value %}checked{% endif %}><span class="checkbox-text">Réseaux sociaux</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_jeux" class="cont-option" {% if form.cont_jeux.value %}checked{% endif %}><span class="checkbox-text">Jeux vidéos</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_livres" class="cont-option" {% if form.cont_livres.value %}checked{% endif %}><span class="checkbox-text">Livres, journaux</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_rien" id="id_cont_rien" {% if form.cont_rien.value %}checked{% endif %}><span class="checkbox-text">Rien</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_autre" class="cont-option" {% if form.cont_autre.value %}checked{% endif %}><span class="checkbox-text">Autres</span></label>
+                        </div>
+                    </div>
+                </section>
                 
                 <!-- ========== SECTION 1: VARIABLES SOCIO-DÉMOGRAPHIQUES ========== -->
                 <section class="form-section hidden" data-section="1">
@@ -85,15 +245,15 @@
                         <label class="form-label">Genre</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
-                                <input type="radio" name="genre" value="F" {% if form.genre.value == "F" %}checked{% endif %}>
+                                <input type="radio" name="genre" value="1" {% if form.genre.value == "1" %}checked{% endif %}>
                                 <span class="radio-text">Femme</span>
                             </label>
                             <label class="radio-label choice-label">
-                                <input type="radio" name="genre" value="H" {% if form.genre.value == "H" %}checked{% endif %}>
+                                <input type="radio" name="genre" value="2" {% if form.genre.value == "2" %}checked{% endif %}>
                                 <span class="radio-text">Homme</span>
                             </label>
                             <label class="radio-label choice-label">
-                                <input type="radio" name="genre" value="A" {% if form.genre.value == "A" %}checked{% endif %}>
+                                <input type="radio" name="genre" value="3" {% if form.genre.value == "3" %}checked{% endif %}>
                                 <span class="radio-text">Autre</span>
                             </label>
                         </div>
@@ -105,11 +265,11 @@
                         <label class="form-label">Vous vivez plutôt dans un environnement :</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
-                                <input type="radio" name="habitat" value="rural" {% if form.habitat.value == "rural" %}checked{% endif %}>
+                                <input type="radio" name="habitat" value="1" {% if form.habitat.value == "1" %}checked{% endif %}>
                                 <span class="radio-text">Rural</span>
                             </label>
                             <label class="radio-label choice-label">
-                                <input type="radio" name="habitat" value="urbain" {% if form.habitat.value == "urbain" %}checked{% endif %}>
+                                <input type="radio" name="habitat" value="2" {% if form.habitat.value == "2" %}checked{% endif %}>
                                 <span class="radio-text">Urbain</span>
                             </label>
                         </div>
@@ -192,11 +352,63 @@
                         {% if form.a_deja_travaille.errors %}<div class="error-message">{{ form.a_deja_travaille.errors }}</div>{% endif %}
                     </div>
 
-                    <!-- Profession (texte libre) -->
+                    <!-- Profession (sous-catégorie) -->
                     <div class="form-group" id="profession_group" style="display: none;">
                         <label class="form-label" for="id_profession">Dans votre emploi (ou dernier emploi), quelle est/était votre profession ?</label>
-                        <textarea id="id_profession" name="profession" class="form-textarea" rows="3" 
-                                  placeholder="Décrivez votre profession">{{ form.profession.value|default:'' }}</textarea>
+                        <select id="id_profession" name="profession" class="form-input">
+                            <option value="">Sélectionnez une sous-catégorie...</option>
+
+                            <optgroup label="1 | Cadres dirigeants">
+                                <option value="101" {% if form.profession.value|stringformat:"s" == "101" %}selected{% endif %}>1.1 | Chefs d'entreprises, hors hôtellerie, restauration, commerce</option>
+                                <option value="102" {% if form.profession.value|stringformat:"s" == "102" %}selected{% endif %}>1.2 | Chefs d'entreprises, hôtellerie, restauration, commerce</option>
+                                <option value="103" {% if form.profession.value|stringformat:"s" == "103" %}selected{% endif %}>1.3 | Cadres dirigeants salariés, hors hôtellerie, restauration, commerce</option>
+                                <option value="104" {% if form.profession.value|stringformat:"s" == "104" %}selected{% endif %}>1.4 | Cadres dirigeants et gérants, hôtellerie, restauration, commerce</option>
+                            </optgroup>
+
+                            <optgroup label="2 | Professions intellectuelles et scientifiques">
+                                <option value="201" {% if form.profession.value|stringformat:"s" == "201" %}selected{% endif %}>2.1 | Ingénieurs et spécialistes des sciences, techniques et TIC</option>
+                                <option value="202" {% if form.profession.value|stringformat:"s" == "202" %}selected{% endif %}>2.2 | Médecins et professionnels de santé</option>
+                                <option value="203" {% if form.profession.value|stringformat:"s" == "203" %}selected{% endif %}>2.3 | Cadres administratifs, financiers et commerciaux</option>
+                                <option value="204" {% if form.profession.value|stringformat:"s" == "204" %}selected{% endif %}>2.4 | Professionnels de la justice, sciences sociales et culture</option>
+                                <option value="205" {% if form.profession.value|stringformat:"s" == "205" %}selected{% endif %}>2.5 | Enseignants et professionnels de l'enseignement</option>
+                            </optgroup>
+
+                            <optgroup label="3 | Professions intermédiaires salariées">
+                                <option value="301" {% if form.profession.value|stringformat:"s" == "301" %}selected{% endif %}>3.1 | Professions intermédiaires des sciences, techniques et TIC</option>
+                                <option value="302" {% if form.profession.value|stringformat:"s" == "302" %}selected{% endif %}>3.2 | Professions intermédiaires salariées de la santé</option>
+                                <option value="303" {% if form.profession.value|stringformat:"s" == "303" %}selected{% endif %}>3.3 | Professions intermédiaires de finance, vente et administration</option>
+                                <option value="304" {% if form.profession.value|stringformat:"s" == "304" %}selected{% endif %}>3.4 | Services juridiques, services sociaux et assimilés</option>
+                                <option value="305" {% if form.profession.value|stringformat:"s" == "305" %}selected{% endif %}>3.5 | Sous-officiers des forces armées</option>
+                            </optgroup>
+
+                            <optgroup label="4 | Petits entrepreneurs (non-salariés)">
+                                <option value="401" {% if form.profession.value|stringformat:"s" == "401" %}selected{% endif %}>4.1 | Exploitants agricoles</option>
+                                <option value="402" {% if form.profession.value|stringformat:"s" == "402" %}selected{% endif %}>4.2 | Commerçants et assimilés</option>
+                                <option value="403" {% if form.profession.value|stringformat:"s" == "403" %}selected{% endif %}>4.3 | Artisans</option>
+                            </optgroup>
+
+                            <optgroup label="5 | Employés qualifiés">
+                                <option value="501" {% if form.profession.value|stringformat:"s" == "501" %}selected{% endif %}>5.1 | Employés de bureau et assimilés</option>
+                                <option value="502" {% if form.profession.value|stringformat:"s" == "502" %}selected{% endif %}>5.2 | Employés de réception, guichetiers et assimilés</option>
+                                <option value="503" {% if form.profession.value|stringformat:"s" == "503" %}selected{% endif %}>5.3 | Aides-soignants, gardes d'enfants et aides-enseignants</option>
+                                <option value="504" {% if form.profession.value|stringformat:"s" == "504" %}selected{% endif %}>5.4 | Services de protection/sécurité et armées</option>
+                            </optgroup>
+
+                            <optgroup label="6 | Ouvriers qualifiés salariés">
+                                <option value="601" {% if form.profession.value|stringformat:"s" == "601" %}selected{% endif %}>6.1 | Ouvriers qualifiés de la construction, sauf électriciens</option>
+                                <option value="602" {% if form.profession.value|stringformat:"s" == "602" %}selected{% endif %}>6.2 | Ouvriers qualifiés alimentation, bois, habillement</option>
+                                <option value="603" {% if form.profession.value|stringformat:"s" == "603" %}selected{% endif %}>6.3 | Ouvriers qualifiés métallurgie, mécanique, imprimerie, élec/électronique</option>
+                                <option value="604" {% if form.profession.value|stringformat:"s" == "604" %}selected{% endif %}>6.4 | Conducteurs de machines/installations fixes, assemblage</option>
+                                <option value="605" {% if form.profession.value|stringformat:"s" == "605" %}selected{% endif %}>6.5 | Conducteurs de véhicules et engins mobiles</option>
+                            </optgroup>
+
+                            <optgroup label="7 | Professions salariées peu qualifiées">
+                                <option value="701" {% if form.profession.value|stringformat:"s" == "701" %}selected{% endif %}>7.1 | Personnels de services et employés de commerces</option>
+                                <option value="702" {% if form.profession.value|stringformat:"s" == "702" %}selected{% endif %}>7.2 | Ouvriers peu qualifiés et manœuvres</option>
+                                <option value="703" {% if form.profession.value|stringformat:"s" == "703" %}selected{% endif %}>7.3 | Agents d'entretien</option>
+                                <option value="704" {% if form.profession.value|stringformat:"s" == "704" %}selected{% endif %}>7.4 | Ouvriers agricoles</option>
+                            </optgroup>
+                        </select>
                         {% if form.profession.errors %}<div class="error-message">{{ form.profession.errors }}</div>{% endif %}
                     </div>
 
@@ -217,100 +429,16 @@
                     </div>
                 </section>
 
-                <!-- ========== SECTION 2: VOTRE SITUATION ========== -->
+                <!-- ========== SECTION 2: EMOTIONS ET SENSATIONS ========== -->
                 <section class="form-section hidden" data-section="2">
                     <div class="section-header">
-                        <h2 class="section-title">💼 Votre situation</h2>
-                        <p class="section-description">Cette section sera complétée prochainement.</p>
+                        <h2 class="section-title">🫧 Emotions et sensations</h2>
+                        <p class="section-description">Cette page sera complétée bientôt.</p>
                     </div>
                     <div class="form-group">
                         <p class="form-label" style="margin-bottom: 0; color: var(--gray-600); font-weight: 500;">
-                            Aucune question dans cette section pour le moment.
+                            Pas de questions pour l'instant.
                         </p>
-                    </div>
-                </section>
-
-                <!-- ========== SECTION 3: SOMMEIL ET RÊVES ========== -->
-                <section class="form-section hidden" data-section="3">
-                    <div class="section-header">
-                        <h2 class="section-title">🛌 Sommeil et rêves</h2>
-                        <p class="section-description">Dernière étape du questionnaire</p>
-                    </div>
-
-                    <!-- Fréquence -->
-                    <div class="form-group">
-                        <label class="form-label">À quelle fréquence vous souvenez-vous de vos rêves ?</label>
-                        <div class="radio-group">
-                            <label class="radio-label choice-label">
-                                <input type="radio" name="frequency" value="daily" {% if form.frequency.value == "daily" %}checked{% endif %}>
-                                <span class="radio-text">📅 Tous les jours</span>
-                            </label>
-                            <label class="radio-label choice-label">
-                                <input type="radio" name="frequency" value="often" {% if form.frequency.value == "often" %}checked{% endif %}>
-                                <span class="radio-text">⭐ Souvent</span>
-                            </label>
-                            <label class="radio-label choice-label">
-                                <input type="radio" name="frequency" value="sometimes" {% if form.frequency.value == "sometimes" %}checked{% endif %}>
-                                <span class="radio-text">🌙 Parfois</span>
-                            </label>
-                            <label class="radio-label choice-label">
-                                <input type="radio" name="frequency" value="rarely" {% if form.frequency.value == "rarely" %}checked{% endif %}>
-                                <span class="radio-text">💫 Rarement</span>
-                            </label>
-                        </div>
-                        {% if form.frequency.errors %}<div class="error-message">{{ form.frequency.errors }}</div>{% endif %}
-                    </div>
-
-                    <!-- Types de rêves -->
-                    <div class="form-group">
-                        <label class="form-label">Quel type de rêves faites-vous le plus souvent ? *</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label choice-label">
-                                <input type="checkbox" name="dream_lucide" {% if form.dream_lucide.value %}checked{% endif %}>
-                                <span class="checkbox-text">✨ Rêves lucides</span>
-                            </label>
-                            <label class="checkbox-label choice-label">
-                                <input type="checkbox" name="dream_recurrent" {% if form.dream_recurrent.value %}checked{% endif %}>
-                                <span class="checkbox-text">🔄 Rêves récurrents</span>
-                            </label>
-                            <label class="checkbox-label choice-label">
-                                <input type="checkbox" name="dream_nightmare" {% if form.dream_nightmare.value %}checked{% endif %}>
-                                <span class="checkbox-text">😱 Cauchemars</span>
-                            </label>
-                            <label class="checkbox-label choice-label">
-                                <input type="checkbox" name="dream_pleasant" {% if form.dream_pleasant.value %}checked{% endif %}>
-                                <span class="checkbox-text">😊 Rêves agréables</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Qualité du sommeil -->
-                    <div class="form-group">
-                        <label class="form-label" for="id_sleep_quality">Comment évaluez-vous votre qualité de sommeil ?</label>
-                        <select id="id_sleep_quality" name="sleep_quality" class="form-input">
-                            <option value="">Sélectionnez...</option>
-                            <option value="excellent" {% if form.sleep_quality.value == "excellent" %}selected{% endif %}>Excellent</option>
-                            <option value="good" {% if form.sleep_quality.value == "good" %}selected{% endif %}>Bon</option>
-                            <option value="average" {% if form.sleep_quality.value == "average" %}selected{% endif %}>Moyen</option>
-                            <option value="poor" {% if form.sleep_quality.value == "poor" %}selected{% endif %}>Mauvais</option>
-                        </select>
-                        {% if form.sleep_quality.errors %}<div class="error-message">{{ form.sleep_quality.errors }}</div>{% endif %}
-                    </div>
-
-                    <!-- Heures de sommeil -->
-                    <div class="form-group">
-                        <label class="form-label" for="id_sleep_hours">Combien d'heures dormez-vous généralement par nuit ?</label>
-                        <input type="number" id="id_sleep_hours" name="sleep_hours" class="form-input" 
-                               min="1" max="24" placeholder="Nombre d'heures" value="{{ form.sleep_hours.value|default:'' }}">
-                        {% if form.sleep_hours.errors %}<div class="error-message">{{ form.sleep_hours.errors }}</div>{% endif %}
-                    </div>
-
-                    <!-- Commentaires -->
-                    <div class="form-group">
-                        <label class="form-label" for="id_comments">Avez-vous des observations supplémentaires sur vos rêves ?</label>
-                        <textarea id="id_comments" name="comments" class="form-textarea" rows="5" 
-                                  placeholder="Partagez vos observations...">{{ form.comments.value|default:'' }}</textarea>
-                        {% if form.comments.errors %}<div class="error-message">{{ form.comments.errors }}</div>{% endif %}
                     </div>
                 </section>
 
@@ -330,6 +458,77 @@
         </div>
     </div>
 </section>
+
+<style>
+    /* Titres de sous-sections violets */
+    #questionnaireForm .subsection-violet {
+        color: #7c3aed;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin: 1.5rem 0 0.5rem;
+        padding-bottom: 0.3rem;
+        border-bottom: 2px solid #ede9fe;
+    }
+
+    /* Présentation compacte des réponses (style enregistrer.html) */
+    #questionnaireForm .radio-label,
+    #questionnaireForm .checkbox-label {
+        padding: 0.32rem 0.55rem;
+    }
+
+    #questionnaireForm .radio-group,
+    #questionnaireForm .checkbox-group {
+        gap: 0.35rem;
+        margin-top: 0.5rem;
+    }
+
+    #questionnaireForm .radio-text,
+    #questionnaireForm .checkbox-text {
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: var(--gray-600);
+    }
+
+    /* Même rendu visuel qu'enregistrer.html au clic */
+    #questionnaireForm .choice-label {
+        border-radius: 0.75rem;
+        border: 1px solid rgba(50, 69, 189, 0.2) !important;
+        box-shadow: none;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    #questionnaireForm .choice-label:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(50, 69, 189, 0.06);
+    }
+
+    #questionnaireForm .choice-label.is-selected {
+        background: rgba(50, 69, 189, 0.09);
+        border-color: rgba(50, 69, 189, 0.42) !important;
+    }
+
+    #questionnaireForm .choice-label.is-selected .radio-text,
+    #questionnaireForm .choice-label.is-selected .checkbox-text {
+        color: #1e3a8a !important;
+        font-weight: 600;
+    }
+
+    #questionnaireForm .inline-boolean-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        gap: 0.35rem;
+    }
+
+    #questionnaireForm .inline-boolean-group .choice-label {
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 700px) {
+        #questionnaireForm .inline-boolean-group {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 <script>
     // ============================================
@@ -369,7 +568,7 @@
         document.querySelectorAll('input[name="a_deja_travaille"]').forEach(radio => {
             radio.addEventListener('change', updateConditionalFields);
         });
-        document.getElementById('id_profession').addEventListener('input', updateManagementFieldVisibility);
+        document.getElementById('id_profession').addEventListener('change', updateManagementFieldVisibility);
         
         // Login modal fallback
         const questionnaireModal = document.getElementById('questionnaireLoginModal');
@@ -383,6 +582,8 @@
         
         // Initialize conditional fields
         updateConditionalFields();
+        updateSocialConditionsFields();
+        bindSocialConditionsListeners();
     });
 
     // ============================================
@@ -590,6 +791,132 @@
         
         const fonctionManagementGroup = document.getElementById('fonction_management_group');
         fonctionManagementGroup.style.display = showProfession && profession ? 'block' : 'none';
+    }
+
+    function bindSocialConditionsListeners() {
+        const modImg = document.getElementById('id_mod_img');
+        if (modImg) {
+            modImg.addEventListener('change', updateSocialConditionsFields);
+        }
+
+        document.querySelectorAll('input[name="reveil_nuit"]').forEach(radio => {
+            radio.addEventListener('change', updateSocialConditionsFields);
+        });
+
+        document.querySelectorAll('input[name="aide_sommeil"]').forEach(radio => {
+            radio.addEventListener('change', updateSocialConditionsFields);
+        });
+
+        const pensRien = document.getElementById('id_pens_rien');
+        if (pensRien) {
+            pensRien.addEventListener('change', function() {
+                toggleExclusiveGroup('id_pens_rien', '.pens-option');
+                updateSocialConditionsFields();
+            });
+        }
+
+        const contRien = document.getElementById('id_cont_rien');
+        if (contRien) {
+            contRien.addEventListener('change', function() {
+                toggleExclusiveGroup('id_cont_rien', '.cont-option');
+            });
+        }
+
+        document.querySelectorAll('.pens-option').forEach(input => {
+            input.addEventListener('change', function() {
+                const pensRienCheckbox = document.getElementById('id_pens_rien');
+                if (pensRienCheckbox && this.checked) {
+                    pensRienCheckbox.checked = false;
+                    pensRienCheckbox.disabled = false;
+                }
+                updateSocialConditionsFields();
+            });
+        });
+
+        document.querySelectorAll('.cont-option').forEach(input => {
+            input.addEventListener('change', function() {
+                const contRienCheckbox = document.getElementById('id_cont_rien');
+                if (contRienCheckbox && this.checked) {
+                    contRienCheckbox.checked = false;
+                    contRienCheckbox.disabled = false;
+                }
+            });
+        });
+
+        const pensAutre = document.getElementById('id_pens_autre');
+        if (pensAutre) {
+            pensAutre.addEventListener('change', updateSocialConditionsFields);
+        }
+    }
+
+    function updateSocialConditionsFields() {
+        toggleExclusiveGroup('id_pens_rien', '.pens-option');
+        toggleExclusiveGroup('id_cont_rien', '.cont-option');
+
+        const modImg = document.getElementById('id_mod_img');
+        const imagesGroup = document.getElementById('images_options_group');
+        if (modImg && imagesGroup) {
+            imagesGroup.style.display = modImg.checked ? 'block' : 'none';
+            if (!modImg.checked) {
+                ['img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns'].forEach(name => {
+                    const el = document.querySelector(`input[name="${name}"]`);
+                    if (el) el.checked = false;
+                });
+            }
+        }
+
+        const reveilYes = document.querySelector('input[name="reveil_nuit"][value="True"]');
+        const reveilDetails = document.getElementById('reveil_nuit_details');
+        if (reveilDetails && reveilYes) {
+            const shouldShow = reveilYes.checked;
+            reveilDetails.style.display = shouldShow ? 'block' : 'none';
+            if (!shouldShow) {
+                const nuits = document.getElementById('id_nuits_reveil');
+                const duree = document.getElementById('id_duree_eveil');
+                if (nuits) nuits.value = '';
+                if (duree) duree.value = '';
+            }
+        }
+
+        const aideYes = document.querySelector('input[name="aide_sommeil"][value="True"]');
+        const aideGroup = document.getElementById('aide_sommeil_options');
+        if (aideGroup && aideYes) {
+            const shouldShow = aideYes.checked;
+            aideGroup.style.display = shouldShow ? 'block' : 'none';
+            if (!shouldShow) {
+                ['aide_medic', 'aide_tisane', 'aide_autre'].forEach(name => {
+                    const el = document.querySelector(`input[name="${name}"]`);
+                    if (el) el.checked = false;
+                });
+            }
+        }
+
+        const pensAutre = document.getElementById('id_pens_autre');
+        const pensAutreTxtGroup = document.getElementById('pens_autre_txt_group');
+        if (pensAutre && pensAutreTxtGroup) {
+            pensAutreTxtGroup.style.display = pensAutre.checked ? 'block' : 'none';
+            if (!pensAutre.checked) {
+                const txt = document.getElementById('id_pens_autre_txt');
+                if (txt) txt.value = '';
+            }
+        }
+    }
+
+    function toggleExclusiveGroup(masterCheckboxId, optionsSelector) {
+        const master = document.getElementById(masterCheckboxId);
+        if (!master) return;
+
+        const options = document.querySelectorAll(optionsSelector);
+        if (master.checked) {
+            options.forEach(input => {
+                input.checked = false;
+                input.disabled = true;
+            });
+        } else {
+            options.forEach(input => {
+                input.disabled = false;
+            });
+        }
     }
 
     function updateChoiceStyles() {

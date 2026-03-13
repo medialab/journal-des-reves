@@ -394,15 +394,26 @@ class Questionnaire(models.Model):
     )
     
     # Genre
-    class GenreChoices(models.TextChoices):
-        FEMME = 'F', 'Femme'
-        HOMME = 'H', 'Homme'
-        AUTRE = 'A', 'Autre'
+    class GenreChoices(models.IntegerChoices):
+        FEMME = 1, 'Femme'
+        HOMME = 2, 'Homme'
+        AUTRE = 3, 'Autre'
     
-    genre = models.CharField(
-        max_length=1,
+    genre = models.IntegerField(
         choices=GenreChoices.choices,
         verbose_name="Genre",
+        null=True,
+        blank=True
+    )
+    
+    # Habitat
+    class HabitatChoices(models.IntegerChoices):
+        RURAL = 1, 'Rural'
+        URBAIN = 2, 'Urbain'
+    
+    habitat = models.IntegerField(
+        choices=HabitatChoices.choices,
+        verbose_name="Environnement d'habitat",
         null=True,
         blank=True
     )
@@ -470,19 +481,6 @@ class Questionnaire(models.Model):
         blank=True
     )
     
-    # Habitat
-    class HabitatChoices(models.TextChoices):
-        RURAL = 'rural', 'Rural'
-        URBAIN = 'urbain', 'Urbain'
-    
-    habitat = models.CharField(
-        max_length=10,
-        choices=HabitatChoices.choices,
-        verbose_name="Environnement d'habitat",
-        null=True,
-        blank=True
-    )
-    
     # Avez-vous déjà travaillé à mi-temps pendant 6 mois minimum ?
     a_deja_travaille = models.BooleanField(
         verbose_name="A déjà travaillé (6+ mois)",
@@ -491,12 +489,51 @@ class Questionnaire(models.Model):
         help_text="Avez-vous déjà travaillé au moins à mi-temps pendant au moins 6 mois ?"
     )
     
-    # Profession (texte libre pour plus de flexibilité)
-    profession = models.TextField(
-        verbose_name="Profession",
+    # Profession (sous-catégorie uniquement)
+    class ProfessionChoices(models.IntegerChoices):
+        CADRES_11 = 101, "1.1 | Chefs d'entreprises, hors hôtellerie, restauration, commerce"
+        CADRES_12 = 102, "1.2 | Chefs d'entreprises, hôtellerie, restauration, commerce"
+        CADRES_13 = 103, "1.3 | Cadres dirigeants salariés, hors hôtellerie, restauration, commerce"
+        CADRES_14 = 104, "1.4 | Cadres dirigeants et gérants, hôtellerie, restauration, commerce"
+
+        INTEL_21 = 201, "2.1 | Ingénieurs et spécialistes des sciences, des techniques, des TIC"
+        INTEL_22 = 202, "2.2 | Médecins et professionnels de santé"
+        INTEL_23 = 203, "2.3 | Cadres administratifs, financiers et commerciaux"
+        INTEL_24 = 204, "2.4 | Professionnels de la justice, des sciences sociales et de la culture"
+        INTEL_25 = 205, "2.5 | Enseignants et professionnels de l'enseignement"
+
+        INTER_31 = 301, "3.1 | Professions intermédiaires des sciences, techniques et TIC"
+        INTER_32 = 302, "3.2 | Professions intermédiaires salariées de la santé"
+        INTER_33 = 303, "3.3 | Professions intermédiaires de finance, vente et administration"
+        INTER_34 = 304, "3.4 | Professions intermédiaires des services juridiques et sociaux"
+        INTER_35 = 305, "3.5 | Sous-officiers des forces armées"
+
+        NONSAL_41 = 401, "4.1 | Exploitants agricoles"
+        NONSAL_42 = 402, "4.2 | Commerçants et assimilés"
+        NONSAL_43 = 403, "4.3 | Artisans"
+
+        EMP_51 = 501, "5.1 | Employés de bureau et assimilés"
+        EMP_52 = 502, "5.2 | Employés de réception, guichetiers et assimilés"
+        EMP_53 = 503, "5.3 | Aides-soignants, gardes d'enfants et aides-enseignants"
+        EMP_54 = 504, "5.4 | Services de protection/sécurité et armées"
+
+        OUV_61 = 601, "6.1 | Ouvriers qualifiés de la construction, sauf électriciens"
+        OUV_62 = 602, "6.2 | Ouvriers qualifiés alimentation, bois, habillement"
+        OUV_63 = 603, "6.3 | Ouvriers qualifiés métallurgie, mécanique, imprimerie, élec/électronique"
+        OUV_64 = 604, "6.4 | Conducteurs de machines/installations fixes, assemblage"
+        OUV_65 = 605, "6.5 | Conducteurs de véhicules et engins mobiles"
+
+        PEU_71 = 701, "7.1 | Personnels de services et employés de commerces"
+        PEU_72 = 702, "7.2 | Ouvriers peu qualifiés et manœuvres"
+        PEU_73 = 703, "7.3 | Agents d'entretien"
+        PEU_74 = 704, "7.4 | Ouvriers agricoles"
+
+    profession = models.IntegerField(
+        choices=ProfessionChoices.choices,
+        verbose_name="Profession (sous-catégorie)",
         blank=True,
         null=True,
-        help_text="Votre profession actuelle ou dernière profession"
+        help_text="Choisir uniquement une sous-catégorie de profession"
     )
     
     # Exercez-vous une fonction de management/autorité ?
@@ -559,6 +596,144 @@ class Questionnaire(models.Model):
         null=True,
         verbose_name="Commentaires"
     )
+
+    # ===== PARTIE 3: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL =====
+    # Groupes logiques:
+    # - pratiques_reves
+    # - perception_reves
+    # - temps_sommeil
+    # - problemes_sommeil
+    # - avant_dormir
+
+    # pratiques_reves
+    class FreqRevesNotChoices(models.IntegerChoices):
+        OUI_SOUVENT = 1, 'Oui souvent'
+        QUELQUES_FOIS = 2, 'Quelques fois'
+        JAMAIS = 3, 'Jamais'
+
+    freq_reves_not = models.IntegerField(
+        choices=FreqRevesNotChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Avant cette enquête, vous est-il arrivé de noter vos rêves ?"
+    )
+
+    # perception_reves
+    mod_img = models.BooleanField(default=False, verbose_name='Images')
+    mod_son = models.BooleanField(default=False, verbose_name='Sons, voix')
+    mod_sens = models.BooleanField(default=False, verbose_name='Sensations du corps')
+    mod_emot = models.BooleanField(default=False, verbose_name='Emotions ressenties')
+    mod_pens = models.BooleanField(default=False, verbose_name='Pensees ou idees')
+
+    img_coul = models.BooleanField(default=False, verbose_name='En couleur')
+    img_nb = models.BooleanField(default=False, verbose_name='En noir et blanc')
+    img_net = models.BooleanField(default=False, verbose_name='Nettes')
+    img_flou = models.BooleanField(default=False, verbose_name='Floues')
+    img_ns = models.BooleanField(default=False, verbose_name='Ne sait pas')
+
+    class EtendueSouvenirReveChoices(models.IntegerChoices):
+        SENSATION = 1, 'Une sensation'
+        INSTANT_PRECIS = 2, 'Un instant precis'
+        MOINS_MOITIE = 3, 'Moins de la moitie de mon reve'
+        PLUS_MOITIE = 4, 'Plus de la moitie de mon reve'
+        INTEGRALITE = 5, 'L\'integralite'
+
+    etendue_souvenir_reve = models.IntegerField(
+        choices=EtendueSouvenirReveChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Vous vous souvenez plutôt"
+    )
+
+    class TempsDuReveChoices(models.IntegerChoices):
+        PASSE_LOINTAIN = 1, 'Du passe lointain'
+        PASSE_PROCHE = 2, 'Du passe proche'
+        PRESENT_VEILLE = 3, 'Du present (de la veille)'
+        FUTUR = 4, 'Du futur (de ce qui pourrait arriver)'
+        AUCUN_LIEN = 5, 'Pas de lien avec votre vie'
+
+    temps_du_reve = models.IntegerField(
+        choices=TempsDuReveChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Vous avez l'impression de rêver davantage"
+    )
+
+    # temps_sommeil
+    heure_coucher = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Le plus souvent, en semaine, à quelle heure éteignez-vous votre lampe pour dormir ?"
+    )
+
+    heure_reveil = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Le plus souvent en semaine à quelle heure vous réveillez-vous ?"
+    )
+
+    latence_som = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(1440)],
+        verbose_name="Le plus souvent, combien de temps vous faut-il pour vous endormir ?"
+    )
+
+    besoin_som = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(1440)],
+        verbose_name="En moyenne, de combien de temps de sommeil avez-vous besoin pour être en forme le lendemain ?"
+    )
+
+    # problemes_sommeil
+    reveil_nuit = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Vous arrive-t-il de vous réveiller la nuit avec des difficultés pour vous rendormir ?"
+    )
+
+    nuits_reveil = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
+        verbose_name="Combien de nuits par semaine cela vous arrive-t-il ?"
+    )
+
+    duree_eveil = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(1440)],
+        verbose_name="En général, combien de temps restez-vous éveillé(e) au cours de la nuit ?"
+    )
+
+    aide_sommeil = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Utilisez-vous des aides pour dormir (médicaments, tisane, application de méditation, etc.) ?"
+    )
+
+    aide_medic = models.BooleanField(default=False, verbose_name='Médicaments')
+    aide_tisane = models.BooleanField(default=False, verbose_name='Tisane')
+    aide_autre = models.BooleanField(default=False, verbose_name='Autre aide')
+
+    # avant_dormir
+    pens_trav = models.BooleanField(default=False, verbose_name='Travail / etudes')
+    pens_fin = models.BooleanField(default=False, verbose_name='Situation financiere')
+    pens_fam = models.BooleanField(default=False, verbose_name='Famille')
+    pens_proch = models.BooleanField(default=False, verbose_name='Proches')
+    pens_actu = models.BooleanField(default=False, verbose_name='Actualite')
+    pens_autre = models.BooleanField(default=False, verbose_name='Autre')
+    pens_rien = models.BooleanField(default=False, verbose_name='Je ne pense pas a des choses en particulier')
+    pens_autre_txt = models.TextField(blank=True, null=True, verbose_name='Precisez autre pensee')
+
+    cont_tv = models.BooleanField(default=False, verbose_name='Television')
+    cont_series_films = models.BooleanField(default=False, verbose_name='Series / films')
+    cont_rs = models.BooleanField(default=False, verbose_name='Reseaux sociaux')
+    cont_jeux = models.BooleanField(default=False, verbose_name='Jeux videos')
+    cont_livres = models.BooleanField(default=False, verbose_name='Livres, journaux')
+    cont_rien = models.BooleanField(default=False, verbose_name='Rien')
+    cont_autre = models.BooleanField(default=False, verbose_name='Autres')
     
     # Métadonnées
     created_at = models.DateTimeField(auto_now_add=True)
@@ -571,6 +746,29 @@ class Questionnaire(models.Model):
     
     def __str__(self):
         return f"Questionnaire de {self.profil.user.username} - {self.created_at.strftime('%d/%m/%Y')}"
+
+    @property
+    def duree_som(self):
+        """Duree de sommeil (minutes) = (reveil - coucher) - latence, avec gestion du passage minuit."""
+        if not self.heure_coucher or not self.heure_reveil or self.latence_som is None:
+            return None
+
+        start_dt = datetime.datetime.combine(datetime.date.today(), self.heure_coucher)
+        wake_dt = datetime.datetime.combine(datetime.date.today(), self.heure_reveil)
+
+        if wake_dt <= start_dt:
+            wake_dt += datetime.timedelta(days=1)
+
+        total_minutes = int((wake_dt - start_dt).total_seconds() // 60)
+        sleep_minutes = total_minutes - int(self.latence_som)
+        return max(0, sleep_minutes)
+
+    @property
+    def deficit_som(self):
+        """Deficit de sommeil (minutes) = duree_som - besoin_som."""
+        if self.duree_som is None or self.besoin_som is None:
+            return None
+        return self.duree_som - int(self.besoin_som)
 
 
 # MODELE POUR LES NOTIFICATIONS ========================

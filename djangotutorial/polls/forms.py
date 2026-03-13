@@ -50,6 +50,52 @@ class QuestionnaireForm(forms.ModelForm):
     class Meta:
         model = Questionnaire
         fields = [
+            # CONDITIONS SOCIALES DU REVE ET DU SOMMEIL
+            # pratiques_reves
+            'freq_reves_not',
+            # perception_reves
+            'mod_img',
+            'mod_son',
+            'mod_sens',
+            'mod_emot',
+            'mod_pens',
+            'img_coul',
+            'img_nb',
+            'img_net',
+            'img_flou',
+            'img_ns',
+            'etendue_souvenir_reve',
+            'temps_du_reve',
+            # temps_sommeil
+            'heure_coucher',
+            'heure_reveil',
+            'latence_som',
+            'besoin_som',
+            # problemes_sommeil
+            'reveil_nuit',
+            'nuits_reveil',
+            'duree_eveil',
+            'aide_sommeil',
+            'aide_medic',
+            'aide_tisane',
+            'aide_autre',
+            # avant_dormir
+            'pens_trav',
+            'pens_fin',
+            'pens_fam',
+            'pens_proch',
+            'pens_actu',
+            'pens_autre',
+            'pens_rien',
+            'pens_autre_txt',
+            'cont_tv',
+            'cont_series_films',
+            'cont_rs',
+            'cont_jeux',
+            'cont_livres',
+            'cont_rien',
+            'cont_autre',
+
             # PARTIE 1: Variables socio-démographiques
             'annee_naissance',
             'genre',
@@ -72,6 +118,52 @@ class QuestionnaireForm(forms.ModelForm):
         ]
         
         widgets = {
+            'freq_reves_not': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'mod_img': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'mod_son': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'mod_sens': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'mod_emot': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'mod_pens': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'img_coul': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'img_nb': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'img_net': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'img_flou': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'img_ns': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'etendue_souvenir_reve': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'temps_du_reve': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'heure_coucher': forms.TimeInput(attrs={'class': 'form-input', 'type': 'time'}),
+            'heure_reveil': forms.TimeInput(attrs={'class': 'form-input', 'type': 'time'}),
+            'latence_som': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '1440'}),
+            'besoin_som': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '1440'}),
+            'reveil_nuit': forms.RadioSelect(
+                choices=((True, 'Oui'), (False, 'Non')),
+                attrs={'class': 'radio-input'}
+            ),
+            'nuits_reveil': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '7'}),
+            'duree_eveil': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '1440'}),
+            'aide_sommeil': forms.RadioSelect(
+                choices=((True, 'Oui'), (False, 'Non')),
+                attrs={'class': 'radio-input'}
+            ),
+            'aide_medic': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'aide_tisane': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'aide_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_trav': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_fin': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_fam': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_proch': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_actu': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'pens_rien': forms.CheckboxInput(attrs={'class': 'checkbox-input', 'id': 'id_pens_rien'}),
+            'pens_autre_txt': forms.Textarea(attrs={'class': 'form-textarea', 'rows': '3'}),
+            'cont_tv': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'cont_series_films': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'cont_rs': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'cont_jeux': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'cont_livres': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'cont_rien': forms.CheckboxInput(attrs={'class': 'checkbox-input', 'id': 'id_cont_rien'}),
+            'cont_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+
             'annee_naissance': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'type': 'number',
@@ -92,10 +184,9 @@ class QuestionnaireForm(forms.ModelForm):
                 'id': 'id_travail_statut'
             }),
             'a_deja_travaille': forms.RadioSelect(attrs={'class': 'radio-input'}),
-            'profession': forms.Textarea(attrs={
-                'class': 'form-textarea',
-                'rows': '3',
-                'placeholder': 'Décrivez votre profession'
+            'profession': forms.Select(attrs={
+                'class': 'form-input',
+                'id': 'id_profession'
             }),
             'fonction_management': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'frequency': forms.RadioSelect(attrs={'class': 'radio-input'}),
@@ -123,6 +214,46 @@ class QuestionnaireForm(forms.ModelForm):
         }
         
         labels = {
+            'freq_reves_not': 'Avant cette enquête, vous est-il arrivé de noter vos rêves ?',
+            'mod_img': 'Images',
+            'mod_son': 'Sons, voix',
+            'mod_sens': 'Sensations du corps',
+            'mod_emot': 'Émotions ressenties',
+            'mod_pens': 'Pensées ou idées',
+            'img_coul': 'En couleur',
+            'img_nb': 'En noir et blanc',
+            'img_net': 'Nettes',
+            'img_flou': 'Floues',
+            'img_ns': 'Ne sait pas',
+            'etendue_souvenir_reve': 'Vous vous souvenez plutôt :',
+            'temps_du_reve': "Vous avez l'impression de rêver davantage :",
+            'heure_coucher': 'Le plus souvent, en semaine, à quelle heure éteignez-vous votre lampe pour dormir ?',
+            'heure_reveil': 'Le plus souvent en semaine à quelle heure vous réveillez-vous ?',
+            'latence_som': 'Le plus souvent, combien de temps vous faut-il pour vous endormir ? Si immédiatement ou quelques secondes, saisir 0 minute.',
+            'besoin_som': 'En moyenne, de combien de temps de sommeil avez-vous besoin pour être en forme le lendemain ?',
+            'reveil_nuit': 'Vous arrive-t-il de vous réveiller la nuit avec des difficultés pour vous rendormir ?',
+            'nuits_reveil': 'Combien de nuits par semaine cela vous arrive-t-il ?',
+            'duree_eveil': 'En général, combien de temps restez-vous éveillé(e) au cours de la nuit ?',
+            'aide_sommeil': 'Utilisez-vous des aides pour dormir (médicaments, tisane, application de méditation, etc.) ?',
+            'aide_medic': 'Médicaments',
+            'aide_tisane': 'Tisane',
+            'aide_autre': 'Autre',
+            'pens_trav': 'Travail / études',
+            'pens_fin': 'Situation financière',
+            'pens_fam': 'Famille',
+            'pens_proch': 'Proches',
+            'pens_actu': 'Actualité',
+            'pens_autre': 'Autre',
+            'pens_rien': 'Je ne pense pas à des choses en particulier',
+            'pens_autre_txt': 'Précisez si autre',
+            'cont_tv': 'Télévision',
+            'cont_series_films': 'Séries / films',
+            'cont_rs': 'Réseaux sociaux',
+            'cont_jeux': 'Jeux vidéos',
+            'cont_livres': 'Livres, journaux',
+            'cont_rien': 'Rien',
+            'cont_autre': 'Autres',
+
             'annee_naissance': 'Année de naissance',
             'genre': 'Genre',
             'niv_diplome': 'Quel est votre diplôme le plus élevé ?',
@@ -138,6 +269,51 @@ class QuestionnaireForm(forms.ModelForm):
             'sleep_hours': 'Heures de sommeil',
             'comments': 'Commentaires',
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Condition: si la modalité image n'est pas sélectionnée, vider les sous-choix images.
+        if not cleaned_data.get('mod_img'):
+            for field_name in ['img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns']:
+                cleaned_data[field_name] = False
+
+        # Condition: réveil nocturne -> nuits_reveil et duree_eveil attendues.
+        if cleaned_data.get('reveil_nuit') is True:
+            if cleaned_data.get('nuits_reveil') is None:
+                self.add_error('nuits_reveil', 'Ce champ est requis si vous vous réveillez la nuit.')
+            if cleaned_data.get('duree_eveil') is None:
+                self.add_error('duree_eveil', 'Ce champ est requis si vous vous réveillez la nuit.')
+        else:
+            cleaned_data['nuits_reveil'] = None
+            cleaned_data['duree_eveil'] = None
+
+        # Condition: aide_sommeil = False -> vider les sous-options.
+        if cleaned_data.get('aide_sommeil') is not True:
+            for field_name in ['aide_medic', 'aide_tisane', 'aide_autre']:
+                cleaned_data[field_name] = False
+
+        # Contrainte: pens_rien exclusif.
+        if cleaned_data.get('pens_rien'):
+            other_pens_fields = ['pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu', 'pens_autre']
+            if any(cleaned_data.get(name) for name in other_pens_fields):
+                raise forms.ValidationError(
+                    "Si 'Je ne pense pas à des choses en particulier' est coché, les autres options de pensée doivent être décochées."
+                )
+
+        # Contrainte: cont_rien exclusif.
+        if cleaned_data.get('cont_rien'):
+            other_cont_fields = ['cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux', 'cont_livres', 'cont_autre']
+            if any(cleaned_data.get(name) for name in other_cont_fields):
+                raise forms.ValidationError(
+                    "Si 'Rien' est coché, les autres contenus/activités doivent être décochés."
+                )
+
+        # Si "Autre" pensée n'est pas coché, on ignore le texte libre.
+        if not cleaned_data.get('pens_autre'):
+            cleaned_data['pens_autre_txt'] = ''
+
+        return cleaned_data
 
 class SignUpForm(UserCreationForm):
     """
