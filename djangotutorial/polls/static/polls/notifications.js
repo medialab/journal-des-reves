@@ -110,25 +110,37 @@ class NotificationManager {
         let panelHTML = `
             <div class="notifications-panel-header">
                 <h3 class="notifications-panel-title">Notifications</h3>
-                <button class="notifications-panel-close" onclick="notificationManager.closePanel()">&times;</button>
+                <button type="button" class="notifications-panel-close" onclick="notificationManager.closePanel()">&times;</button>
             </div>
             <div class="notifications-panel-content">
         `;
         
         if (this.notifications.length === 0) {
-            panelHTML += `<div class="notifications-panel-empty">Aucune notification</div>`;
-        } else {
-            panelHTML += this.notifications.map(notif => `
-                <div class="notification-item-panel ${notif.is_read ? '' : 'unread'}">
-                    <div class="notification-item-panel-content">
-                        <div class="notification-item-panel-type">${this.getNotificationType(notif.type)}</div>
-                        <div class="notification-item-panel-title">${this.escapeHtml(notif.title)}</div>
-                        <div class="notification-item-panel-message">${this.escapeHtml(notif.message)}</div>
-                        <div class="notification-item-panel-time">${this.formatDateFull(new Date(notif.created_at))}</div>
-                    </div>
-                    <button class="notification-item-panel-delete" onclick="notificationManager.deleteNotification(${notif.id})">×</button>
+            panelHTML += `
+                <div class="notifications-panel-empty">
+                    <div class="notifications-panel-empty-icon">✓</div>
+                    <div class="notifications-panel-empty-title">Vous etes a jour</div>
+                    <div class="notifications-panel-empty-text">Aucune notification en attente pour le moment.</div>
                 </div>
-            `).join('');
+            `;
+        } else {
+            panelHTML += this.notifications.map(notif => {
+                const meta = this.getNotificationMeta(notif.type);
+                return `
+                    <div class="notification-item-panel ${notif.is_read ? '' : 'unread'} tone-${meta.tone}">
+                        <div class="notification-item-panel-icon" aria-hidden="true">${meta.icon}</div>
+                        <div class="notification-item-panel-content">
+                            <div class="notification-item-panel-meta">
+                                <div class="notification-item-panel-type">${meta.label}</div>
+                                <div class="notification-item-panel-time">${this.formatDateFull(new Date(notif.created_at))}</div>
+                            </div>
+                            <div class="notification-item-panel-title">${this.escapeHtml(notif.title)}</div>
+                            <div class="notification-item-panel-message">${this.escapeHtml(notif.message)}</div>
+                        </div>
+                        <button type="button" class="notification-item-panel-delete" onclick="notificationManager.deleteNotification(${notif.id})" aria-label="Supprimer la notification">×</button>
+                    </div>
+                `;
+            }).join('');
         }
         
         panelHTML += `
@@ -147,13 +159,37 @@ class NotificationManager {
         }
     }
     
-    getNotificationType(type) {
+    normalizeNotificationType(type) {
+        if (!type) return 'general';
+        if (type.includes('questionnaire')) return 'questionnaire_reminder';
+        if (type.includes('daily')) return 'daily_reminder';
+        return 'general';
+    }
+
+    getNotificationMeta(type) {
+        const normalizedType = this.normalizeNotificationType(type);
         const types = {
-            'daily_reminder': '🌙 Rappel quotidien',
-            'questionnaire_reminder': '📋 Questionnaire',
-            'general': 'ℹ️ Information'
+            daily_reminder: {
+                label: 'Rappel quotidien',
+                icon: '🌙',
+                tone: 'daily'
+            },
+            questionnaire_reminder: {
+                label: 'Questionnaire',
+                icon: '📋',
+                tone: 'questionnaire'
+            },
+            general: {
+                label: 'Information',
+                icon: 'ℹ️',
+                tone: 'general'
+            }
         };
-        return types[type] || type;
+        return types[normalizedType] || types.general;
+    }
+
+    getNotificationType(type) {
+        return this.getNotificationMeta(type).label;
     }
     
     escapeHtml(text) {
@@ -181,7 +217,8 @@ class NotificationManager {
         try {
             const response = await fetch(`/polls/api/notifications/${notificationId}/delete/`, {
                 method: 'DELETE',
-                credentials: 'include'
+                credentials: 'include',
+                headers: { 'X-CSRFToken': this.getCsrfToken() }
             });
             
             if (response.ok) {
@@ -201,8 +238,41 @@ class NotificationManager {
         if (!document.querySelector('link[href*="notifications.css"]')) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = '/static/polls/notifications.css';
+            link.href = '/static/polls/notifications.css?v=20260316-notifs';
             document.head.appendChild(link);
+        }
+    }
+
+    getCsrfToken() {
+        const value = `; ${document.cookie}`;
+        const parts = value.split('; csrftoken=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+
+    dismissToast(notification, notificationId = null) {
+        if (!notification || !notification.isConnected) return;
+
+        notification.style.animation = 'slideOut 0.3s ease-out forwards';
+        setTimeout(() => {
+            if (notification.isConnected) {
+                notification.remove();
+            }
+        }, 280);
+
+        if (notificationId !== null && notificationId !== undefined) {
+            this.saveDismissedNotificationId(notificationId);
+
+            const notif = this.notifications.find(n => n.id === notificationId);
+            if (notif && !notif.is_read) {
+                notif.is_read = true;
+                this.updateNotificationsBadge(this.notifications.filter(n => !n.is_read).length);
+                if (this.panel.classList.contains('active')) {
+                    this.renderPanelNotifications();
+                }
+            }
+
+            this.markAsRead(notificationId);
         }
     }
 
@@ -230,31 +300,43 @@ class NotificationManager {
      */
     showNotification(title, message, type = 'general', duration = 5000, notificationId = null) {
         const notification = document.createElement('div');
-        notification.className = `notification-item ${type === 'questionnaire' ? 'questionnaire' : 'daily'} unread`;
+        const meta = this.getNotificationMeta(type);
+        notification.className = `notification-item ${meta.tone} unread`;
         if (notificationId !== null && notificationId !== undefined) {
             notification.dataset.notificationId = String(notificationId);
         }
-        
-        const typeDisplay = type === 'questionnaire' ? '📋' : '🌙';
+        notification.setAttribute('role', 'status');
+        notification.setAttribute('aria-live', 'polite');
         
         notification.innerHTML = `
-            <button class="notification-close">&times;</button>
-            <div class="notification-title">${typeDisplay} ${title}</div>
-            <div class="notification-message">${message}</div>
-            <div class="notification-time">${this.formatTime(new Date())}</div>
+            <div class="notification-icon" aria-hidden="true">${meta.icon}</div>
+            <div class="notification-content">
+                <div class="notification-meta-row">
+                    <div class="notification-tag">${meta.label}</div>
+                    <div class="notification-time">${this.formatTime(new Date())}</div>
+                </div>
+                <div class="notification-title">${this.escapeHtml(title)}</div>
+                <div class="notification-message">${this.escapeHtml(message)}</div>
+            </div>
+            <button type="button" class="notification-close" aria-label="Marquer comme lue">&times;</button>
         `;
 
         const closeBtn = notification.querySelector('.notification-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', (event) => {
+                event.preventDefault();
                 event.stopPropagation();
-                this.saveDismissedNotificationId(notificationId);
-                notification.remove();
+                if (notificationId !== null && notificationId !== undefined) {
+                    this.dismissToast(notification, notificationId);
+                } else {
+                    this.dismissToast(notification);
+                    this.saveDismissedNotificationId(notificationId);
+                }
             });
         }
         
         notification.onclick = (e) => {
-            if (e.target.className !== 'notification-close') {
+            if (!e.target.closest('.notification-close')) {
                 notification.classList.remove('unread');
             }
         };
@@ -264,8 +346,12 @@ class NotificationManager {
         // Auto-remove après duration
         if (duration > 0) {
             setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-out';
-                setTimeout(() => notification.remove(), 300);
+                if (notification.isConnected) {
+                    if (notificationId !== null && notificationId !== undefined) {
+                        this.saveDismissedNotificationId(notificationId);
+                    }
+                    this.dismissToast(notification);
+                }
             }, duration);
         }
     }
@@ -316,12 +402,21 @@ class NotificationManager {
         try {
             const response = await fetch(`/polls/api/notifications/${notificationId}/read/`, {
                 method: 'POST',
-                credentials: 'include'
+                credentials: 'include',
+                headers: { 'X-CSRFToken': this.getCsrfToken() }
             });
-            
+
             if (response.ok) {
-                // Mettre à jour le badge
-                await this.updateUnreadCount();
+                // Mettre à jour le tableau local
+                const notif = this.notifications.find(n => n.id === notificationId);
+                if (notif) notif.is_read = true;
+                // Re-render le panel si ouvert
+                if (this.panel.classList.contains('active')) {
+                    this.renderPanelNotifications();
+                }
+                // Calculer le badge localement (évite un aller-retour réseau)
+                const unreadCount = this.notifications.filter(n => !n.is_read).length;
+                this.updateNotificationsBadge(unreadCount);
             }
         } catch (error) {
             console.error('Erreur marquage notification:', error);
@@ -359,8 +454,16 @@ class NotificationManager {
                 if (bell) bell.appendChild(badge);
             }
             badge.textContent = count > 9 ? '9+' : count;
+            // Badge natif PWA sur l'icône de l'app (Chrome 81+, Safari 16.4+)
+            if ('setAppBadge' in navigator) {
+                navigator.setAppBadge(count).catch(() => {});
+            }
         } else if (badge) {
             badge.remove();
+            // Effacer le badge natif PWA
+            if ('clearAppBadge' in navigator) {
+                navigator.clearAppBadge().catch(() => {});
+            }
         }
     }
 
@@ -452,6 +555,7 @@ class NotificationManager {
         );
     }
 }
+
 
 // Initialiser le gestionnaire de notifications
 const notificationManager = new NotificationManager();

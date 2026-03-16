@@ -6,8 +6,6 @@ from django.contrib import messages
 from django.views import generic, View
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.decorators.http import require_http_methods
-from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate, login
 import uuid
 import os
@@ -166,7 +164,7 @@ class EnregistrerView(LoginRequiredMixin, View):
             emotions_custom = request.POST.getlist('emotions_custom')
             elements_predefined = request.POST.getlist('elements_reve')
             elements_custom = request.POST.getlist('elements_custom')
-            temps_reve = request.POST.get('temps_reve', '').strip()
+            temps_selected = set(request.POST.getlist('temps_reve'))
             commentaire_libre = request.POST.get('commentaire_libre', '').strip()
             images_modalites_ids = request.POST.getlist('images_modalites')
 
@@ -184,7 +182,12 @@ class EnregistrerView(LoginRequiredMixin, View):
                 type_reve=type_reve if type_reve else None,
                 etendue_reve=int(etendue_reve) if etendue_reve else None,
                 sens=int(sens) if sens else None,
-                temps_reve=temps_reve if temps_reve else None,
+                temps_passe_lointain='passe_lointain' in temps_selected,
+                temps_passe_recent='passe_recent' in temps_selected,
+                temps_veille='veille' in temps_selected,
+                temps_futur_proche='futur_proche' in temps_selected,
+                temps_futur_lointain='futur_lointain' in temps_selected,
+                temps_difficile='difficile' in temps_selected,
                 commentaire_libre=commentaire_libre if commentaire_libre else None,
                 existence_souvenir=True,
                 transcription_ready=False
@@ -339,7 +342,7 @@ class ModifierReveView(LoginRequiredMixin, View):
             emotions_custom = request.POST.getlist('emotions_custom')
             elements_predefined = request.POST.getlist('elements_reve')
             elements_custom = request.POST.getlist('elements_custom')
-            temps_reve = request.POST.get('temps_reve', '').strip()
+            temps_selected = set(request.POST.getlist('temps_reve'))
             commentaire_libre = request.POST.get('commentaire_libre', '').strip()
             images_modalites_ids = request.POST.getlist('images_modalites')
 
@@ -349,7 +352,12 @@ class ModifierReveView(LoginRequiredMixin, View):
             reve.type_reve = type_reve if type_reve else None
             reve.etendue_reve = int(etendue_reve) if etendue_reve else None
             reve.sens = int(sens) if sens else None
-            reve.temps_reve = temps_reve if temps_reve else None
+            reve.temps_passe_lointain = 'passe_lointain' in temps_selected
+            reve.temps_passe_recent = 'passe_recent' in temps_selected
+            reve.temps_veille = 'veille' in temps_selected
+            reve.temps_futur_proche = 'futur_proche' in temps_selected
+            reve.temps_futur_lointain = 'futur_lointain' in temps_selected
+            reve.temps_difficile = 'difficile' in temps_selected
             reve.commentaire_libre = commentaire_libre if commentaire_libre else None
             reve.save()
 
@@ -533,7 +541,12 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
             'type_reve',
             'etendue_reve',
             'sens',
-            'temps_reve',
+            'temps_passe_lointain',
+            'temps_passe_recent',
+            'temps_veille',
+            'temps_futur_proche',
+            'temps_futur_lointain',
+            'temps_difficile',
             'elements_reve',
             'emotions_reve',
             'emotions_custom',
@@ -560,7 +573,12 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
                 reve.get_type_reve_display() if reve.type_reve else '',
                 reve.get_etendue_reve_display() if reve.etendue_reve else '',
                 reve.get_sens_display() if reve.sens else '',
-                reve.get_temps_reve_display() if reve.temps_reve else '',
+                'oui' if reve.temps_passe_lointain else 'non',
+                'oui' if reve.temps_passe_recent else 'non',
+                'oui' if reve.temps_veille else 'non',
+                'oui' if reve.temps_futur_proche else 'non',
+                'oui' if reve.temps_futur_lointain else 'non',
+                'oui' if reve.temps_difficile else 'non',
                 elements,
                 emotions,
                 emotions_custom,
@@ -710,6 +728,16 @@ class QuestionnaireView(View):
                 'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
                 'cont_livres', 'cont_rien', 'cont_autre',
                 'dream_lucide', 'dream_recurrent', 'dream_nightmare', 'dream_pleasant',
+                'composition_logement_seul', 'composition_logement_conjoint',
+                'composition_logement_enfants', 'composition_logement_ami_parent_heberge',
+                'composition_logement_colocataire', 'composition_logement_parent_grand_parent',
+                'composition_logement_autres',
+                'discri_age', 'discri_genre', 'discri_sante_physique', 'discri_sante_mentale',
+                'discri_couleur_peau', 'discri_origine_nationalite', 'discri_situation_familiale',
+                'discri_orientation_sexuelle', 'discri_autre',
+                'discri_contexte_emploi', 'discri_contexte_logement', 'discri_contexte_travail',
+                'discri_contexte_education', 'discri_contexte_sante', 'discri_contexte_famille',
+                'discri_contexte_autre',
             }
             BOOL_RADIO_FIELDS = {
                 'a_deja_travaille', 'fonction_management', 'reveil_nuit', 'aide_sommeil',
@@ -718,17 +746,46 @@ class QuestionnaireView(View):
                 'annee_naissance', 'niv_diplome', 'revenus_tranche', 'travail_statut',
                 'genre', 'habitat', 'profession',
                 'freq_reves_not', 'etendue_souvenir_reve', 'temps_du_reve',
-                'latence_som', 'besoin_som', 'nuits_reveil', 'duree_eveil', 'sleep_hours',
+                'latence_som', 'nuits_reveil', 'duree_eveil', 'sleep_hours',
+                'statut_couple', 'nb_enfants_cohabitants', 'nb_enfants_moins14',
+                'pere_niv_diplome', 'pere_csp', 'mere_niv_diplome', 'mere_csp',
+                'conj_niv_diplome', 'conj_csp', 'lieu_naissance', 'lieu_naissance_pere',
+                'perception_financiere', 'perception_risque_pauvrete', 'position_subjective_classe',
+                'perception_mobilite', 'discri_presence', 'sante_generale',
+                'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
             }
-            TIME_FIELDS = {'heure_coucher', 'heure_reveil'}
+            TIME_FIELDS = {'heure_coucher', 'heure_reveil', 'besoin_som'}
 
             SECTION_FIELDS = {
                 '1': [
                     'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
                     'travail_statut', 'a_deja_travaille', 'profession', 'fonction_management',
                 ],
-                '2': [],
+                '2': [
+                    'statut_couple',
+                    'composition_logement_seul', 'composition_logement_conjoint',
+                    'composition_logement_enfants', 'composition_logement_ami_parent_heberge',
+                    'composition_logement_colocataire', 'composition_logement_parent_grand_parent',
+                    'composition_logement_autres',
+                    'nb_enfants_cohabitants', 'nb_enfants_moins14',
+                    'pere_niv_diplome', 'pere_csp',
+                    'mere_niv_diplome', 'mere_csp',
+                    'conj_niv_diplome', 'conj_csp',
+                    'lieu_naissance', 'lieu_naissance_pere',
+                ],
                 '3': [
+                    'perception_financiere', 'perception_risque_pauvrete',
+                    'position_subjective_classe', 'perception_mobilite',
+                    'discri_presence',
+                    'discri_age', 'discri_genre', 'discri_sante_physique', 'discri_sante_mentale',
+                    'discri_couleur_peau', 'discri_origine_nationalite', 'discri_situation_familiale',
+                    'discri_orientation_sexuelle', 'discri_autre', 'discri_autre_precision',
+                    'discri_contexte_emploi', 'discri_contexte_logement', 'discri_contexte_travail',
+                    'discri_contexte_education', 'discri_contexte_sante', 'discri_contexte_famille',
+                    'discri_contexte_autre',
+                    'sante_generale', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
+                ],
+                '4': [
                     'freq_reves_not', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
                     'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
                     'etendue_souvenir_reve', 'temps_du_reve',
@@ -955,8 +1012,9 @@ class NotificationsListView(LoginRequiredMixin, View):
 
 class NotificationMarkAsReadView(LoginRequiredMixin, View):
     """Marquer une notification comme lue"""
-    
-    @require_http_methods(["POST"])
+
+    http_method_names = ['post']
+
     def post(self, request, notification_id):
         """Marquer une notification comme lue"""
         try:
@@ -1011,8 +1069,9 @@ class NotificationUnreadCountView(LoginRequiredMixin, View):
 
 class NotificationDeleteView(LoginRequiredMixin, View):
     """Supprimer une notification"""
-    
-    @require_http_methods(["DELETE"])
+
+    http_method_names = ['delete']
+
     def delete(self, request, notification_id):
         """Supprimer une notification"""
         try:

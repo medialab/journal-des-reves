@@ -4,10 +4,274 @@
 {% block title %}Mon Profil – {{ user.username }}{% endblock %}
 
 {% block content %}
+<style>
+.profile-insights-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.8fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.insight-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 1.25rem;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.insight-card-title {
+    margin: 0 0 0.35rem;
+    color: #3245bd;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.insight-card-subtitle {
+    margin: 0;
+    color: #667085;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.weekly-stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 188px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 100%);
+}
+
+.weekly-stat-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.weekly-stat-number-inline {
+    color: #3245bd;
+    font-size: clamp(2.4rem, 4vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.weekly-stat-caption {
+    color: #667085;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+}
+
+.tone-bar-card {
+    min-height: 188px;
+}
+
+/* Spectrum cursor */
+.tone-spectrum {
+    margin-top: 1rem;
+}
+
+
+.tone-spectrum-track-wrapper {
+    position: relative;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.tone-spectrum-track {
+    position: relative;
+    height: 10px;
+    width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3245bd 0%, rgba(255,255,255,0.0) 100%);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.tone-spectrum-ticks {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0;
+    pointer-events: none;
+}
+
+.tone-spectrum-tick {
+    width: 2px;
+    height: 16px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 1px;
+}
+
+.tone-spectrum-cursor {
+    position: absolute;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #3245bd;
+    box-shadow: 0 2px 8px rgba(50,69,189,0.32);
+    z-index: 2;
+    transition: left 0.35s ease;
+}
+
+.tone-legend {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.tone-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #667085;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.tone-legend-item strong {
+    color: #172033;
+}
+
+.profile-secondary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.theme-cloud-card,
+.time-bars-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 1.25rem;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+}
+
+.theme-cloud {
+    position: relative;
+    display: flex;
+    min-height: 270px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    padding: 1rem 0.25rem 0.5rem;
+}
+
+.theme-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    text-align: center;
+    color: #3245bd;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: 0 10px 18px rgba(50, 69, 189, 0.08);
+}
+
+.theme-bubble:hover {
+    transform: scale(1.06);
+    box-shadow: 0 18px 26px rgba(50, 69, 189, 0.14);
+}
+
+.theme-bubble-label {
+    padding: 0 0.35rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.theme-bubble-count {
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    opacity: 0.72;
+}
+
+.time-bars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+
+.time-bar-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 180px) minmax(0, 1fr) 56px;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.time-bar-label {
+    color: #172033;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.time-bar-track {
+    position: relative;
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #edf1f7;
+}
+
+.time-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #3245bd 0%, #6b9de1 100%);
+}
+
+.time-bar-value {
+    color: #667085;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+.profile-empty-inline {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: #667085;
+    line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+    .profile-insights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tone-legend {
+        grid-template-columns: 1fr;
+    }
+
+    .time-bar-row {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+
+    .time-bar-value {
+        text-align: left;
+    }
+}
+</style>
 <!-- Section Hero -->
 <section class="page-hero page-hero-small">
     <div class="container-small">
-        <h1 class="page-title">👤 Mon Profil</h1>
+        <h1 class="page-title">Mon Profil</h1>
         <p class="page-subtitle">Consultez vos statistiques personnelles</p>
     </div>
 </section>
@@ -16,27 +280,92 @@
 <div class="page-content">
     <div class="container-small">
         {% if total_reves > 0 %}
+            <div class="profile-insights-grid">
+                <article class="insight-card weekly-stat-card">
+                    <div>
+                        <div class="weekly-stat-title-row">
+                            <span class="weekly-stat-number-inline">{{ weekly_dream_count }}</span>
+                            <h2 class="insight-card-title" style="margin:0; text-align:left;">Souvenirs de rêves cette semaine</h2>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="insight-card tone-bar-card">
+                    <h2 class="insight-card-title" style="text-align:left;">Tonalité des rêves</h2>
+                    {% if valence_total > 0 and valence_cursor_pct is not None %}
+                        <div class="tone-spectrum">
+                            <div class="tone-spectrum-track-wrapper">
+                                <div class="tone-spectrum-track">
+                                    <div class="tone-spectrum-ticks">
+                                        <div class="tone-spectrum-tick"></div>
+                                        <div class="tone-spectrum-tick"></div>
+                                        <div class="tone-spectrum-tick"></div>
+                                        <div class="tone-spectrum-tick"></div>
+                                        <div class="tone-spectrum-tick"></div>
+                                    </div>
+                                </div>
+                                <div class="tone-spectrum-cursor" style="left: {{ valence_cursor_pct }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="tone-legend">
+                            {% for segment in valence_segments %}
+                                <div class="tone-legend-item">
+                                    <span>{{ segment.label }} ({{ segment.count }})</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="profile-empty-inline">La tonalité apparaîtra ici dès que vous aurez qualifié au moins un rêve.</div>
+                    {% endif %}
+                </article>
+            </div>
+
             <!-- Graphiques -->
             <div class="charts-grid">
                 {% if emotions_labels %}
                     <!-- Camembert des émotions -->
                     <article class="chart-card">
-                        <h2 class="chart-title">Émotions ressenties</h2>
+                        <h2 class="chart-title" style="text-align:left;">Émotions ressenties</h2>
                         <div class="chart-container">
                             <canvas id="emotionsChart" width="300" height="300"></canvas>
                         </div>
                     </article>
                 {% endif %}
 
-                {% if etendue_labels %}
-                    <!-- Diagramme de l'étendue du souvenir -->
-                    <article class="chart-card">
-                        <h2 class="chart-title">Étendue du souvenir</h2>
-                        <div class="chart-container">
-                            <canvas id="etendueChart" width="300" height="200"></canvas>
+                <!-- Courbe hebdomadaire des souvenirs de rêve -->
+                <article class="chart-card">
+                    <h2 class="chart-title" style="text-align:left;">Souvenirs de rêves (courbe hebdomadaire)</h2>
+                    <div class="chart-container">
+                        <canvas id="weeklyCurveChart" width="300" height="300"></canvas>
+                    </div>
+                </article>
+            </div>
+
+            <div class="profile-secondary-grid">
+                <article class="theme-cloud-card">
+                    <h2 class="insight-card-title" style="text-align:left;">Espace thématique</h2>
+                    <p class="insight-card-subtitle">Éléments récurrents liés aux personnes, lieux et situations de vos rêves.</p>
+                    {% if top_themes %}
+                        <div class="theme-cloud">
+                            {% for item in top_themes %}
+                                <div class="theme-bubble" style="width: {{ item.size }}px; height: {{ item.size }}px; background: hsla(228, 58%, 47%, {{ item.opacity }}); border: 2px solid hsla(228, 58%, 47%, {{ item.border_opacity }}); transform: translate({{ item.offset_x }}px, {{ item.offset_y }}px);">
+                                    <span class="theme-bubble-label" style="font-size: {{ item.font_size }}px;">{{ item.theme }}</span>
+                                    <span class="theme-bubble-count">×{{ item.count }}</span>
+                                </div>
+                            {% endfor %}
                         </div>
-                    </article>
-                {% endif %}
+                    {% else %}
+                        <div class="profile-empty-inline">Les thématiques s'afficheront ici dès que vous associerez des personnes, lieux ou situations à vos rêves.</div>
+                    {% endif %}
+                </article>
+
+                <article class="time-bars-card">
+                    <h2 class="insight-card-title" style="text-align:left;">Le temps du rêve</h2>
+                    <p class="insight-card-subtitle">Temporalité des éléments du rêve par rapport à votre vie éveillée.</p>
+                    <div class="chart-container">
+                        <canvas id="tempsChart" width="340" height="180"></canvas>
+                    </div>
+                </article>
             </div>
         {% else %}
             <!-- État vide -->
@@ -119,59 +448,87 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     {% endif %}
 
-    // Graphique de l'étendue du souvenir (Bar Chart)
-    {% if etendue_labels %}
-        const etendueCtx = document.getElementById('etendueChart');
-        if (etendueCtx) {
-            new Chart(etendueCtx, {
-                type: 'bar',
+    // Courbe hebdomadaire des souvenirs de rêve (Line Chart)
+    {% if weekly_curve_labels %}
+        const weeklyCurveCtx = document.getElementById('weeklyCurveChart');
+        if (weeklyCurveCtx) {
+            new Chart(weeklyCurveCtx, {
+                type: 'line',
                 data: {
-                    labels: {{ etendue_labels|safe }},
+                    labels: {{ weekly_curve_labels|safe }},
                     datasets: [{
-                        label: 'Nombre de rêves',
-                        data: {{ etendue_counts|safe }},
-                        backgroundColor: [
-                            'rgba(50, 69, 189, 0.8)',
-                            'rgba(107, 157, 225, 0.8)',
-                            'rgba(107, 157, 225, 0.6)',
-                            'rgba(50, 69, 189, 0.6)',
-                        ],
-                        borderColor: [
-                            'rgba(50, 69, 189, 1)',
-                            'rgba(107, 157, 225, 1)',
-                            'rgba(107, 157, 225, 1)',
-                            'rgba(50, 69, 189, 1)',
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 6
+                        label: 'Souvenirs de rêve',
+                        data: {{ weekly_curve_counts|safe }},
+                        fill: true,
+                        borderColor: 'rgba(50, 69, 189, 1)',
+                        backgroundColor: 'rgba(50, 69, 189, 0.12)',
+                        tension: 0.35,
+                        pointBackgroundColor: 'rgba(50, 69, 189, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            labels: {
-                                font: {
-                                    family: "'Inter', sans-serif",
-                                    size: 12
-                                }
-                            }
+                            display: false
                         }
                     },
                     scales: {
                         x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Inter', sans-serif", size: 13 } }
+                        },
+                        y: {
                             beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
+                            grid: { color: '#f0f2f7' },
+                            ticks: { stepSize: 1, font: { family: "'Inter', sans-serif", size: 13 } }
                         }
                     }
                 }
             });
         }
     {% endif %}
+
+    // Graphique du temps du rêve (Bar Chart)
+    const tempsCtx = document.getElementById('tempsChart');
+    if (tempsCtx) {
+        new Chart(tempsCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for item in temps_stats %}'{{ item.label }}',{% endfor %}],
+                datasets: [{
+                    label: 'Nombre de rêves',
+                    data: [{% for item in temps_stats %}{{ item.count }},{% endfor %}],
+                    backgroundColor: 'rgba(50, 69, 189, 0.7)',
+                    borderColor: 'rgba(50, 69, 189, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

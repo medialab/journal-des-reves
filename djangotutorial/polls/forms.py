@@ -1,4 +1,5 @@
 from django import forms
+import re
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -14,7 +15,12 @@ class ReveForm(forms.ModelForm):
             'etendue_reve',
             'sens',
             'emotions_reve',
-            'temps_reve',
+            'temps_passe_lointain',
+            'temps_passe_recent',
+            'temps_veille',
+            'temps_futur_proche',
+            'temps_futur_lointain',
+            'temps_difficile',
             'commentaire_libre',
             'tags'
         ]
@@ -28,7 +34,6 @@ class ReveForm(forms.ModelForm):
             'etendue_reve': forms.RadioSelect(),
             'sens': forms.RadioSelect(),
             'emotions_reve': forms.CheckboxSelectMultiple(),
-            'temps_reve': forms.RadioSelect(),
             'commentaire_libre': forms.Textarea(attrs={'rows': 4}),
             'tags': forms.CheckboxSelectMultiple(),
         }
@@ -38,7 +43,6 @@ class ReveForm(forms.ModelForm):
             'etendue_reve': 'Je me souviens plutôt',
             'sens': 'Sens présents dans le rêve',
             'emotions_reve': 'Émotions ressenties',
-            'temps_reve': 'Temporalité des éléments du rêve',
             'commentaire_libre': 'Commentaire libre',
             'tags': 'Tags personnalisés',
         }
@@ -106,6 +110,52 @@ class QuestionnaireForm(forms.ModelForm):
             'a_deja_travaille',
             'profession',
             'fonction_management',
+            'statut_couple',
+            'composition_logement_seul',
+            'composition_logement_conjoint',
+            'composition_logement_enfants',
+            'composition_logement_ami_parent_heberge',
+            'composition_logement_colocataire',
+            'composition_logement_parent_grand_parent',
+            'composition_logement_autres',
+            'nb_enfants_cohabitants',
+            'nb_enfants_moins14',
+            'pere_niv_diplome',
+            'pere_csp',
+            'mere_niv_diplome',
+            'mere_csp',
+            'conj_niv_diplome',
+            'conj_csp',
+            'lieu_naissance',
+            'lieu_naissance_pere',
+            'perception_financiere',
+            'perception_risque_pauvrete',
+            'position_subjective_classe',
+            'perception_mobilite',
+            'discri_presence',
+            'discri_age',
+            'discri_genre',
+            'discri_sante_physique',
+            'discri_sante_mentale',
+            'discri_couleur_peau',
+            'discri_origine_nationalite',
+            'discri_situation_familiale',
+            'discri_orientation_sexuelle',
+            'discri_autre',
+            'discri_autre_precision',
+            'discri_contexte_emploi',
+            'discri_contexte_logement',
+            'discri_contexte_travail',
+            'discri_contexte_education',
+            'discri_contexte_sante',
+            'discri_contexte_famille',
+            'discri_contexte_autre',
+            'sante_generale',
+            'det_1',
+            'det_2',
+            'det_3',
+            'det_4',
+            'det_5',
             # PARTIE 2: Questions sur les rêves
             'frequency', 
             'dream_lucide', 
@@ -134,7 +184,7 @@ class QuestionnaireForm(forms.ModelForm):
             'heure_coucher': forms.TimeInput(attrs={'class': 'form-input', 'type': 'time'}),
             'heure_reveil': forms.TimeInput(attrs={'class': 'form-input', 'type': 'time'}),
             'latence_som': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '1440'}),
-            'besoin_som': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '1440'}),
+            'besoin_som': forms.TimeInput(attrs={'class': 'form-input', 'type': 'time'}),
             'reveil_nuit': forms.RadioSelect(
                 choices=((True, 'Oui'), (False, 'Non')),
                 attrs={'class': 'radio-input'}
@@ -189,6 +239,52 @@ class QuestionnaireForm(forms.ModelForm):
                 'id': 'id_profession'
             }),
             'fonction_management': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'statut_couple': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'composition_logement_seul': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option'}),
+            'composition_logement_conjoint': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option'}),
+            'composition_logement_enfants': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option', 'id': 'id_composition_logement_enfants'}),
+            'composition_logement_ami_parent_heberge': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option'}),
+            'composition_logement_colocataire': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option'}),
+            'composition_logement_parent_grand_parent': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option'}),
+            'composition_logement_autres': forms.CheckboxInput(attrs={'class': 'checkbox-input composition-logement-option'}),
+            'nb_enfants_cohabitants': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '19'}),
+            'nb_enfants_moins14': forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'max': '19'}),
+            'pere_niv_diplome': forms.Select(attrs={'class': 'form-input'}),
+            'pere_csp': forms.Select(attrs={'class': 'form-input'}),
+            'mere_niv_diplome': forms.Select(attrs={'class': 'form-input'}),
+            'mere_csp': forms.Select(attrs={'class': 'form-input'}),
+            'conj_niv_diplome': forms.Select(attrs={'class': 'form-input'}),
+            'conj_csp': forms.Select(attrs={'class': 'form-input'}),
+            'lieu_naissance': forms.Select(attrs={'class': 'form-input'}),
+            'lieu_naissance_pere': forms.Select(attrs={'class': 'form-input'}),
+            'perception_financiere': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'perception_risque_pauvrete': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'position_subjective_classe': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'perception_mobilite': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'discri_presence': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'discri_age': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_genre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_sante_physique': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_sante_mentale': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_couleur_peau': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_origine_nationalite': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_situation_familiale': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_orientation_sexuelle': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input', 'id': 'id_discri_autre'}),
+            'discri_autre_precision': forms.Textarea(attrs={'class': 'form-textarea', 'rows': '2'}),
+            'discri_contexte_emploi': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_contexte_logement': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_contexte_travail': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_contexte_education': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_contexte_sante': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_contexte_famille': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'discri_contexte_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+            'sante_generale': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'det_1': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'det_2': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'det_3': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'det_4': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'det_5': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'frequency': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'dream_lucide': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'dream_recurrent': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
@@ -260,6 +356,52 @@ class QuestionnaireForm(forms.ModelForm):
             'revenus_tranche': 'Revenus mensuels du ménage',
             'travail_statut': 'Situation principale vis-à-vis du travail',
             'profession': 'Profession',
+            'statut_couple': 'Êtes-vous en couple ?',
+            'composition_logement_seul': 'Seul.e',
+            'composition_logement_conjoint': 'Avec mon ou ma conjointe',
+            'composition_logement_enfants': 'Avec un enfant ou des enfants',
+            'composition_logement_ami_parent_heberge': 'Avec ami/parent hébergé',
+            'composition_logement_colocataire': 'Colocataire',
+            'composition_logement_parent_grand_parent': 'Parent ou grand-parent',
+            'composition_logement_autres': 'Autres',
+            'nb_enfants_cohabitants': 'Combien d’enfants vivent avec vous (même en garde alternée) ?',
+            'nb_enfants_moins14': 'Combien ont moins de 14 ans ?',
+            'pere_niv_diplome': 'Quel est le plus haut diplôme de votre père ?',
+            'pere_csp': 'Votre père est / était...',
+            'mere_niv_diplome': 'Quel est le plus haut diplôme de votre mère ?',
+            'mere_csp': 'Votre mère est / était plutôt...',
+            'conj_niv_diplome': 'Quel est le plus haut diplôme de votre conjoint ?',
+            'conj_csp': 'Votre conjoint·e est plutôt...',
+            'lieu_naissance': 'Où êtes-vous né(e) ?',
+            'lieu_naissance_pere': 'Où est né votre père ?',
+            'perception_financiere': 'Actuellement, dans votre foyer, vous diriez que financièrement :',
+            'perception_risque_pauvrete': 'Pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ?',
+            'position_subjective_classe': 'Aujourd’hui, si vous deviez vous situer socialement, vous diriez que vous appartenez plutôt à :',
+            'perception_mobilite': 'Par rapport à vos parents au même âge, diriez-vous que votre situation sociale est :',
+            'discri_presence': 'Pensez-vous avoir subi des traitements inégalitaires ou des discriminations au cours des 5 dernières années ?',
+            'discri_age': 'Votre âge',
+            'discri_genre': 'Votre sexe ou votre genre',
+            'discri_sante_physique': 'Votre état de santé physique ou un handicap',
+            'discri_sante_mentale': 'Votre état de santé psychique, votre état de santé mentale',
+            'discri_couleur_peau': 'Votre couleur de peau',
+            'discri_origine_nationalite': 'Vos origines ou votre nationalité',
+            'discri_situation_familiale': 'Votre situation de famille (célibataire, enfants en bas âge)',
+            'discri_orientation_sexuelle': 'Votre orientation sexuelle',
+            'discri_autre': 'Pour une autre raison',
+            'discri_autre_precision': 'Précisez',
+            'discri_contexte_emploi': 'Lors d’une recherche d’emploi',
+            'discri_contexte_logement': 'Lors de la recherche d’un logement',
+            'discri_contexte_travail': 'Sur votre lieu de travail',
+            'discri_contexte_education': 'A l’école, à l’université ou en formation',
+            'discri_contexte_sante': 'Chez un médecin, professionnel de santé ou à l’hôpital',
+            'discri_contexte_famille': 'Dans le cadre familial',
+            'discri_contexte_autre': 'Lors d’une autre situation',
+            'sante_generale': 'Comment est votre état de santé en général ?',
+            'det_1': 'Nerveux/nerveuse',
+            'det_2': 'Triste et abattu·e',
+            'det_3': 'Calme et détendu·e',
+            'det_4': 'Si découragé·e que rien ne pouvait vous remonter le moral',
+            'det_5': 'Heureux/heureuse',
             'frequency': 'À quelle fréquence vous souvenez-vous de vos rêves ?',
             'dream_lucide': 'Rêves lucides',
             'dream_recurrent': 'Rêves récurrents',
@@ -269,6 +411,179 @@ class QuestionnaireForm(forms.ModelForm):
             'sleep_hours': 'Heures de sommeil',
             'comments': 'Commentaires',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        dropdown_fields = [
+            'pere_niv_diplome', 'pere_csp',
+            'mere_niv_diplome', 'mere_csp',
+            'conj_niv_diplome', 'conj_csp',
+            'lieu_naissance', 'lieu_naissance_pere',
+        ]
+
+        csp_grouped_fields = {'pere_csp', 'mere_csp'}
+
+        def _clean_label(label):
+            text = str(label)
+            text = re.sub(r'^\d+(?:\.\d+)?\s*\|\s*', '', text)
+            text = re.sub(r'^\d+\.\s*', '', text)
+            return text.strip()
+
+        for field_name in dropdown_fields:
+            if field_name in csp_grouped_fields:
+                continue
+            field = self.fields.get(field_name)
+            if not field:
+                continue
+
+            normalized_choices = []
+            for value, label in field.choices:
+                if value in (None, ''):
+                    continue
+                normalized_choices.append((value, _clean_label(label)))
+
+            # Remplace l'option "---------" par un libellé propre.
+            field.choices = [('', 'Sélectionnez...')] + normalized_choices
+
+        pere_csp_grouped_choices = [
+            ('1 | Cadre dirigeant', [
+                (101, "1.1 | Chef d'entreprise, hors hôtellerie, restauration, commerce"),
+                (102, "1.2 | Chef d'entreprise, hôtellerie, restauration, commerce"),
+                (103, "1.3 | Cadre dirigeant salarié, hors hôtellerie, restauration, commerce"),
+                (104, "1.4 | Cadre dirigeant et gérant, hôtellerie, restauration, commerce"),
+            ]),
+            ('2 | Profession intellectuelle et scientifique', [
+                (201, "2.1 | Ingénieur et spécialiste des sciences, des techniques, des TIC"),
+                (202, "2.2 | Médecin et professionnel de santé"),
+                (203, "2.3 | Cadre administratif, financier et commercial"),
+                (204, "2.4 | Professionnel de la justice, des sciences sociales et de la culture"),
+                (205, "2.5 | Enseignant et professionnel de l’enseignement"),
+            ]),
+            ('3 | Profession intermédiaire salariée', [
+                (301, "3.1 | Profession intermédiaire des sciences, des techniques, des TIC"),
+                (302, "3.2 | Profession intermédiaire salariée de la santé"),
+                (303, "3.3 | Profession intermédiaire de finance, vente et administration"),
+                (304, "3.4 | Profession intermédiaire des services juridiques, des services sociaux et assimilés"),
+                (305, "3.5 | Sous-officier des forces armées"),
+            ]),
+            ('4 | Petit entrepreneur (non-salarié)', [
+                (401, '4.1 | Exploitant agricole'),
+                (402, '4.2 | Commerçant et assimilé'),
+                (403, '4.3 | Artisan'),
+            ]),
+            ('5 | Employé qualifié', [
+                (501, '5.1 | Employé de bureau et assimilé'),
+                (502, '5.2 | Employé de réception, guichetier et assimilé'),
+                (503, '5.3 | Aide-soignant, garde d’enfant et aide-enseignant'),
+                (504, '5.4 | Personnel des services de protection et de sécurité et de l’armée'),
+            ]),
+            ('6 | Ouvrier qualifié salarié', [
+                (601, '6.1 | Ouvrier qualifié de la construction, sauf électricien'),
+                (602, "6.2 | Ouvrier qualifié de l'alimentation, du travail sur bois, de l'habillement"),
+                (603, "6.3 | Ouvrier qualifié de la métallurgie, de la construction mécanique, de l'imprimerie, de l'électricité et de l'électronique"),
+                (604, "6.4 | Conducteur de machines et d'installations fixes, ouvrier qualifié de l'assemblage"),
+                (605, '6.5 | Conducteur de véhicules et de matériels et engins mobiles'),
+            ]),
+            ('7 | Profession salariée peu qualifiée', [
+                (701, '7.1 | Personnel de service et employé de commerce'),
+                (702, '7.2 | Ouvrier peu qualifié et manœuvre'),
+                (703, '7.3 | Agent d\'entretien'),
+                (704, '7.4 | Ouvrier agricole'),
+            ]),
+            ('9 | Hors marché du travail', [
+                (902, '9.2 | Personne handicapée inapte de moins de 65 ans'),
+                (903, '9.3 | Chômeur non classé dans une autre catégorie'),
+                (904, '9.4 | Autre personne hors du marché du travail'),
+            ]),
+            ('13 | Non réponse', [
+                (1300, '13 | Je ne sais pas ou ne peux pas répondre'),
+            ]),
+        ]
+
+        mere_csp_grouped_choices = [
+            ('1 | Cadre dirigeante', [
+                (101, "1.1 | Cheffe d'entreprise, hors hôtellerie, restauration, commerce"),
+                (102, "1.2 | Cheffe d'entreprise, hôtellerie, restauration, commerce"),
+                (103, "1.3 | Cadre dirigeante salariée, hors hôtellerie, restauration, commerce"),
+                (104, "1.4 | Cadre dirigeante et gérante, hôtellerie, restauration, commerce"),
+            ]),
+            ('2 | Profession intellectuelle et scientifique', [
+                (201, "2.1 | Ingénieure et spécialiste des sciences, des techniques, des TIC"),
+                (202, "2.2 | Médecin et professionnelle de santé"),
+                (203, "2.3 | Cadre administrative, financière et commerciale"),
+                (204, "2.4 | Professionnelle de la justice, des sciences sociales et de la culture"),
+                (205, "2.5 | Enseignante et professionnelle de l’enseignement"),
+            ]),
+            ('3 | Profession intermédiaire salariée', [
+                (301, "3.1 | Profession intermédiaire des sciences, des techniques, des TIC"),
+                (302, "3.2 | Profession intermédiaire salariée de la santé"),
+                (303, "3.3 | Profession intermédiaire de finance, vente et administration"),
+                (304, "3.4 | Profession intermédiaire des services juridiques, des services sociaux et assimilés"),
+                (305, "3.5 | Sous-officière des forces armées"),
+            ]),
+            ('4 | Petite entrepreneure (non-salariée)', [
+                (401, '4.1 | Exploitante agricole'),
+                (402, '4.2 | Commerçante et assimilée'),
+                (403, '4.3 | Artisane'),
+            ]),
+            ('5 | Employée qualifiée', [
+                (501, '5.1 | Employée de bureau et assimilée'),
+                (502, '5.2 | Employée de réception, guichetière et assimilée'),
+                (503, '5.3 | Aide-soignante, garde d’enfant et aide-enseignante'),
+                (504, '5.4 | Personnelle des services de protection et de sécurité et de l’armée'),
+            ]),
+            ('6 | Ouvrière qualifiée salariée', [
+                (601, '6.1 | Ouvrière qualifiée de la construction, sauf électricienne'),
+                (602, "6.2 | Ouvrière qualifiée de l'alimentation, du travail sur bois, de l'habillement"),
+                (603, "6.3 | Ouvrière qualifiée de la métallurgie, de la construction mécanique, de l'imprimerie, de l'électricité et de l'électronique"),
+                (604, "6.4 | Conductrice de machines et d'installations fixes, ouvrière qualifiée de l'assemblage"),
+                (605, '6.5 | Conductrice de véhicules et de matériels et engins mobiles'),
+            ]),
+            ('7 | Profession salariée peu qualifiée', [
+                (701, '7.1 | Personnelle de service et employée de commerce'),
+                (702, '7.2 | Ouvrière peu qualifiée et manœuvre'),
+                (703, '7.3 | Agente d\'entretien'),
+                (704, '7.4 | Ouvrière agricole'),
+            ]),
+            ('9 | Hors marché du travail', [
+                (902, '9.2 | Personne handicapée inapte de moins de 65 ans'),
+                (903, '9.3 | Chômeuse non classée dans une autre catégorie'),
+                (904, '9.4 | Autre personne hors du marché du travail'),
+            ]),
+            ('13 | Non réponse', [
+                (1300, '13 | Je ne sais pas ou ne peux pas répondre'),
+            ]),
+        ]
+
+        field = self.fields.get('pere_csp')
+        if field:
+            field.choices = [('', 'Sélectionnez...')] + pere_csp_grouped_choices
+
+        field = self.fields.get('mere_csp')
+        if field:
+            field.choices = [('', 'Sélectionnez...')] + mere_csp_grouped_choices
+
+        # Retire les choix vides automatiques qui s'affichent comme "---------".
+        # Les champs select conservent un libellé explicite "Sélectionnez..." quand nécessaire.
+        fields_without_blank_choice = [
+            'perception_financiere',
+            'perception_risque_pauvrete',
+            'position_subjective_classe',
+            'perception_mobilite',
+            'discri_presence',
+            'sante_generale',
+            'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
+        ]
+        for field_name in fields_without_blank_choice:
+            field = self.fields.get(field_name)
+            if not field:
+                continue
+            field.choices = [
+                (value, label)
+                for value, label in field.choices
+                if value not in (None, '')
+            ]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -312,6 +627,66 @@ class QuestionnaireForm(forms.ModelForm):
         # Si "Autre" pensée n'est pas coché, on ignore le texte libre.
         if not cleaned_data.get('pens_autre'):
             cleaned_data['pens_autre_txt'] = ''
+
+        # Conditions pour les enfants cohabitants.
+        has_children_at_home = cleaned_data.get('composition_logement_enfants')
+        nb_enfants_cohabitants = cleaned_data.get('nb_enfants_cohabitants')
+        nb_enfants_moins14 = cleaned_data.get('nb_enfants_moins14')
+
+        if has_children_at_home:
+            if nb_enfants_cohabitants is None:
+                self.add_error('nb_enfants_cohabitants', "Ce champ est requis si vous vivez avec un enfant ou des enfants.")
+
+            if nb_enfants_moins14 is None:
+                self.add_error('nb_enfants_moins14', "Ce champ est requis si vous vivez avec un enfant ou des enfants.")
+
+            if nb_enfants_cohabitants is not None and nb_enfants_cohabitants >= 20:
+                self.add_error('nb_enfants_cohabitants', "La valeur doit être inférieure à 20.")
+
+            if nb_enfants_moins14 is not None and nb_enfants_moins14 >= 20:
+                self.add_error('nb_enfants_moins14', "La valeur doit être inférieure à 20.")
+
+            if (
+                nb_enfants_cohabitants is not None
+                and nb_enfants_moins14 is not None
+                and nb_enfants_moins14 > nb_enfants_cohabitants
+            ):
+                self.add_error('nb_enfants_moins14', "Le nombre d'enfants de moins de 14 ans doit être inférieur ou égal au nombre total d'enfants cohabitants.")
+        else:
+            cleaned_data['nb_enfants_cohabitants'] = None
+            cleaned_data['nb_enfants_moins14'] = None
+
+        # Questions conjoint uniquement si en couple = Oui.
+        if cleaned_data.get('statut_couple') != 1:
+            cleaned_data['conj_niv_diplome'] = None
+            cleaned_data['conj_csp'] = None
+
+        # Questions discrimination détaillées uniquement si discrimination présente.
+        discri_present = cleaned_data.get('discri_presence') in (1, 2)
+        discri_reason_fields = [
+            'discri_age', 'discri_genre', 'discri_sante_physique', 'discri_sante_mentale',
+            'discri_couleur_peau', 'discri_origine_nationalite', 'discri_situation_familiale',
+            'discri_orientation_sexuelle', 'discri_autre'
+        ]
+        discri_context_fields = [
+            'discri_contexte_emploi', 'discri_contexte_logement', 'discri_contexte_travail',
+            'discri_contexte_education', 'discri_contexte_sante', 'discri_contexte_famille',
+            'discri_contexte_autre'
+        ]
+
+        if not discri_present:
+            for field_name in discri_reason_fields + discri_context_fields:
+                cleaned_data[field_name] = False
+            cleaned_data['discri_autre_precision'] = ''
+        else:
+            if not any(cleaned_data.get(name) for name in discri_reason_fields):
+                self.add_error('discri_presence', 'Veuillez sélectionner au moins une raison de discrimination.')
+            if not any(cleaned_data.get(name) for name in discri_context_fields):
+                self.add_error('discri_presence', 'Veuillez sélectionner au moins un contexte de discrimination.')
+            if cleaned_data.get('discri_autre') and not (cleaned_data.get('discri_autre_precision') or '').strip():
+                self.add_error('discri_autre_precision', 'Précisez la raison "autre".')
+            if not cleaned_data.get('discri_autre'):
+                cleaned_data['discri_autre_precision'] = ''
 
         return cleaned_data
 

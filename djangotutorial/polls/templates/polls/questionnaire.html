@@ -4,7 +4,7 @@
 {% block title %}Questionnaire - Journal des Rêves{% endblock %}
 
 {% block content %}
-<section class="page-content">
+<section class="page-content questionnaire-intro-active" id="questionnairePage">
     <div class="container-small">
         
         <!-- Messages Django -->
@@ -41,7 +41,19 @@
         <div class="form-card"{% if not is_authenticated %} style="opacity: 0.4; pointer-events: none;"{% endif %}>
             <!-- INTRO SCREEN -->
             <div class="questionnaire-intro" id="introScreen">
-                <h1 class="questionnaire-title">📝 Questionnaire</h1>
+                <h1 class="questionnaire-title">
+                    <span class="questionnaire-title-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M12 11h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M12 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M8 11h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M8 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                    <span>Questionnaire</span>
+                </h1>
                 <p class="questionnaire-description">
                     Ce questionnaire fait partie d'une recherche en sciences sociales visant à comprendre l'expérience des rêves et 
                     leur relation avec votre vie quotidienne. L'ensemble du questionnaire dure seulement 10 à 15 minutes.
@@ -51,27 +63,22 @@
                 </button>
             </div>
             
-            <!-- Barre de progression (masquée au chargement) -->
-            <div class="progress-bar hidden" id="progressBarContainer">
-                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-            </div>
-            
             <!-- Numéro d'étape (masqué au chargement) -->
             <div class="step-indicator hidden" id="stepIndicator">
-                <span class="step-number" id="stepNumber">1</span> / <span class="step-total">3</span>
+                <span class="step-number" id="stepNumber">1</span> / <span class="step-total">4</span>
             </div>
 
             <form method="post" id="questionnaireForm" class="modern-form">
                 {% csrf_token %}
 
-                <!-- ========== SECTION 3: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL ========== -->
-                <section class="form-section hidden" data-section="3">
+                <!-- ========== SECTION 4: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL ========== -->
+                <section class="form-section hidden" data-section="4">
                     <div class="section-header">
                         <h2 class="section-title">🌙 Conditions sociales du rêve et du sommeil</h2>
-                        <p class="section-description">Troisième page du questionnaire</p>
+                        <p class="section-description">Quatrième page du questionnaire</p>
                     </div>
 
-                    <h3 class="subsection-violet">Vos rêves</h3>
+                    <h3 class="subsection-violet">Vos rêves et votre sommeil</h3>
 
                     <div class="form-group">
                         <label class="form-label">Avant cette enquête, vous est-il arrivé de noter vos rêves ?</label>
@@ -136,7 +143,8 @@
                         </div>
                     </div>
 
-                    <h3 class="subsection-violet">Votre sommeil</h3>
+                    <div class="focus-card">
+                    <h4 class="detresse-title"> Votre sommeil </h4>
 
                     <div class="form-group">
                         <label class="form-label" for="id_heure_coucher">Le plus souvent, en semaine, à quelle heure éteignez-vous votre lampe pour dormir ?</label>
@@ -149,13 +157,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="id_latence_som">Le plus souvent, combien de temps vous faut-il pour vous endormir ? Si immédiatement ou quelques secondes, saisir 0 minute.</label>
+                        <label class="form-label" for="id_latence_som">Le plus souvent, combien de temps vous faut-il pour vous endormir ?</label>
+                        <p class="question-hint">Mettre le résultat en minutes, et si immédiatement ou quelques secondes, saisir 0 minute.</p>
                         <input type="number" id="id_latence_som" name="latence_som" min="0" max="1440" class="form-input" value="{{ form.latence_som.value|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="id_besoin_som">En moyenne, de combien de temps de sommeil avez-vous besoin pour être en forme le lendemain ?</label>
-                        <input type="number" id="id_besoin_som" name="besoin_som" min="0" max="1440" class="form-input" value="{{ form.besoin_som.value|default:'' }}">
+                        <input type="time" id="id_besoin_som" name="besoin_som" class="form-input" value="{{ form.besoin_som.value|default:'' }}">
                     </div>
 
                     <div class="form-group">
@@ -186,6 +195,7 @@
                     </div>
 
                     <div class="form-group" id="aide_sommeil_options" style="display: none;">
+                        <p class="form-label" style="margin-bottom: 0.35rem;">Précisez :</p>
                         <div class="checkbox-group inline-boolean-group">
                             <label class="checkbox-label choice-label"><input type="checkbox" name="aide_medic" {% if form.aide_medic.value %}checked{% endif %}><span class="checkbox-text">Médicaments</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="aide_tisane" {% if form.aide_tisane.value %}checked{% endif %}><span class="checkbox-text">Tisane</span></label>
@@ -193,9 +203,11 @@
                         </div>
                     </div>
 
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">Avant de vous endormir, pensez-vous souvent à… (plusieurs réponses possibles)</label>
-                        <div class="checkbox-group inline-boolean-group">
+                        <div class="checkbox-group compact-choices sleep-choices-row">
                             <label class="checkbox-label choice-label"><input type="checkbox" name="pens_trav" class="pens-option" {% if form.pens_trav.value %}checked{% endif %}><span class="checkbox-text">Travail / études</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="pens_fin" class="pens-option" {% if form.pens_fin.value %}checked{% endif %}><span class="checkbox-text">Situation financière</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="pens_fam" class="pens-option" {% if form.pens_fam.value %}checked{% endif %}><span class="checkbox-text">Famille</span></label>
@@ -213,7 +225,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Parmi les contenus ou activités suivants, lesquels consultez-vous, regardez-vous ou pratiquez-vous le plus souvent avant de vous endormir ?</label>
-                        <div class="checkbox-group inline-boolean-group">
+                        <div class="checkbox-group compact-choices sleep-choices-row">
                             <label class="checkbox-label choice-label"><input type="checkbox" name="cont_tv" class="cont-option" {% if form.cont_tv.value %}checked{% endif %}><span class="checkbox-text">Télévision</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="cont_series_films" class="cont-option" {% if form.cont_series_films.value %}checked{% endif %}><span class="checkbox-text">Séries / films</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="cont_rs" class="cont-option" {% if form.cont_rs.value %}checked{% endif %}><span class="checkbox-text">Réseaux sociaux</span></label>
@@ -221,6 +233,231 @@
                             <label class="checkbox-label choice-label"><input type="checkbox" name="cont_livres" class="cont-option" {% if form.cont_livres.value %}checked{% endif %}><span class="checkbox-text">Livres, journaux</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="cont_rien" id="id_cont_rien" {% if form.cont_rien.value %}checked{% endif %}><span class="checkbox-text">Rien</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="cont_autre" class="cont-option" {% if form.cont_autre.value %}checked{% endif %}><span class="checkbox-text">Autres</span></label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========== SECTION 3: POSITION SOCIALE, DISCRIMINATIONS, SANTE ========== -->
+                <section class="form-section hidden" data-section="3">
+                    <div class="section-header">
+                        <h2 class="section-title">⚖️ Position sociale, discriminations et santé</h2>
+                        <p class="section-description">Troisième page du questionnaire</p>
+                    </div>
+
+                    <h3 class="subsection-violet">Position sociale subjective</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Actuellement, dans votre foyer, vous diriez que financièrement :</label>
+                        <div class="radio-group">
+                            {% for value, label in form.perception_financiere.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="perception_financiere" value="{{ value }}" {% if form.perception_financiere.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.perception_financiere.errors %}<div class="error-message">{{ form.perception_financiere.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Pensez-vous qu'il y a un risque que vous deveniez pauvre dans les cinq prochaines années ?</label>
+                        <div class="radio-group">
+                            {% for value, label in form.perception_risque_pauvrete.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="perception_risque_pauvrete" value="{{ value }}" {% if form.perception_risque_pauvrete.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.perception_risque_pauvrete.errors %}<div class="error-message">{{ form.perception_risque_pauvrete.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Aujourd'hui, si vous deviez vous situer socialement, vous diriez que vous appartenez plutôt à :</label>
+                        <div class="radio-group">
+                            {% for value, label in form.position_subjective_classe.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="position_subjective_classe" value="{{ value }}" {% if form.position_subjective_classe.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.position_subjective_classe.errors %}<div class="error-message">{{ form.position_subjective_classe.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Par rapport à vos parents au même âge, diriez-vous que votre situation sociale est :</label>
+                        <div class="radio-group">
+                            {% for value, label in form.perception_mobilite.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="perception_mobilite" value="{{ value }}" {% if form.perception_mobilite.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.perception_mobilite.errors %}<div class="error-message">{{ form.perception_mobilite.errors }}</div>{% endif %}
+                    </div>
+
+                    <h3 class="subsection-violet">Discriminations</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Pensez-vous avoir subi des traitements inégalitaires ou des discriminations au cours des 5 dernières années ?</label>
+                        <div class="radio-group compact-choices compact-inline-row discri-presence-row">
+                            {% for value, label in form.discri_presence.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="discri_presence" value="{{ value }}" {% if form.discri_presence.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.discri_presence.errors %}<div class="error-message">{{ form.discri_presence.errors }}</div>{% endif %}
+                    </div>
+
+                    <div id="discri_details_group" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Pour quelle(s) raison(s) ? (plusieurs réponses possibles)</label>
+                            <div class="checkbox-group inline-boolean-group">
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_age" class="discri-reason" {% if form.discri_age.value %}checked{% endif %}><span class="checkbox-text">Votre âge</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_genre" class="discri-reason" {% if form.discri_genre.value %}checked{% endif %}><span class="checkbox-text">Votre sexe ou votre genre</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_sante_physique" class="discri-reason" {% if form.discri_sante_physique.value %}checked{% endif %}><span class="checkbox-text">Votre état de santé physique ou un handicap</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_sante_mentale" class="discri-reason" {% if form.discri_sante_mentale.value %}checked{% endif %}><span class="checkbox-text">Votre état de santé psychique, votre état de santé mentale</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_couleur_peau" class="discri-reason" {% if form.discri_couleur_peau.value %}checked{% endif %}><span class="checkbox-text">Votre couleur de peau</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_origine_nationalite" class="discri-reason" {% if form.discri_origine_nationalite.value %}checked{% endif %}><span class="checkbox-text">Vos origines, votre religion, ou votre nationalité</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_situation_familiale" class="discri-reason" {% if form.discri_situation_familiale.value %}checked{% endif %}><span class="checkbox-text">Votre situation de famille</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_orientation_sexuelle" class="discri-reason" {% if form.discri_orientation_sexuelle.value %}checked{% endif %}><span class="checkbox-text">Votre orientation sexuelle</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" id="id_discri_autre" name="discri_autre" class="discri-reason" {% if form.discri_autre.value %}checked{% endif %}><span class="checkbox-text">Pour une autre raison</span></label>
+                            </div>
+                            {% if form.discri_age.errors or form.discri_genre.errors or form.discri_sante_physique.errors or form.discri_sante_mentale.errors or form.discri_couleur_peau.errors or form.discri_origine_nationalite.errors or form.discri_situation_familiale.errors or form.discri_orientation_sexuelle.errors or form.discri_autre.errors %}
+                            <div class="error-message">Merci de sélectionner au moins une raison.</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group" id="discri_autre_precision_group" style="display: none;">
+                            <label class="form-label" for="id_discri_autre_precision">Précisez :</label>
+                            <textarea id="id_discri_autre_precision" name="discri_autre_precision" class="form-textarea" rows="3">{{ form.discri_autre_precision.value|default:'' }}</textarea>
+                            {% if form.discri_autre_precision.errors %}<div class="error-message">{{ form.discri_autre_precision.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Dans quel(s) contexte(s) ? (plusieurs réponses possibles)</label>
+                            <div class="checkbox-group inline-boolean-group">
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_emploi" class="discri-context" {% if form.discri_contexte_emploi.value %}checked{% endif %}><span class="checkbox-text">Lors d'une recherche d'emploi</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_logement" class="discri-context" {% if form.discri_contexte_logement.value %}checked{% endif %}><span class="checkbox-text">Lors de la recherche d'un logement</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_travail" class="discri-context" {% if form.discri_contexte_travail.value %}checked{% endif %}><span class="checkbox-text">Sur votre lieu de travail</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_education" class="discri-context" {% if form.discri_contexte_education.value %}checked{% endif %}><span class="checkbox-text">A l'école, à l'université ou en formation</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_sante" class="discri-context" {% if form.discri_contexte_sante.value %}checked{% endif %}><span class="checkbox-text">Chez un médecin, professionnel de santé ou à l'hôpital</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_famille" class="discri-context" {% if form.discri_contexte_famille.value %}checked{% endif %}><span class="checkbox-text">Dans le cadre familial</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_autre" class="discri-context" {% if form.discri_contexte_autre.value %}checked{% endif %}><span class="checkbox-text">Lors d'une autre situation</span></label>
+                            </div>
+                            {% if form.discri_contexte_emploi.errors or form.discri_contexte_logement.errors or form.discri_contexte_travail.errors or form.discri_contexte_education.errors or form.discri_contexte_sante.errors or form.discri_contexte_famille.errors or form.discri_contexte_autre.errors %}
+                            <div class="error-message">Merci de sélectionner au moins un contexte.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h3 class="subsection-violet">Santé générale perçue</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Comment est votre état de santé en général ?</label>
+                        <div class="radio-group inline-boolean-group compact-choices compact-inline-row">
+                            {% for value, label in form.sante_generale.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="sante_generale" value="{{ value }}" {% if form.sante_generale.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.sante_generale.errors %}<div class="error-message">{{ form.sante_generale.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="detresse-card">
+                        <h4 class="detresse-title">Au cours des 4 dernières semaines, à quelle fréquence vous êtes-vous senti(e)...</h4>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">Nerveux/nerveuse</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.det_1.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="det_1" value="{{ value }}" {% if form.det_1.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if form.det_1.errors %}<div class="error-message">{{ form.det_1.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">Triste et abattu·e</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.det_2.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="det_2" value="{{ value }}" {% if form.det_2.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if form.det_2.errors %}<div class="error-message">{{ form.det_2.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">Calme et détendu·e</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.det_3.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="det_3" value="{{ value }}" {% if form.det_3.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if form.det_3.errors %}<div class="error-message">{{ form.det_3.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">Si découragé·e que rien ne pouvait vous remonter le moral</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.det_4.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="det_4" value="{{ value }}" {% if form.det_4.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if form.det_4.errors %}<div class="error-message">{{ form.det_4.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">Heureux/heureuse</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.det_5.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="det_5" value="{{ value }}" {% if form.det_5.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if form.det_5.errors %}<div class="error-message">{{ form.det_5.errors }}</div>{% endif %}
                         </div>
                     </div>
                 </section>
@@ -358,55 +595,55 @@
                         <select id="id_profession" name="profession" class="form-input">
                             <option value="">Sélectionnez une sous-catégorie...</option>
 
-                            <optgroup label="1 | Cadres dirigeants">
-                                <option value="101" {% if form.profession.value|stringformat:"s" == "101" %}selected{% endif %}>1.1 | Chefs d'entreprises, hors hôtellerie, restauration, commerce</option>
-                                <option value="102" {% if form.profession.value|stringformat:"s" == "102" %}selected{% endif %}>1.2 | Chefs d'entreprises, hôtellerie, restauration, commerce</option>
-                                <option value="103" {% if form.profession.value|stringformat:"s" == "103" %}selected{% endif %}>1.3 | Cadres dirigeants salariés, hors hôtellerie, restauration, commerce</option>
-                                <option value="104" {% if form.profession.value|stringformat:"s" == "104" %}selected{% endif %}>1.4 | Cadres dirigeants et gérants, hôtellerie, restauration, commerce</option>
+                            <optgroup label="1 | Cadre dirigeant·e">
+                                <option value="101" {% if form.profession.value|stringformat:"s" == "101" %}selected{% endif %}>1.1 | Chef·fe d'entreprise, hors hôtellerie, restauration, commerce</option>
+                                <option value="102" {% if form.profession.value|stringformat:"s" == "102" %}selected{% endif %}>1.2 | Chef·fe d'entreprise, hôtellerie, restauration, commerce</option>
+                                <option value="103" {% if form.profession.value|stringformat:"s" == "103" %}selected{% endif %}>1.3 | Cadre dirigeant·e salarié·e, hors hôtellerie, restauration, commerce</option>
+                                <option value="104" {% if form.profession.value|stringformat:"s" == "104" %}selected{% endif %}>1.4 | Cadre dirigeant·e ou gérant·e, hôtellerie, restauration, commerce</option>
                             </optgroup>
 
-                            <optgroup label="2 | Professions intellectuelles et scientifiques">
-                                <option value="201" {% if form.profession.value|stringformat:"s" == "201" %}selected{% endif %}>2.1 | Ingénieurs et spécialistes des sciences, techniques et TIC</option>
-                                <option value="202" {% if form.profession.value|stringformat:"s" == "202" %}selected{% endif %}>2.2 | Médecins et professionnels de santé</option>
-                                <option value="203" {% if form.profession.value|stringformat:"s" == "203" %}selected{% endif %}>2.3 | Cadres administratifs, financiers et commerciaux</option>
-                                <option value="204" {% if form.profession.value|stringformat:"s" == "204" %}selected{% endif %}>2.4 | Professionnels de la justice, sciences sociales et culture</option>
-                                <option value="205" {% if form.profession.value|stringformat:"s" == "205" %}selected{% endif %}>2.5 | Enseignants et professionnels de l'enseignement</option>
+                            <optgroup label="2 | Profession intellectuelle ou scientifique">
+                                <option value="201" {% if form.profession.value|stringformat:"s" == "201" %}selected{% endif %}>2.1 | Ingénieur·e ou spécialiste des sciences, des techniques, des technologies de l'information et des communications</option>
+                                <option value="202" {% if form.profession.value|stringformat:"s" == "202" %}selected{% endif %}>2.2 | Médecin ou professionnel·le de santé</option>
+                                <option value="203" {% if form.profession.value|stringformat:"s" == "203" %}selected{% endif %}>2.3 | Cadre administratif·ve, financier·ère ou commercial·e</option>
+                                <option value="204" {% if form.profession.value|stringformat:"s" == "204" %}selected{% endif %}>2.4 | Professionnel·le de la justice, des sciences sociales ou de la culture</option>
+                                <option value="205" {% if form.profession.value|stringformat:"s" == "205" %}selected{% endif %}>2.5 | Enseignant·e ou professionnel·le de l'enseignement</option>
                             </optgroup>
 
-                            <optgroup label="3 | Professions intermédiaires salariées">
-                                <option value="301" {% if form.profession.value|stringformat:"s" == "301" %}selected{% endif %}>3.1 | Professions intermédiaires des sciences, techniques et TIC</option>
-                                <option value="302" {% if form.profession.value|stringformat:"s" == "302" %}selected{% endif %}>3.2 | Professions intermédiaires salariées de la santé</option>
-                                <option value="303" {% if form.profession.value|stringformat:"s" == "303" %}selected{% endif %}>3.3 | Professions intermédiaires de finance, vente et administration</option>
-                                <option value="304" {% if form.profession.value|stringformat:"s" == "304" %}selected{% endif %}>3.4 | Services juridiques, services sociaux et assimilés</option>
-                                <option value="305" {% if form.profession.value|stringformat:"s" == "305" %}selected{% endif %}>3.5 | Sous-officiers des forces armées</option>
+                            <optgroup label="3 | Profession intermédiaire salariée">
+                                <option value="301" {% if form.profession.value|stringformat:"s" == "301" %}selected{% endif %}>3.1 | Profession intermédiaire des sciences, des techniques, des technologies de l'information et des communications</option>
+                                <option value="302" {% if form.profession.value|stringformat:"s" == "302" %}selected{% endif %}>3.2 | Profession intermédiaire salariée de la santé</option>
+                                <option value="303" {% if form.profession.value|stringformat:"s" == "303" %}selected{% endif %}>3.3 | Profession intermédiaire de la finance, de la vente ou de l'administration</option>
+                                <option value="304" {% if form.profession.value|stringformat:"s" == "304" %}selected{% endif %}>3.4 | Profession intermédiaire des services juridiques ou des services sociaux</option>
+                                <option value="305" {% if form.profession.value|stringformat:"s" == "305" %}selected{% endif %}>3.5 | Sous-officier·ère des forces armées</option>
                             </optgroup>
 
-                            <optgroup label="4 | Petits entrepreneurs (non-salariés)">
-                                <option value="401" {% if form.profession.value|stringformat:"s" == "401" %}selected{% endif %}>4.1 | Exploitants agricoles</option>
-                                <option value="402" {% if form.profession.value|stringformat:"s" == "402" %}selected{% endif %}>4.2 | Commerçants et assimilés</option>
-                                <option value="403" {% if form.profession.value|stringformat:"s" == "403" %}selected{% endif %}>4.3 | Artisans</option>
+                            <optgroup label="4 | Petit·e entrepreneur·e (non salarié·e)">
+                                <option value="401" {% if form.profession.value|stringformat:"s" == "401" %}selected{% endif %}>4.1 | Exploitant·e agricole</option>
+                                <option value="402" {% if form.profession.value|stringformat:"s" == "402" %}selected{% endif %}>4.2 | Commerçant·e ou assimilé·e</option>
+                                <option value="403" {% if form.profession.value|stringformat:"s" == "403" %}selected{% endif %}>4.3 | Artisan·e</option>
                             </optgroup>
 
-                            <optgroup label="5 | Employés qualifiés">
-                                <option value="501" {% if form.profession.value|stringformat:"s" == "501" %}selected{% endif %}>5.1 | Employés de bureau et assimilés</option>
-                                <option value="502" {% if form.profession.value|stringformat:"s" == "502" %}selected{% endif %}>5.2 | Employés de réception, guichetiers et assimilés</option>
-                                <option value="503" {% if form.profession.value|stringformat:"s" == "503" %}selected{% endif %}>5.3 | Aides-soignants, gardes d'enfants et aides-enseignants</option>
-                                <option value="504" {% if form.profession.value|stringformat:"s" == "504" %}selected{% endif %}>5.4 | Services de protection/sécurité et armées</option>
+                            <optgroup label="5 | Employé·e qualifié·e">
+                                <option value="501" {% if form.profession.value|stringformat:"s" == "501" %}selected{% endif %}>5.1 | Employé·e de bureau ou assimilé·e</option>
+                                <option value="502" {% if form.profession.value|stringformat:"s" == "502" %}selected{% endif %}>5.2 | Employé·e de réception, guichetier·ère ou assimilé·e</option>
+                                <option value="503" {% if form.profession.value|stringformat:"s" == "503" %}selected{% endif %}>5.3 | Aide-soignant·e, garde d'enfant ou aide-enseignant·e</option>
+                                <option value="504" {% if form.profession.value|stringformat:"s" == "504" %}selected{% endif %}>5.4 | Personnel des services de protection, de sécurité ou des armées</option>
                             </optgroup>
 
-                            <optgroup label="6 | Ouvriers qualifiés salariés">
-                                <option value="601" {% if form.profession.value|stringformat:"s" == "601" %}selected{% endif %}>6.1 | Ouvriers qualifiés de la construction, sauf électriciens</option>
-                                <option value="602" {% if form.profession.value|stringformat:"s" == "602" %}selected{% endif %}>6.2 | Ouvriers qualifiés alimentation, bois, habillement</option>
-                                <option value="603" {% if form.profession.value|stringformat:"s" == "603" %}selected{% endif %}>6.3 | Ouvriers qualifiés métallurgie, mécanique, imprimerie, élec/électronique</option>
-                                <option value="604" {% if form.profession.value|stringformat:"s" == "604" %}selected{% endif %}>6.4 | Conducteurs de machines/installations fixes, assemblage</option>
-                                <option value="605" {% if form.profession.value|stringformat:"s" == "605" %}selected{% endif %}>6.5 | Conducteurs de véhicules et engins mobiles</option>
+                            <optgroup label="6 | Ouvrier·ère qualifié·e salarié·e">
+                                <option value="601" {% if form.profession.value|stringformat:"s" == "601" %}selected{% endif %}>6.1 | Ouvrier·ère qualifié·e de la construction, sauf électricien·ne</option>
+                                <option value="602" {% if form.profession.value|stringformat:"s" == "602" %}selected{% endif %}>6.2 | Ouvrier·ère qualifié·e de l'alimentation, du travail sur bois ou de l'habillement</option>
+                                <option value="603" {% if form.profession.value|stringformat:"s" == "603" %}selected{% endif %}>6.3 | Ouvrier·ère qualifié·e de la métallurgie, de la construction mécanique, de l'imprimerie, de l'électricité ou de l'électronique</option>
+                                <option value="604" {% if form.profession.value|stringformat:"s" == "604" %}selected{% endif %}>6.4 | Conducteur·rice de machine ou d'installation fixe, ouvrier·ère qualifié·e de l'assemblage</option>
+                                <option value="605" {% if form.profession.value|stringformat:"s" == "605" %}selected{% endif %}>6.5 | Conducteur·rice de véhicule ou de matériel et engin mobile</option>
                             </optgroup>
 
-                            <optgroup label="7 | Professions salariées peu qualifiées">
-                                <option value="701" {% if form.profession.value|stringformat:"s" == "701" %}selected{% endif %}>7.1 | Personnels de services et employés de commerces</option>
-                                <option value="702" {% if form.profession.value|stringformat:"s" == "702" %}selected{% endif %}>7.2 | Ouvriers peu qualifiés et manœuvres</option>
-                                <option value="703" {% if form.profession.value|stringformat:"s" == "703" %}selected{% endif %}>7.3 | Agents d'entretien</option>
-                                <option value="704" {% if form.profession.value|stringformat:"s" == "704" %}selected{% endif %}>7.4 | Ouvriers agricoles</option>
+                            <optgroup label="7 | Profession salariée peu qualifiée">
+                                <option value="701" {% if form.profession.value|stringformat:"s" == "701" %}selected{% endif %}>7.1 | Personnel de service ou employé·e de commerce</option>
+                                <option value="702" {% if form.profession.value|stringformat:"s" == "702" %}selected{% endif %}>7.2 | Ouvrier·ère peu qualifié·e ou manœuvre</option>
+                                <option value="703" {% if form.profession.value|stringformat:"s" == "703" %}selected{% endif %}>7.3 | Agent·e d'entretien</option>
+                                <option value="704" {% if form.profession.value|stringformat:"s" == "704" %}selected{% endif %}>7.4 | Ouvrier·ère agricole</option>
                             </optgroup>
                         </select>
                         {% if form.profession.errors %}<div class="error-message">{{ form.profession.errors }}</div>{% endif %}
@@ -432,13 +669,140 @@
                 <!-- ========== SECTION 2: EMOTIONS ET SENSATIONS ========== -->
                 <section class="form-section hidden" data-section="2">
                     <div class="section-header">
-                        <h2 class="section-title">🫧 Emotions et sensations</h2>
-                        <p class="section-description">Cette page sera complétée bientôt.</p>
+                        <h2 class="section-title">🏠 Vie de couple et logement</h2>
+                        <p class="section-description">Quelques questions socio-démographiques complémentaires</p>
                     </div>
+
                     <div class="form-group">
-                        <p class="form-label" style="margin-bottom: 0; color: var(--gray-600); font-weight: 500;">
-                            Pas de questions pour l'instant.
-                        </p>
+                        <label class="form-label">Êtes-vous en couple ?</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="statut_couple" value="1" {% if form.statut_couple.value == "1" %}checked{% endif %}>
+                                <span class="radio-text">Oui</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="statut_couple" value="2" {% if form.statut_couple.value == "2" %}checked{% endif %}>
+                                <span class="radio-text">Non</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="statut_couple" value="3" {% if form.statut_couple.value == "3" %}checked{% endif %}>
+                                <span class="radio-text">Indéterminé</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="statut_couple" value="4" {% if form.statut_couple.value == "4" %}checked{% endif %}>
+                                <span class="radio-text">Ne souhaite pas répondre</span>
+                            </label>
+                        </div>
+                        {% if form.statut_couple.errors %}<div class="error-message">{{ form.statut_couple.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quelles personnes vivent actuellement avec vous dans votre logement ? (plusieurs réponses possibles)</label>
+                        <div class="checkbox-group inline-boolean-group">
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_seul" class="composition-option" {% if form.composition_logement_seul.value %}checked{% endif %}><span class="checkbox-text">Seul.e</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_conjoint" class="composition-option" {% if form.composition_logement_conjoint.value %}checked{% endif %}><span class="checkbox-text">Avec mon ou ma conjointe</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_enfants" id="id_composition_logement_enfants" class="composition-option" {% if form.composition_logement_enfants.value %}checked{% endif %}><span class="checkbox-text">Avec un enfant ou des enfants</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_ami_parent_heberge" class="composition-option" {% if form.composition_logement_ami_parent_heberge.value %}checked{% endif %}><span class="checkbox-text">Avec ami/parent hébergé</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_colocataire" class="composition-option" {% if form.composition_logement_colocataire.value %}checked{% endif %}><span class="checkbox-text">Colocataire</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_parent_grand_parent" class="composition-option" {% if form.composition_logement_parent_grand_parent.value %}checked{% endif %}><span class="checkbox-text">Parent ou grand-parent</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="composition_logement_autres" class="composition-option" {% if form.composition_logement_autres.value %}checked{% endif %}><span class="checkbox-text">Autres</span></label>
+                        </div>
+                    </div>
+
+                    <div id="composition_enfants_group" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="id_nb_enfants_cohabitants">Combien d'enfants vivent avec vous (même en garde alternée) ?</label>
+                            <input type="number" id="id_nb_enfants_cohabitants" name="nb_enfants_cohabitants" min="0" max="19" class="form-input" value="{{ form.nb_enfants_cohabitants.value|default:'' }}">
+                            {% if form.nb_enfants_cohabitants.errors %}<div class="error-message">{{ form.nb_enfants_cohabitants.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="id_nb_enfants_moins14">Combien ont moins de 14 ans ?</label>
+                            <input type="number" id="id_nb_enfants_moins14" name="nb_enfants_moins14" min="0" max="19" class="form-input" value="{{ form.nb_enfants_moins14.value|default:'' }}">
+                            {% if form.nb_enfants_moins14.errors %}<div class="error-message">{{ form.nb_enfants_moins14.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <h3 class="subsection-violet">Mobilités sociales</h3>
+
+                    <div class="focus-card">
+                    <h4 class="detresse-title"> Quelques éléments sur les personnes autour de vous </h4>
+                    <div class="form-group">
+                        <label class="form-label">Quel est le plus haut diplôme de votre père ?</label>
+                        <select id="id_pere_niv_diplome" name="pere_niv_diplome" class="form-input">
+                            {% for value, label in form.pere_niv_diplome.field.choices %}
+                            <option value="{{ value }}" {% if form.pere_niv_diplome.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.pere_niv_diplome.errors %}<div class="error-message">{{ form.pere_niv_diplome.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Votre père est / était...</label>
+                        {{ form.pere_csp }}
+                        {% if form.pere_csp.errors %}<div class="error-message">{{ form.pere_csp.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quel est le plus haut diplôme de votre mère ?</label>
+                        <select id="id_mere_niv_diplome" name="mere_niv_diplome" class="form-input">
+                            {% for value, label in form.mere_niv_diplome.field.choices %}
+                            <option value="{{ value }}" {% if form.mere_niv_diplome.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.mere_niv_diplome.errors %}<div class="error-message">{{ form.mere_niv_diplome.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Votre mère est / était plutôt...</label>
+                        {{ form.mere_csp }}
+                        {% if form.mere_csp.errors %}<div class="error-message">{{ form.mere_csp.errors }}</div>{% endif %}
+                    </div>
+
+                    <div id="conjoint_mobilite_group" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Quel est le plus haut diplôme de votre conjoint ?</label>
+                            <select id="id_conj_niv_diplome" name="conj_niv_diplome" class="form-input">
+                                {% for value, label in form.conj_niv_diplome.field.choices %}
+                                <option value="{{ value }}" {% if form.conj_niv_diplome.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.conj_niv_diplome.errors %}<div class="error-message">{{ form.conj_niv_diplome.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Votre conjoint·e est plutôt...</label>
+                            <select id="id_conj_csp" name="conj_csp" class="form-input">
+                                {% for value, label in form.conj_csp.field.choices %}
+                                <option value="{{ value }}" {% if form.conj_csp.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.conj_csp.errors %}<div class="error-message">{{ form.conj_csp.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    </div>
+
+                    <h3 class="subsection-violet">Statut migratoire</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Où êtes-vous né(e) ?</label>
+                        <select id="id_lieu_naissance" name="lieu_naissance" class="form-input">
+                            {% for value, label in form.lieu_naissance.field.choices %}
+                            <option value="{{ value }}" {% if form.lieu_naissance.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.lieu_naissance.errors %}<div class="error-message">{{ form.lieu_naissance.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Où est né votre père ?</label>
+                        <select id="id_lieu_naissance_pere" name="lieu_naissance_pere" class="form-input">
+                            {% for value, label in form.lieu_naissance_pere.field.choices %}
+                            <option value="{{ value }}" {% if form.lieu_naissance_pere.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.lieu_naissance_pere.errors %}<div class="error-message">{{ form.lieu_naissance_pere.errors }}</div>{% endif %}
                     </div>
                 </section>
 
@@ -460,26 +824,99 @@
 </section>
 
 <style>
-    /* Titres de sous-sections violets */
+    .page-content.questionnaire-intro-active {
+        min-height: calc(100vh - 110px);
+        display: flex;
+        align-items: center;
+    }
+
+    .page-content.questionnaire-intro-active .container-small {
+        width: 100%;
+    }
+
+    /* A l'arrivee: pas d'effet carte blanche derriere l'intro */
+    .page-content.questionnaire-intro-active .form-card {
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .page-content .container-small {
+        max-width: min(1200px, 100%);
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+    }
+
+    .page-content .form-card {
+        padding: 0.9rem;
+    }
+
+    .questionnaire-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .questionnaire-title-icon {
+        display: inline-flex;
+        width: 1.15em;
+        height: 1.15em;
+    }
+
+    .questionnaire-title-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Titres de sous-sections (bleu du site) */
     #questionnaireForm .subsection-violet {
-        color: #7c3aed;
+        color: #3245bd;
         font-size: 1.05rem;
         font-weight: 700;
-        margin: 1.5rem 0 0.5rem;
-        padding-bottom: 0.3rem;
-        border-bottom: 2px solid #ede9fe;
+        margin: 1.45rem 0 0.65rem;
+        padding-bottom: 0.45rem;
+        border-bottom: 2px solid rgba(50, 69, 189, 0.18);
+        line-height: 1.35;
+    }
+
+    #questionnaireForm .subsection-violet + .form-group {
+        margin-top: 0.5rem;
+    }
+
+    #questionnaireForm .section-header {
+        margin-bottom: 1.25rem;
+    }
+
+    #questionnaireForm .section-title {
+        margin-bottom: 0.45rem;
+    }
+
+    #questionnaireForm .section-description {
+        margin-bottom: 0;
+        color: var(--gray-500);
+    }
+
+    #questionnaireForm .form-group + .form-group {
+        margin-top: 0.66rem;
+    }
+
+    #questionnaireForm .form-group > .form-label {
+        margin-bottom: 0.2rem;
+        line-height: 1.4;
     }
 
     /* Présentation compacte des réponses (style enregistrer.html) */
     #questionnaireForm .radio-label,
     #questionnaireForm .checkbox-label {
-        padding: 0.32rem 0.55rem;
+        padding: 0.24rem 0.48rem;
     }
 
     #questionnaireForm .radio-group,
     #questionnaireForm .checkbox-group {
         gap: 0.35rem;
-        margin-top: 0.5rem;
+        margin-top: 0.2rem;
     }
 
     #questionnaireForm .radio-text,
@@ -487,6 +924,13 @@
         font-size: 0.92rem;
         font-weight: 500;
         color: var(--gray-600);
+    }
+
+    #questionnaireForm .question-hint {
+        margin: 0.35rem 0 0.5rem;
+        font-size: 0.88rem;
+        color: var(--gray-500);
+        line-height: 1.35;
     }
 
     /* Même rendu visuel qu'enregistrer.html au clic */
@@ -500,6 +944,10 @@
     #questionnaireForm .choice-label:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 10px rgba(50, 69, 189, 0.06);
+    }
+
+    #questionnaireForm .choice-label.is-dim {
+        opacity: 0.62;
     }
 
     #questionnaireForm .choice-label.is-selected {
@@ -519,13 +967,250 @@
         gap: 0.35rem;
     }
 
+    #questionnaireForm .compact-inline-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.28rem;
+    }
+
+    #questionnaireForm .compact-choices .choice-label {
+        padding: 0.28rem 0.56rem;
+        border-radius: 0.65rem;
+        white-space: nowrap;
+    }
+
+    #questionnaireForm .compact-choices .radio-text,
+    #questionnaireForm .compact-choices .checkbox-text {
+        font-size: 0.9rem;
+        line-height: 1.18;
+    }
+
+    /* Groupes d'options d'endormissement: toutes les options sur une meme ligne */
+    #questionnaireForm .checkbox-group.sleep-choices-row {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.2rem;
+        gap: 0.4rem;
+    }
+
+    #questionnaireForm .checkbox-group.sleep-choices-row .checkbox-label.choice-label {
+        display: inline-flex !important;
+        width: auto !important;
+        max-width: none !important;
+        flex: 0 0 auto !important;
+        min-width: max-content;
+        margin: 0 !important;
+    }
+
+    /* Question discrimination: les 3 choix restent sur la meme ligne */
+    #questionnaireForm .discri-presence-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.2rem;
+    }
+
+    #questionnaireForm .discri-presence-row .choice-label {
+        flex: 0 0 auto;
+        min-width: max-content;
+    }
+
+    #questionnaireForm .focus-card {
+        margin-top: 0.55rem;
+        padding: 0.82rem 0.9rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(50, 69, 189, 0.24);
+        background: linear-gradient(180deg, rgba(50, 69, 189, 0.09) 0%, rgba(50, 69, 189, 0.05) 100%);
+    }
+
+    #questionnaireForm .focus-card .form-group {
+        margin-top: 0;
+        padding-top: 0.52rem;
+        padding-bottom: 0.52rem;
+        border-top: 1px dashed rgba(50, 69, 189, 0.2);
+    }
+
+    #questionnaireForm .focus-card .form-group:first-child {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    #questionnaireForm .focus-card .form-group:last-child {
+        padding-bottom: 0;
+    }
+
+    #questionnaireForm .focus-card #conjoint_mobilite_group {
+        margin-top: 0.2rem;
+    }
+
+    #questionnaireForm .focus-card + .form-group {
+        margin-top: 0.68rem;
+    }
+
+    /* Section sommeil: eviter les champs pleine largeur */
+    #questionnaireForm section[data-section="4"] .focus-card input[type="time"].form-input {
+        width: min(260px, 100%);
+    }
+
+    #questionnaireForm section[data-section="4"] .focus-card input[type="number"].form-input {
+        width: min(300px, 100%);
+    }
+
+    /* Section sommeil: booleens compacts, non etires sur toute la ligne */
+    #questionnaireForm section[data-section="4"] .focus-card .inline-boolean-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        justify-content: flex-start;
+    }
+
+    #questionnaireForm section[data-section="4"] .focus-card .inline-boolean-group .choice-label {
+        width: auto;
+        max-width: none;
+        flex: 0 0 auto;
+    }
+
+    #questionnaireForm .radio-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        gap: 0.35rem;
+    }
+
+    #questionnaireForm .radio-grid-2 .radio-text {
+        font-size: 0.88rem;
+        line-height: 1.35;
+    }
+
     #questionnaireForm .inline-boolean-group .choice-label {
         margin-bottom: 0;
     }
 
+    #questionnaireForm .detresse-card {
+        margin-top: 1.45rem;
+        padding: 1.2rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(50, 69, 189, 0.24);
+        background: linear-gradient(180deg, rgba(50, 69, 189, 0.09) 0%, rgba(50, 69, 189, 0.05) 100%);
+    }
+
+    #questionnaireForm .detresse-title {
+        margin: 0 0 0.9rem;
+        color: #3245bd;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    #questionnaireForm .detresse-row {
+        padding: 0.95rem 0;
+        border-top: 1px dashed rgba(50, 69, 189, 0.24);
+    }
+
+    #questionnaireForm .detresse-row:first-of-type {
+        border-top: none;
+        padding-top: 0.2rem;
+    }
+
+    #questionnaireForm .detresse-question {
+        margin: 0 0 0.45rem;
+        color: #1e3a8a;
+        font-size: 0.93rem;
+        font-weight: 600;
+    }
+
+    #questionnaireForm .detresse-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(120px, 1fr));
+        gap: 0.35rem;
+    }
+
+    #questionnaireForm .detresse-choice {
+        min-height: 48px;
+        align-items: center;
+    }
+
+    #questionnaireForm .detresse-choice .radio-text {
+        font-size: 0.82rem;
+        line-height: 1.2;
+    }
+
+    #questionnaireForm .form-section.active {
+        animation: sectionFadeIn 0.24s ease-out;
+    }
+
+    @keyframes sectionFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     @media (max-width: 700px) {
+        .page-content.questionnaire-intro-active {
+            min-height: auto;
+            display: block;
+        }
+
+        .page-content .container-small {
+            padding-left: 0.42rem;
+            padding-right: 0.42rem;
+        }
+
+        .page-content .form-card {
+            padding: 0.52rem;
+        }
+
+        #questionnaireForm .subsection-violet {
+            margin: 1.2rem 0 0.55rem;
+        }
+
+        #questionnaireForm .form-group + .form-group {
+            margin-top: 0.54rem;
+        }
+
         #questionnaireForm .inline-boolean-group {
             grid-template-columns: 1fr;
+        }
+
+        #questionnaireForm .radio-grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        #questionnaireForm .detresse-grid {
+            grid-template-columns: 1fr;
+        }
+
+        #questionnaireForm .focus-card {
+            padding: 0.62rem;
+        }
+
+        #questionnaireForm section[data-section="4"] .focus-card input[type="time"].form-input,
+        #questionnaireForm section[data-section="4"] .focus-card input[type="number"].form-input {
+            width: 100%;
+        }
+
+        #questionnaireForm .compact-inline-row {
+            gap: 0.22rem;
+        }
+
+        #questionnaireForm .checkbox-group.sleep-choices-row {
+            gap: 0.35rem;
+        }
+
+        #questionnaireForm .checkbox-group.sleep-choices-row .checkbox-label.choice-label {
+            display: inline-flex !important;
+            width: auto !important;
+            flex: 0 0 auto !important;
+            min-width: max-content;
         }
     }
 </style>
@@ -535,7 +1220,7 @@
     // QUESTIONNAIRE STATE & TIMING
     // ============================================
     let currentSection = 1;
-    const totalSections = 3;
+    const totalSections = 4;
     let questionnaireStarted = false;
     
     // Timing tracking
@@ -583,7 +1268,18 @@
         // Initialize conditional fields
         updateConditionalFields();
         updateSocialConditionsFields();
+        updateSectionTwoFields();
+        updateSectionThreeFields();
         bindSocialConditionsListeners();
+
+        const besoinSomInput = document.getElementById('id_besoin_som');
+        if (besoinSomInput) {
+            besoinSomInput.addEventListener('focus', function() {
+                if (!this.value) {
+                    this.value = '00:00';
+                }
+            });
+        }
     });
 
     // ============================================
@@ -599,9 +1295,12 @@
         // Hide intro
         const intro = document.getElementById('introScreen');
         intro.classList.add('hidden');
+
+        // Exit centered intro layout once questionnaire starts
+        const questionnairePage = document.getElementById('questionnairePage');
+        questionnairePage.classList.remove('questionnaire-intro-active');
         
         // Show progress indicator and first section
-        document.getElementById('progressBarContainer').classList.remove('hidden');
         document.getElementById('stepIndicator').classList.remove('hidden');
         document.getElementById('formActions').classList.remove('hidden');
         
@@ -711,13 +1410,22 @@
         if (targetSection) {
             targetSection.classList.remove('hidden');
             targetSection.classList.add('active');
+
+            // Place le focus sur le premier champ pour améliorer la navigation clavier.
+            const firstFocusable = targetSection.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])');
+            if (firstFocusable) {
+                firstFocusable.focus({ preventScroll: true });
+            }
         }
     }
 
     function updateUI() {
         // Update progress bar
         const progress = (currentSection / totalSections) * 100;
-        document.getElementById('progressFill').style.width = progress + '%';
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) {
+            progressFill.style.width = progress + '%';
+        }
         document.getElementById('stepNumber').textContent = currentSection;
 
         // Show/hide buttons
@@ -847,6 +1555,56 @@
         if (pensAutre) {
             pensAutre.addEventListener('change', updateSocialConditionsFields);
         }
+
+        const compositionEnfants = document.getElementById('id_composition_logement_enfants');
+        if (compositionEnfants) {
+            compositionEnfants.addEventListener('change', updateSectionTwoFields);
+        }
+
+        document.querySelectorAll('input[name="statut_couple"]').forEach(radio => {
+            radio.addEventListener('change', updateSectionTwoFields);
+        });
+
+        document.querySelectorAll('input[name="discri_presence"]').forEach(radio => {
+            radio.addEventListener('change', updateSectionThreeFields);
+        });
+
+        const discriAutre = document.getElementById('id_discri_autre');
+        if (discriAutre) {
+            discriAutre.addEventListener('change', updateSectionThreeFields);
+        }
+    }
+
+    function updateSectionTwoFields() {
+        const compositionEnfants = document.getElementById('id_composition_logement_enfants');
+        const enfantsGroup = document.getElementById('composition_enfants_group');
+        if (!compositionEnfants || !enfantsGroup) {
+            return;
+        }
+
+        const shouldShow = compositionEnfants.checked;
+        enfantsGroup.style.display = shouldShow ? 'block' : 'none';
+
+        if (!shouldShow) {
+            const nbEnfants = document.getElementById('id_nb_enfants_cohabitants');
+            const nbMoins14 = document.getElementById('id_nb_enfants_moins14');
+            if (nbEnfants) nbEnfants.value = '';
+            if (nbMoins14) nbMoins14.value = '';
+        }
+
+        const conjointGroup = document.getElementById('conjoint_mobilite_group');
+        const statutCoupleOui = document.querySelector('input[name="statut_couple"][value="1"]');
+        if (conjointGroup && statutCoupleOui) {
+            const showConjoint = statutCoupleOui.checked;
+            conjointGroup.style.display = showConjoint ? 'block' : 'none';
+
+            if (!showConjoint) {
+                const conjNivDiplome = document.getElementById('id_conj_niv_diplome');
+                const conjCsp = document.getElementById('id_conj_csp');
+                if (conjNivDiplome) conjNivDiplome.value = '';
+                if (conjCsp) conjCsp.value = '';
+            }
+        }
     }
 
     function updateSocialConditionsFields() {
@@ -899,6 +1657,37 @@
                 const txt = document.getElementById('id_pens_autre_txt');
                 if (txt) txt.value = '';
             }
+        }
+    }
+
+    function updateSectionThreeFields() {
+        const discriDetailsGroup = document.getElementById('discri_details_group');
+        const discriAutre = document.getElementById('id_discri_autre');
+        const discriAutrePrecisionGroup = document.getElementById('discri_autre_precision_group');
+        const discriAutrePrecision = document.getElementById('id_discri_autre_precision');
+
+        const discriPresence = document.querySelector('input[name="discri_presence"]:checked');
+        const showDiscriDetails = discriPresence && (discriPresence.value === '1' || discriPresence.value === '2');
+
+        if (discriDetailsGroup) {
+            discriDetailsGroup.style.display = showDiscriDetails ? 'block' : 'none';
+        }
+
+        if (!showDiscriDetails) {
+            document.querySelectorAll('.discri-reason, .discri-context').forEach(input => {
+                input.checked = false;
+            });
+            if (discriAutrePrecision) {
+                discriAutrePrecision.value = '';
+            }
+        }
+
+        const showAutrePrecision = showDiscriDetails && discriAutre && discriAutre.checked;
+        if (discriAutrePrecisionGroup) {
+            discriAutrePrecisionGroup.style.display = showAutrePrecision ? 'block' : 'none';
+        }
+        if (!showAutrePrecision && discriAutrePrecision) {
+            discriAutrePrecision.value = '';
         }
     }
 

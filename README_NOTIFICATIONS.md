@@ -78,8 +78,8 @@ Bienvenue ! Vous trouverez ici tous les documents créés pour le système de no
 djangotutorial/
 ├── polls/
 │   ├── models.py ..................... ✨ Notification model
-│   ├── views.py ..................... ✨ 3 vues API notifications
-│   ├── urls.py ...................... ✨ 3 routes API
+│   ├── views.py ..................... ✨ 4 vues API notifications
+│   ├── urls.py ...................... ✨ 4 routes API
 │   ├── admin.py ..................... ✨ NotificationAdmin
 │   ├── management/commands/
 │   │   ├── send_daily_reminder.py ... ✨ NEW
@@ -107,11 +107,15 @@ djangotutorial/
 **Où?**
 - Cloche 🔔 en haut à droite
 - Badge rouge avec nombre de non lues
+- Badge natif sur l'icône de l'application PWA quand le navigateur supporte la Badging API
 
 **Comment?**
 - Tâches planifiées créent les notifications
 - API recharge chaque 30s
-- Stoage en BD SQLite
+- Fermeture du toast = notification marquée comme lue
+- Suppression depuis le panneau = suppression réelle de la notification
+- Stockage en BD SQLite
+- Requête POST/DELETE protégées par token CSRF
 
 **Commandes:**
 ```bash
@@ -207,7 +211,9 @@ python3 manage.py send_daily_reminder
 1. Allez à http://localhost:8000/polls/
 2. Vérifiez cloche 🔔 sans badge (0 non lues)
 3. Créez une notification (shell)
-4. Rechargez → Badge aparaît ✅
+4. Rechargez → Badge apparaît ✅
+5. Fermez le toast → le badge diminue immédiatement ✅
+6. En PWA installée, vérifiez aussi le badge de l'icône d'application si le navigateur le supporte ✅
 
 **Test 4: Modal**
 1. Créer user avec created_at = il y a 8 jours
@@ -233,6 +239,15 @@ A: Éditer `showQuestionnaireModal()` dans `polls/static/polls/notifications.js`
 **Q: Notifications ne s'affichent pas?**
 A: F12 Console → Vérifier erreurs JS → Appeler `notificationManager.loadNotifications()`
 
+**Q: Que fait le bouton fermer sur un toast ?**
+A: Il marque la notification comme lue côté serveur. Elle disparaît du toast et n'est plus comptée dans le badge, mais reste visible dans le panneau comme historique.
+
+**Q: Comment supprimer définitivement une notification ?**
+A: Depuis le panneau des notifications, cliquez sur `×` à droite de la ligne concernée. Cela appelle l'API DELETE.
+
+**Q: Le badge PWA ne s'affiche pas sur tous les téléphones, c'est normal ?**
+A: Oui. Le badge natif dépend du support navigateur/OS. Le badge rouge sur la cloche web reste l'indicateur principal, et le badge d'icône PWA s'ajoute quand la plateforme le permet.
+
 **Q: Session ne persiste pas?**
 A: Vérifier `SESSION_COOKIE_SECURE = not DEBUG` en settings.py
 
@@ -248,12 +263,20 @@ A: Vérifier crontab: `crontab -e` → Check path Python → Lire /tmp/reves_*.l
 - ✅ SAMESITE Lax (protection CSRF)
 - ✅ SECURE en production (HTTPS)
 - ✅ Sessions en BD (plus sûr)
+- ✅ Token CSRF injecté dans les requêtes POST/DELETE des notifications
 
 ### Performance
 - ✅ Notifications rechargées chaque 30s (pas polling constant)
 - ✅ Pagination limit 50 notifications
 - ✅ Cache localStorage pour modal 24h
 - ✅ Index BD sur (profil_id, is_read)
+- ✅ Mise à jour locale immédiate du badge au marquage lu
+
+### UX / PWA
+- ✅ Badge rouge dans la barre de navigation
+- ✅ Badge natif d'application PWA via `setAppBadge()` / `clearAppBadge()` quand disponible
+- ✅ Fermeture d'un toast = marquage lu, sans perte d'historique
+- ✅ Support mobile/PWA avec safe areas
 
 ### Scalabilité
 - ✅ Supporte 100+ utilisateurs
@@ -298,8 +321,8 @@ A: Vérifier crontab: `crontab -e` → Check path Python → Lire /tmp/reves_*.l
 
 | Propriété | Valeur |
 |-----------|--------|
-| Version | 1.0.0 |
-| Date | 5 Mars 2026 |
+| Version | 1.1.0 |
+| Date | 16 Mars 2026 |
 | Fichiers créés | 7 |
 | Fichiers modifiés | 5 |
 | Lignes de code | ~2000 |

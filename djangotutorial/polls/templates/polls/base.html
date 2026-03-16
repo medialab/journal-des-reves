@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=26">
     <link rel="stylesheet" href="{% static 'polls/forms.css' %}?v=27">
     <link rel="stylesheet" href="{% static 'polls/pages.css' %}?v=27">
-    <link rel="stylesheet" href="{% static 'polls/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'polls/notifications.css' %}?v=20260316-notifs">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 
@@ -90,18 +90,6 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'polls:description' %}" class="nav-link">
-                    <span class="nav-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <line x1="12" x2="12" y1="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
-                            <line x1="12" x2="12.01" y1="8" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
-                        </svg>
-                    </span>
-                    <span class="nav-label">Projet</span>
-                </a>
-            </li>
-            <li>
                 <a href="{% url 'polls:questionnaire' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,7 +101,19 @@
                             <path d="M8 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                     </span>
-                    <span class="nav-label">Formulaire</span>
+                    <span class="nav-label">Questionnaire</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'polls:description' %}" class="nav-link">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <line x1="12" x2="12" y1="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                            <line x1="12" x2="12.01" y1="8" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                        </svg>
+                    </span>
+                    <span class="nav-label">Projet</span>
                 </a>
             </li>
             <li id="app-install-li" style="display:none;">
@@ -218,7 +218,7 @@
     </div>
 </div>
 
-<script src="{% static 'polls/notifications.js' %}"></script>
+<script src="{% static 'polls/notifications.js' %}?v=20260316-notifs"></script>
 
 <script>
     // Gestion du modal de connexion
@@ -419,7 +419,7 @@ async function togglePushSubscription() {
     if (existing) {
         // Désabonnement
         await existing.unsubscribe();
-        await fetch('/webpush/save_info/', {
+        await fetch('/webpush/save_information', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
             body: JSON.stringify({ subscription: existing.toJSON(), status_type: 'unsubscribe' }),
@@ -438,7 +438,7 @@ async function togglePushSubscription() {
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
-        await fetch('/webpush/save_info/', {
+        await fetch('/webpush/save_information', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
             body: JSON.stringify({ subscription: subscription.toJSON(), status_type: 'subscribe' }),

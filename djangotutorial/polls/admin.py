@@ -28,7 +28,7 @@ class ReveAdmin(admin.ModelAdmin):
             "classes": ["collapse"]
         }),
         ("Rêve - Contexte et commentaire", {
-            "fields": ["elements_reve", "temps_reve", "commentaire_libre"],
+            "fields": ["elements_reve", "temps_passe_lointain", "temps_passe_recent", "temps_veille", "temps_futur_proche", "temps_futur_lointain", "temps_difficile", "commentaire_libre"],
             "classes": ["collapse"]
         }),
     ]
