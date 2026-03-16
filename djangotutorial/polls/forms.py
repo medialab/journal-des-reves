@@ -329,7 +329,7 @@ class QuestionnaireForm(forms.ModelForm):
             'besoin_som': 'En moyenne, de combien de temps de sommeil avez-vous besoin pour être en forme le lendemain ?',
             'reveil_nuit': 'Vous arrive-t-il de vous réveiller la nuit avec des difficultés pour vous rendormir ?',
             'nuits_reveil': 'Combien de nuits par semaine cela vous arrive-t-il ?',
-            'duree_eveil': 'En général, combien de temps restez-vous éveillé(e) au cours de la nuit ?',
+            'duree_eveil': 'En général, combien de temps restez-vous éveillé·e au cours de la nuit ?',
             'aide_sommeil': 'Utilisez-vous des aides pour dormir (médicaments, tisane, application de méditation, etc.) ?',
             'aide_medic': 'Médicaments',
             'aide_tisane': 'Tisane',
@@ -357,11 +357,11 @@ class QuestionnaireForm(forms.ModelForm):
             'travail_statut': 'Situation principale vis-à-vis du travail',
             'profession': 'Profession',
             'statut_couple': 'Êtes-vous en couple ?',
-            'composition_logement_seul': 'Seul.e',
-            'composition_logement_conjoint': 'Avec mon ou ma conjointe',
+            'composition_logement_seul': 'Seul·e',
+            'composition_logement_conjoint': 'Avec mon ou ma conjoint·e',
             'composition_logement_enfants': 'Avec un enfant ou des enfants',
-            'composition_logement_ami_parent_heberge': 'Avec ami/parent hébergé',
-            'composition_logement_colocataire': 'Colocataire',
+            'composition_logement_ami_parent_heberge': 'Avec un·e ami·e ou un parent hébergé',
+            'composition_logement_colocataire': 'Avec un·e colocataire',
             'composition_logement_parent_grand_parent': 'Parent ou grand-parent',
             'composition_logement_autres': 'Autres',
             'nb_enfants_cohabitants': 'Combien d’enfants vivent avec vous (même en garde alternée) ?',
@@ -370,9 +370,9 @@ class QuestionnaireForm(forms.ModelForm):
             'pere_csp': 'Votre père est / était...',
             'mere_niv_diplome': 'Quel est le plus haut diplôme de votre mère ?',
             'mere_csp': 'Votre mère est / était plutôt...',
-            'conj_niv_diplome': 'Quel est le plus haut diplôme de votre conjoint ?',
+            'conj_niv_diplome': 'Quel est le plus haut diplôme de votre conjoint·e ?',
             'conj_csp': 'Votre conjoint·e est plutôt...',
-            'lieu_naissance': 'Où êtes-vous né(e) ?',
+            'lieu_naissance': 'Où êtes-vous né·e ?',
             'lieu_naissance_pere': 'Où est né votre père ?',
             'perception_financiere': 'Actuellement, dans votre foyer, vous diriez que financièrement :',
             'perception_risque_pauvrete': 'Pensez-vous qu’il y a un risque que vous deveniez pauvre dans les cinq prochaines années ?',
@@ -397,11 +397,11 @@ class QuestionnaireForm(forms.ModelForm):
             'discri_contexte_famille': 'Dans le cadre familial',
             'discri_contexte_autre': 'Lors d’une autre situation',
             'sante_generale': 'Comment est votre état de santé en général ?',
-            'det_1': 'Nerveux/nerveuse',
+            'det_1': 'Nerveux·se',
             'det_2': 'Triste et abattu·e',
             'det_3': 'Calme et détendu·e',
             'det_4': 'Si découragé·e que rien ne pouvait vous remonter le moral',
-            'det_5': 'Heureux/heureuse',
+            'det_5': 'Heureux·se',
             'frequency': 'À quelle fréquence vous souvenez-vous de vos rêves ?',
             'dream_lucide': 'Rêves lucides',
             'dream_recurrent': 'Rêves récurrents',
@@ -422,7 +422,7 @@ class QuestionnaireForm(forms.ModelForm):
             'lieu_naissance', 'lieu_naissance_pere',
         ]
 
-        csp_grouped_fields = {'pere_csp', 'mere_csp'}
+        csp_grouped_fields = {'pere_csp', 'mere_csp', 'conj_csp'}
 
         def _clean_label(label):
             text = str(label)
@@ -556,6 +556,61 @@ class QuestionnaireForm(forms.ModelForm):
             ]),
         ]
 
+        conj_csp_grouped_choices = [
+            ('1 | Cadre dirigeant·e', [
+                (101, "1.1 | Chef·fe d'entreprise, hors hôtellerie, restauration, commerce"),
+                (102, "1.2 | Chef·fe d'entreprise, hôtellerie, restauration, commerce"),
+                (103, "1.3 | Cadre dirigeant·e salarié·e, hors hôtellerie, restauration, commerce"),
+                (104, "1.4 | Cadre dirigeant·e ou gérant·e, hôtellerie, restauration, commerce"),
+            ]),
+            ('2 | Profession intellectuelle ou scientifique', [
+                (201, "2.1 | Ingénieur·e ou spécialiste des sciences, des techniques, des TIC"),
+                (202, "2.2 | Médecin ou professionnel·le de santé"),
+                (203, "2.3 | Cadre administratif·ve, financier·ère ou commercial·e"),
+                (204, "2.4 | Professionnel·le de la justice, des sciences sociales ou de la culture"),
+                (205, "2.5 | Enseignant·e ou professionnel·le de l’enseignement"),
+            ]),
+            ('3 | Profession intermédiaire salariée', [
+                (301, "3.1 | Profession intermédiaire des sciences, des techniques, des TIC"),
+                (302, "3.2 | Profession intermédiaire salariée de la santé"),
+                (303, "3.3 | Profession intermédiaire de finance, vente et administration"),
+                (304, "3.4 | Profession intermédiaire des services juridiques, des services sociaux et assimilés"),
+                (305, "3.5 | Sous-officier·ère des forces armées"),
+            ]),
+            ('4 | Petit·e entrepreneur·e (non-salarié·e)', [
+                (401, '4.1 | Exploitant·e agricole'),
+                (402, '4.2 | Commerçant·e et assimilé·e'),
+                (403, '4.3 | Artisan·e'),
+            ]),
+            ('5 | Employé·e qualifié·e', [
+                (501, '5.1 | Employé·e de bureau et assimilé·e'),
+                (502, '5.2 | Employé·e de réception, guichetier·ère et assimilé·e'),
+                (503, '5.3 | Aide-soignant·e, garde d’enfant et aide-enseignant·e'),
+                (504, '5.4 | Personnel des services de protection, de sécurité et des armées'),
+            ]),
+            ('6 | Ouvrier·ère qualifié·e salarié·e', [
+                (601, '6.1 | Ouvrier·ère qualifié·e de la construction, sauf électricien·ne'),
+                (602, "6.2 | Ouvrier·ère qualifié·e de l'alimentation, du travail sur bois, de l'habillement"),
+                (603, "6.3 | Ouvrier·ère qualifié·e de la métallurgie, de la construction mécanique, de l'imprimerie, de l'électricité et de l'électronique"),
+                (604, "6.4 | Conducteur·rice de machines et d'installations fixes, ouvrier·ère qualifié·e de l'assemblage"),
+                (605, '6.5 | Conducteur·rice de véhicules et de matériels et engins mobiles'),
+            ]),
+            ('7 | Profession salariée peu qualifiée', [
+                (701, '7.1 | Personnel de service et employé·e de commerce'),
+                (702, '7.2 | Ouvrier·ère peu qualifié·e et manœuvre'),
+                (703, '7.3 | Agent·e d’entretien'),
+                (704, '7.4 | Ouvrier·ère agricole'),
+            ]),
+            ('9 | Hors marché du travail', [
+                (902, '9.2 | Personne handicapée inapte de moins de 65 ans'),
+                (903, '9.3 | Chômeur·se non classé·e dans une autre catégorie'),
+                (904, '9.4 | Autre personne hors du marché du travail'),
+            ]),
+            ('13 | Non réponse', [
+                (1300, '13 | Je ne sais pas ou ne peux pas répondre'),
+            ]),
+        ]
+
         field = self.fields.get('pere_csp')
         if field:
             field.choices = [('', 'Sélectionnez...')] + pere_csp_grouped_choices
@@ -563,6 +618,10 @@ class QuestionnaireForm(forms.ModelForm):
         field = self.fields.get('mere_csp')
         if field:
             field.choices = [('', 'Sélectionnez...')] + mere_csp_grouped_choices
+
+        field = self.fields.get('conj_csp')
+        if field:
+            field.choices = [('', 'Sélectionnez...')] + conj_csp_grouped_choices
 
         # Retire les choix vides automatiques qui s'affichent comme "---------".
         # Les champs select conservent un libellé explicite "Sélectionnez..." quand nécessaire.

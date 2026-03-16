@@ -1011,6 +1011,21 @@ class Questionnaire(models.Model):
     cont_autre = models.BooleanField(default=False, verbose_name='Autres')
     
     # Métadonnées
+    is_completed = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="Questionnaire complété"
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date de complétion"
+    )
+    completion_duration_seconds = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Durée de passation (secondes)"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -1045,6 +1060,14 @@ class Questionnaire(models.Model):
             return None
         besoin_minutes = self.besoin_som.hour * 60 + self.besoin_som.minute
         return self.duree_som - besoin_minutes
+
+    @property
+    def estimated_completion_duration_seconds(self):
+        if self.completion_duration_seconds is not None:
+            return self.completion_duration_seconds
+        if self.is_completed and self.created_at and self.completed_at:
+            return max(0, int((self.completed_at - self.created_at).total_seconds()))
+        return None
 
 
 # MODELE POUR LES NOTIFICATIONS ========================

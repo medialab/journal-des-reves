@@ -21,7 +21,10 @@ from .forms import ReveForm, QuestionnaireForm, SignUpForm
 # Helper functions
 def add_questionnaire_context(context, profil):
     """Ajouter les informations de questionnaire au contexte"""
-    has_questionnaire = Questionnaire.objects.filter(profil=profil).exists()
+    has_questionnaire = Questionnaire.objects.filter(
+        profil=profil,
+        is_completed=True,
+    ).exists()
     context['has_questionnaire'] = has_questionnaire
     return context
 
@@ -758,22 +761,18 @@ class QuestionnaireView(View):
 
             SECTION_FIELDS = {
                 '1': [
-                    'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
-                    'travail_statut', 'a_deja_travaille', 'profession', 'fonction_management',
+                    'freq_reves_not', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
+                    'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
+                    'etendue_souvenir_reve', 'temps_du_reve',
+                    'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
+                    'reveil_nuit', 'nuits_reveil', 'duree_eveil',
+                    'aide_sommeil', 'aide_medic', 'aide_tisane', 'aide_autre',
+                    'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
+                    'pens_autre', 'pens_rien', 'pens_autre_txt',
+                    'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
+                    'cont_livres', 'cont_rien', 'cont_autre',
                 ],
                 '2': [
-                    'statut_couple',
-                    'composition_logement_seul', 'composition_logement_conjoint',
-                    'composition_logement_enfants', 'composition_logement_ami_parent_heberge',
-                    'composition_logement_colocataire', 'composition_logement_parent_grand_parent',
-                    'composition_logement_autres',
-                    'nb_enfants_cohabitants', 'nb_enfants_moins14',
-                    'pere_niv_diplome', 'pere_csp',
-                    'mere_niv_diplome', 'mere_csp',
-                    'conj_niv_diplome', 'conj_csp',
-                    'lieu_naissance', 'lieu_naissance_pere',
-                ],
-                '3': [
                     'perception_financiere', 'perception_risque_pauvrete',
                     'position_subjective_classe', 'perception_mobilite',
                     'discri_presence',
@@ -785,17 +784,19 @@ class QuestionnaireView(View):
                     'discri_contexte_autre',
                     'sante_generale', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
                 ],
-                '4': [
-                    'freq_reves_not', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
-                    'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
-                    'etendue_souvenir_reve', 'temps_du_reve',
-                    'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
-                    'reveil_nuit', 'nuits_reveil', 'duree_eveil',
-                    'aide_sommeil', 'aide_medic', 'aide_tisane', 'aide_autre',
-                    'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
-                    'pens_autre', 'pens_rien', 'pens_autre_txt',
-                    'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
-                    'cont_livres', 'cont_rien', 'cont_autre',
+                '3': [
+                    'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
+                    'travail_statut', 'a_deja_travaille', 'profession', 'fonction_management',
+                    'statut_couple',
+                    'composition_logement_seul', 'composition_logement_conjoint',
+                    'composition_logement_enfants', 'composition_logement_ami_parent_heberge',
+                    'composition_logement_colocataire', 'composition_logement_parent_grand_parent',
+                    'composition_logement_autres',
+                    'nb_enfants_cohabitants', 'nb_enfants_moins14',
+                    'pere_niv_diplome', 'pere_csp',
+                    'mere_niv_diplome', 'mere_csp',
+                    'conj_niv_diplome', 'conj_csp',
+                    'lieu_naissance', 'lieu_naissance_pere',
                 ],
             }
 
@@ -854,6 +855,20 @@ class QuestionnaireView(View):
             questionnaire = form.save(commit=False)
             questionnaire.profil = request.user.profil
             questionnaire.user = request.user
+            questionnaire.is_completed = True
+            questionnaire.completed_at = timezone.now()
+
+            section_timings = request.session.get('section_timings', {})
+            total_duration = None
+            if section_timings:
+                total_duration = int(sum(float(value) for value in section_timings.values()))
+            elif questionnaire.created_at:
+                total_duration = max(
+                    0,
+                    int((questionnaire.completed_at - questionnaire.created_at).total_seconds()),
+                )
+
+            questionnaire.completion_duration_seconds = total_duration
             questionnaire.save()
             
             # Clear session data

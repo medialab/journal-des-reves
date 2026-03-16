@@ -38,7 +38,8 @@ class Command(BaseCommand):
         for profil in recent_profils:
             # Vérifier si l'utilisateur a déjà rempli le questionnaire
             has_questionnaire = Questionnaire.objects.filter(
-                profil=profil
+                profil=profil,
+                is_completed=True,
             ).exists()
             
             if not has_questionnaire:

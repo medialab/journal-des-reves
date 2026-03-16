@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from django.urls import reverse_lazy
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,6 +85,9 @@ CSRF_TRUSTED_ORIGINS = env_list(
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
     "polls.apps.PollsConfig",
     'pwa',
     'webpush',
@@ -141,6 +146,128 @@ DATABASES = {
 }
 
 
+# =============================================================================
+# UNFOLD CONFIGURATION (django-unfold)
+# =============================================================================
+
+UNFOLD = {
+    "STYLES": {
+        "dashboard_filters_row": {"display": "grid", "grid-template-columns": "repeat(auto-fit, minmax(200px, 1fr))", "gap": "12px"},
+    },
+    "COLORS": {
+        "base": {
+            "50": "#f8f9fa",
+            "100": "#f0f2f5",
+            "200": "#e9ecef",
+            "300": "#dee2e6",
+            "400": "#ced4da",
+            "500": "#adb5bd",
+            "600": "#6c757d",
+            "700": "#495057",
+            "800": "#343a40",
+            "900": "#212529",
+        },
+        "primary": {
+            "50": "#eff6ff",
+            "100": "#dbeafe",
+            "200": "#bfdbfe",
+            "300": "#93c5fd",
+            "400": "#60a5fa",
+            "500": "#3b82f6",
+            "600": "#2563eb",
+            "700": "#1d4ed8",
+            "800": "#1e40af",
+            "900": "#1e3a8a",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Utilisateurs & Questionnaires",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Profils",
+                        "icon": "people",
+                        "link": reverse_lazy("admin:polls_profil_changelist"),
+                    },
+                    {
+                        "title": "Questionnaires",
+                        "icon": "description",
+                        "link": reverse_lazy("admin:polls_questionnaire_changelist"),
+                    },
+                    {
+                        "title": "Utilisateurs",
+                        "icon": "account_circle",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Contenu & Rêves",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Rêves",
+                        "icon": "favorite",
+                        "link": reverse_lazy("admin:polls_reve_changelist"),
+                    },
+                    {
+                        "title": "Émotions de référence",
+                        "icon": "mood",
+                        "link": reverse_lazy("admin:polls_reveemotion_changelist"),
+                    },
+                    {
+                        "title": "Modalités visuelles",
+                        "icon": "visibility",
+                        "link": reverse_lazy("admin:polls_reveimagemodalite_changelist"),
+                    },
+                    {
+                        "title": "Tags utilisateurs",
+                        "icon": "sell",
+                        "link": reverse_lazy("admin:polls_revetag_changelist"),
+                    },
+                    {
+                        "title": "Émotions personnalisées",
+                        "icon": "sentiment_satisfied",
+                        "link": reverse_lazy("admin:polls_reveemotioncustom_changelist"),
+                    },
+                    {
+                        "title": "Éléments personnalisés",
+                        "icon": "category",
+                        "link": reverse_lazy("admin:polls_reveelementcustom_changelist"),
+                    },
+                    {
+                        "title": "Notifications",
+                        "icon": "notifications",
+                        "link": reverse_lazy("admin:polls_notification_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Administration",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Groupes",
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                ],
+            },
+        ],
+    },
+    "DASHBOARD": {
+        "columns": 3,
+        "widgets": [],
+    },
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -165,7 +292,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'fr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
 
