@@ -204,10 +204,10 @@ Je garde ces fichiers techniques comme reference:
 - `NOTIFICATIONS_IMPLEMENTATION.md`
 - `SETUP_NOTIFICATIONS.md`
 - `QUICK_START.md`
-- `ARCHITECTURE.md`
+- `README.md`
 - `CHANGELOG.md`
-- `SCHEDULER_EXAMPLES.py`
-- `init_notifications.py`
+- `scripts/notifications/SCHEDULER_EXAMPLES.py`
+- `scripts/notifications/init_notifications.py`
 
 Ce README est le guide principal; les fichiers ci-dessus restent utiles pour le detail.
 
@@ -411,7 +411,7 @@ profil.save()
 ✅ **Documentation:**
 - `NOTIFICATIONS_IMPLEMENTATION.md`
 - `SETUP_NOTIFICATIONS.md`
-- `init_notifications.py` - Script auto-installation
+- `scripts/notifications/init_notifications.py` - Script auto-installation
 
 ---
 
@@ -1117,7 +1117,7 @@ Besoin d'aide ? Consultez la documentation complète dans [NOTIFICATIONS_IMPLEME
 
 
 
-### Source migree: `ARCHITECTURE.md`
+### Source migree: `README.md`
 
 # Architecture du Système de Notifications
 
@@ -1416,8 +1416,8 @@ site_reves/
     ├── NOTIFICATIONS_IMPLEMENTATION.md (NEW)
     ├── SETUP_NOTIFICATIONS.md (NEW)
     ├── QUICK_START.md (NEW)
-    ├── SCHEDULER_EXAMPLES.py (NEW)
-    └── init_notifications.py (NEW - setup script)
+    ├── scripts/notifications/SCHEDULER_EXAMPLES.py (NEW)
+    └── scripts/notifications/init_notifications.py (NEW - setup script)
 ```
 
 ---
@@ -1639,9 +1639,9 @@ Pour plus de détails, lire [NOTIFICATIONS_IMPLEMENTATION.md](NOTIFICATIONS_IMPL
 - ✨ **NEW**: `NOTIFICATIONS_IMPLEMENTATION.md` - Documentation technique complet
 - ✨ **NEW**: `SETUP_NOTIFICATIONS.md` - Guide d'installation détaillé
 - ✨ **NEW**: `QUICK_START.md` - Démarrage rapide
-- ✨ **NEW**: `ARCHITECTURE.md` - Diagrammes et architecture
-- ✨ **NEW**: `SCHEDULER_EXAMPLES.py` - Exemples de configuration
-- ✨ **NEW**: `init_notifications.py` - Script d'initialisation automatique
+- ✨ **NEW**: `README.md` - Diagrammes et architecture
+- ✨ **NEW**: `scripts/notifications/SCHEDULER_EXAMPLES.py` - Exemples de configuration
+- ✨ **NEW**: `scripts/notifications/init_notifications.py` - Script d'initialisation automatique
 - ✨ **NEW**: `CHANGELOG.md` - Ce fichier
 
 ---
@@ -1850,8 +1850,8 @@ profil.save()
 | QUICK_START.md | Démarrage 5 min |
 | SETUP_NOTIFICATIONS.md | Installation détaillée |
 | NOTIFICATIONS_IMPLEMENTATION.md | Doc technique complet |
-| ARCHITECTURE.md | Diagrammes & architecture |
-| SCHEDULER_EXAMPLES.py | Exemples configurations |
+| README.md | Diagrammes & architecture |
+| scripts/notifications/SCHEDULER_EXAMPLES.py | Exemples configurations |
 
 ---
 
@@ -1860,8 +1860,8 @@ profil.save()
 Pour toute question :
 1. Lire QUICK_START.md
 2. Consulter NOTIFICATIONS_IMPLEMENTATION.md
-3. Vérifier ARCHITECTURE.md
-4. Exécuter init_notifications.py
+3. Vérifier README.md
+4. Exécuter scripts/notifications/init_notifications.py
 
 ---
 
