@@ -8,10 +8,7 @@
         <div class="container-small journal-hero">
             <span class="journal-kicker">Connexion</span>
             <h1 class="page-title">Ravie de vous revoir</h1>
-            <div class="hero-buttons login-hero-cta">
-                <a href="{% url 'polls:signup' %}" class="btn btn-primary btn-large">Pas encore membre ? Créer un compte</a>
-            </div>
-                <p class="page-subtitle">Accédez à votre journal et à vos statistiques.</p>
+            <p class="page-subtitle">Accédez à votre journal et à vos statistiques.</p>
         </div>
     </section>
 
@@ -58,6 +55,10 @@
 
                     <div class="forgot-password-link">
                         <p><a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p>
+                    </div>
+
+                    <div class="signup-link">
+                        <a href="{% url 'polls:signup' %}" class="btn btn-outline-light">Pas encore membre ? Créer un compte</a>
                     </div>
                 </form>
             </div>

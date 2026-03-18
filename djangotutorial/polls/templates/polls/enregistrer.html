@@ -522,6 +522,9 @@ function initFormHandlers() {
 	const addElementBtn = document.getElementById('addElementBtn');
 	const customElementInput = document.getElementById('customElementInput');
 	const noMemoryBtn = document.getElementById('noMemoryBtn');
+	const startBtn = document.getElementById('startBtn');
+	const pauseBtn = document.getElementById('pauseBtn');
+	const stopBtn = document.getElementById('stopBtn');
 	const existenceSouvenirInput = document.getElementById('existenceSouvenir');
 	const questionsGrid = document.getElementById('questionsGrid');
 	const emotionsSection = document.getElementById('emotionsSection');
@@ -529,62 +532,36 @@ function initFormHandlers() {
 
 	// Mode "Aucun souvenir"
 	let noMemoryMode = false;
+	let noMemorySubmitting = false;
 
 	noMemoryBtn.addEventListener('click', function() {
-		noMemoryMode = !noMemoryMode;
-		
-		if (noMemoryMode) {
-			setRecorderEntryLayout(false);
-			// Activer le mode "Aucun souvenir"
-			existenceSouvenirInput.value = '0';
-			
-			// Cacher les questions
-			if (questionsGrid) {
-				questionsGrid.style.display = 'none';
-			}
-			
-			// Cacher la section des émotions
-			if (emotionsSection) {
-				emotionsSection.style.display = 'none';
-			}
-			
-			// Retirer le required sur l'audio
-			audioInput.removeAttribute('required');
-			
-			// Changer le texte du bouton submit
-			submitBtn.textContent = 'Je valide que je n\'ai aucun souvenir de mon rêve de cette nuit';
-			submitBtn.disabled = false;
-			
-			// Changer le style du bouton "Aucun souvenir"
-			noMemoryBtn.textContent = 'Annuler - Je veux enregistrer mon rêve';
-		} else {
-			setRecorderEntryLayout(true);
-			// Désactiver le mode "Aucun souvenir"
-			existenceSouvenirInput.value = '1';
-			
-			// Garder les questions cachées tant que Démarrer n'a pas été cliqué
-			if (questionsGrid) {
-				questionsGrid.style.display = 'none';
-			}
-			
-			// Garder la section des émotions cachée avec les questions
-			if (emotionsSection) {
-				emotionsSection.style.display = 'none';
-			}
-			
-			// Remettre le required sur l'audio
-			audioInput.setAttribute('required', 'required');
-			
-			// Restaurer le texte du bouton submit
-			submitBtn.textContent = 'Soumettre';
-			submitBtn.disabled = true;
-			
-			// Restaurer le style du bouton "Aucun souvenir"
-			noMemoryBtn.textContent = 'Aucun souvenir de mon/mes rêve(s) cette nuit';
-			
-			// Revérifier le formulaire
-			checkForm();
+		if (noMemorySubmitting) {
+			return;
 		}
+
+		noMemorySubmitting = true;
+		noMemoryMode = true;
+		existenceSouvenirInput.value = '0';
+		audioInput.removeAttribute('required');
+
+		if (questionsGrid) {
+			questionsGrid.style.display = 'none';
+		}
+
+		if (emotionsSection) {
+			emotionsSection.style.display = 'none';
+		}
+
+		noMemoryBtn.disabled = true;
+		startBtn.disabled = true;
+		if (pauseBtn) {
+			pauseBtn.disabled = true;
+		}
+		if (stopBtn) {
+			stopBtn.disabled = true;
+		}
+
+		form.requestSubmit();
 	});
 
 	// Activer le bouton soumettre quand les champs requis sont remplis
