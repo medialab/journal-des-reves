@@ -20,6 +20,7 @@ ENV/
 db.sqlite3
 db.sqlite3-journal
 /media/
+djangotutorial/media/
 /staticfiles/
 /static/
 
@@ -40,3 +41,8 @@ Thumbs.db
 
 # Transcription logs
 transcription.log
+
+# Local sensitive/docs and audio artifacts
+SECURITY_README.md
+*.wav
+*.WAV

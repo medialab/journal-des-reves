@@ -13,7 +13,7 @@
 					Ajouter un rêve
 					<span class="btn-arrow">→</span>
 				</a>
-				<a href="{% url 'polls:questionnaire' %}" class="btn btn-outline btn-large">
+				<a href="{% url 'polls:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
 					Remplissez le questionnaire
 				</a>
 			</div>
@@ -99,10 +99,9 @@
 							</div>
 						{% else %}
 							<div class="empty-state">
-								<span class="empty-icon">🌌</span>
 								<h3>Commencez votre journal</h3>
 								<p>Enregistrez votre premier rêve pour obtenir des statistiques personnalisées.</p>
-								<a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
+								<a href="{% url 'polls:enregistrer' %}" class="btn btn-large journal-empty-btn">
 									Enregistrer un rêve
 								</a>
 							</div>
@@ -115,6 +114,27 @@
 </div>
 
 <style>
+/* Bouton questionnaire dans le hero (fond bleu → texte blanc) */
+.btn-outline-hero {
+	color: white !important;
+	border-color: white !important;
+}
+.btn-outline-hero:hover {
+	background: rgba(255, 255, 255, 0.15) !important;
+	color: white !important;
+}
+
+/* Bouton enregistrer dans l'état vide (fond blanc → bleu) */
+.journal-empty-btn {
+	background: #3245bd;
+	color: white;
+	border: none;
+}
+.journal-empty-btn:hover {
+	background: #2338a8;
+	transform: translateY(-2px);
+}
+
 .dream-edit-btn:hover {
 	background-color: rgba(59, 130, 246, 0.1);
 	transform: scale(1.1);

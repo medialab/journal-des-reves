@@ -8,6 +8,12 @@
     {% progressive_web_app_meta %}
     <script>
         (function() {
+            function updateViewportUnit() {
+                // iOS Safari can report unstable 100vh when browser UI shows/hides.
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--app-vh', `${vh}px`);
+            }
+
             function applyPwaClasses() {
                 const ua = navigator.userAgent || '';
                 const isiOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
@@ -20,9 +26,12 @@
                 document.documentElement.classList.toggle('is-ios-pwa', !!(isStandalone && isiOS));
             }
 
+            updateViewportUnit();
             applyPwaClasses();
             window.addEventListener('DOMContentLoaded', applyPwaClasses);
             window.addEventListener('visibilitychange', applyPwaClasses);
+            window.addEventListener('resize', updateViewportUnit);
+            window.addEventListener('orientationchange', updateViewportUnit);
         })();
     </script>
     <title>{% block title %}Journal des Rêves{% endblock %}</title>

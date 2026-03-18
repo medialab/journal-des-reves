@@ -283,13 +283,62 @@ function initRecorder() {
 	const statusText = document.getElementById('statusText');
 	const statusIndicator = document.getElementById('statusIndicator');
 	const recordingTime = document.getElementById('recordingTime');
+	let recordedAudioMimeType = null;  // Track actual MIME type recorded
+
+	// Fonction pour trouver le MIME type supporté
+	function findSupportedMimeType() {
+		const mimeTypes = [
+			'audio/mp4',                // Safari, iOS
+			'audio/webm;codecs=opus',   // Chrome, Firefox
+			'audio/wav',
+		];
+		
+		const supported = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
+		return supported || '';  // Default if none supported
+	}
 
 	startBtn.addEventListener('click', async function() {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			mediaRecorder = new MediaRecorder(stream);
+			// Vérifier contexte sécurisé (CRITICAL pour Safari et iOS)
+			const isLoopbackHost = ['localhost', '127.0.0.1', '::1'].includes(location.hostname) || location.hostname.endsWith('.localhost');
+			const isSecureContextForRecording = location.protocol === 'https:' || isLoopbackHost;
+			if (!isSecureContextForRecording) {
+				throw new Error('L\'enregistrement audio nécessite HTTPS. Avec ngrok, ouvrez l\'URL en https://... (pas http://). En local, localhost/127.0.0.1 est autorisé.');
+			}
+
+			// Vérifier mediaDevices availability
+			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+				throw new Error('getUserMedia non supporté - utilisez Chrome, Firefox, Safari 14.1+ ou Edge');
+			}
+
+			// Demander l'accès au microphone avec les bonnes options pour Safari
+			const stream = await navigator.mediaDevices.getUserMedia({ 
+				audio: {
+					echoCancellation: true,
+					noiseSuppression: true,
+					autoGainControl: false
+				}
+			});
+
+			// Vérifier que le track audio existe (important pour iOS)
+			const audioTracks = stream.getAudioTracks();
+			if (audioTracks.length === 0) {
+				throw new Error('Aucune piste audio disponible');
+			}
+
+			// Créer MediaRecorder avec le MIME type approprié
+			const mimeType = findSupportedMimeType();
+			const recorderOptions = {};
+			if (mimeType) {
+				recorderOptions.mimeType = mimeType;
+			}
+			
+			mediaRecorder = new MediaRecorder(stream, recorderOptions);
+			recordedAudioMimeType = mediaRecorder.mimeType;  // Store actual MIME type
 			audioChunks = [];
 			setRecorderEntryLayout(false);
+
+			console.log(`🎙️ MediaRecorder créé avec format: ${recordedAudioMimeType}`);
 
 			// Afficher le statut et les contrôles, cacher les actions initiales
 			const recorderStatus = document.getElementById('recorderStatus');
@@ -309,10 +358,24 @@ function initRecorder() {
 			});
 
 			mediaRecorder.addEventListener('stop', function() {
-				currentAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+				// CRUCIAL: Utiliser le MIME type réel enregistré, pas un hardcoded
+				// Safari enregistre en audio/mp4, Chrome/Firefox en audio/webm
+				currentAudioBlob = new Blob(audioChunks, { type: recordedAudioMimeType || 'audio/wav' });
+				
+				// Détermine le nom et type du fichier basé sur le MIME type réel
+				let filename = 'dream-recording.wav';
+				let contentType = 'audio/wav';
+				
+				if (recordedAudioMimeType?.includes('mp4')) {
+					filename = 'dream-recording.m4a';
+					contentType = 'audio/mp4';
+				} else if (recordedAudioMimeType?.includes('webm')) {
+					filename = 'dream-recording.webm';
+					contentType = 'audio/webm';
+				}
 				
 				// Créer un File object pour le formulaire
-				const audioFile = new File([currentAudioBlob], 'dream-recording.wav', { type: 'audio/wav' });
+				const audioFile = new File([currentAudioBlob], filename, { type: contentType });
 				
 				// Créer un DataTransfer pour modifier les fichiers input
 				const dataTransfer = new DataTransfer();
@@ -350,8 +413,26 @@ function initRecorder() {
 			recordingTimerInterval = setInterval(updateRecordingTime, 100);
 
 		} catch (error) {
-			console.error('Erreur accès microphone:', error);
-			alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+			console.error('❌ Erreur d\'accès au microphone:', error.name, error.message);
+			
+			// Messages d'erreur détaillés pour différents cas
+			let userMessage = 'Impossible d\'enregistrer le micro.';
+			
+			if (error.name === 'NotAllowedError') {
+				userMessage = 'Permission refusée. Vérifiez les permissions du microphone dans les paramètres du navigateur.';
+			} else if (error.name === 'NotFoundError') {
+				userMessage = 'Aucun microphone détecté. Vérifiez que votre appareil dispose d\'un microphone.';
+			} else if (error.name === 'NotReadableError') {
+				userMessage = 'Microphone occupé ou non accessible. Fermez les autres applications utilisant le microphone.';
+			} else if (error.message?.includes('HTTPS')) {
+				userMessage = error.message;
+			}
+			
+			alert(userMessage);
+			
+			// Reset UI
+			startBtn.disabled = false;
+			startBtn.style.display = 'block';
 		}
 	});
 
@@ -867,6 +948,9 @@ function initFormHandlers() {
 }
 
 .custom-emotion-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
 	gap: 0.4rem;
 	margin-top: 0.3rem;
 }
@@ -910,13 +994,17 @@ function initFormHandlers() {
 @media (max-width: 768px) {
 	#customEmotionInput,
 	#customElementInput {
-		max-width: 180px;
+		max-width: none;
+		width: 100%;
 	}
 
 	#addEmotionBtn,
 	#addElementBtn {
-		padding: 0.28rem 0.55rem !important;
+		width: auto !important;
+		min-width: 70px;
+		padding: 0.24rem 0.48rem !important;
 		font-size: 0.78rem !important;
+		white-space: nowrap;
 	}
 }
 

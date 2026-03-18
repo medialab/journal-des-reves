@@ -3,12 +3,15 @@
 {% block title %}Connexion – Journal des Rêves{% endblock %}
 
 {% block content %}
-<div class="page active">
+<div class="page active login-page">
     <section class="page-hero page-hero-small">
         <div class="container-small journal-hero">
             <span class="journal-kicker">Connexion</span>
             <h1 class="page-title">Ravie de vous revoir</h1>
-            <p class="page-subtitle">Accédez à votre journal et à vos statistiques.</p>
+            <div class="hero-buttons login-hero-cta">
+                <a href="{% url 'polls:signup' %}" class="btn btn-primary btn-large">Pas encore membre ? Créer un compte</a>
+            </div>
+                <p class="page-subtitle">Accédez à votre journal et à vos statistiques.</p>
         </div>
     </section>
 
@@ -49,16 +52,12 @@
                     {% endif %}
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-large">Se connecter</button>
                         <a href="{% url 'polls:index' %}" class="btn btn-outline btn-large">Retour à l'accueil</a>
+                        <button type="submit" class="btn btn-primary btn-large">Se connecter</button>
                     </div>
 
                     <div class="forgot-password-link">
                         <p><a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p>
-                    </div>
-                    
-                    <div class="signup-link">
-                        <p>Pas encore membre ? <a href="{% url 'polls:signup' %}">Créer un compte</a></p>
                     </div>
                 </form>
             </div>

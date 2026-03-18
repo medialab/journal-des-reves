@@ -1,4 +1,5 @@
 from django.db.models import F
+from django.db import transaction
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse, HttpResponse
 from django.urls import reverse
@@ -7,10 +8,13 @@ from django.views import generic, View
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
+from django.core.cache import cache
 import uuid
 import os
 import json
 import csv
+import time
+import wave
 
 from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite, Notification
 from .services.journal_service import get_journal_data
@@ -18,14 +22,131 @@ from .services.transcription_service import start_transcription_async
 from .forms import ReveForm, QuestionnaireForm, SignUpForm
 
 
+# Security/abuse protection constants
+MAX_AUDIO_DURATION_SECONDS = 15 * 60
+MAX_AUDIO_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB
+MAX_AUDIO_UPLOADS_PER_DAY = 7
+MAX_QUESTIONNAIRE_SUBMISSIONS = 5
+
+UPLOAD_RATE_LIMIT = 10
+UPLOAD_RATE_WINDOW_SECONDS = 60
+EXPORT_RATE_LIMIT = 5
+EXPORT_RATE_WINDOW_SECONDS = 5 * 60
+NOTIFICATIONS_MUTATION_RATE_LIMIT = 20
+NOTIFICATIONS_MUTATION_RATE_WINDOW_SECONDS = 60
+NOTIFICATIONS_READ_RATE_LIMIT = 60
+NOTIFICATIONS_READ_RATE_WINDOW_SECONDS = 60
+
+MAX_RATE_LIMIT_BACKOFF_SECONDS = 300
+QUESTIONNAIRE_MIN_SECTION_DURATION_SECONDS = 1
+QUESTIONNAIRE_MAX_SECTION_DURATION_SECONDS = 30 * 60
+QUESTIONNAIRE_DUPLICATE_SUBMIT_WINDOW_SECONDS = 15
+
+ALLOWED_AUDIO_EXTENSIONS = {'.wav', '.mp4a', '.m4a', '.mp4', '.webm'}
+ALLOWED_AUDIO_CONTENT_TYPES = {
+    'audio/wav',
+    'audio/x-wav',
+    'audio/wave',
+    'audio/mp4',
+    'audio/x-m4a',
+    'audio/m4a',
+    'audio/webm',
+    'video/webm',
+    'video/mp4',
+}
+
+
+def _rate_limit(user_id, scope, limit, window_seconds):
+    """Return (is_allowed, retry_after_seconds) using cache-based fixed window + backoff."""
+    now = int(time.time())
+    block_key = f"rl:block:{scope}:{user_id}"
+    blocked_until = cache.get(block_key)
+
+    if blocked_until and blocked_until > now:
+        return False, blocked_until - now
+
+    bucket = now // window_seconds
+    count_key = f"rl:count:{scope}:{user_id}:{bucket}"
+
+    try:
+        count = cache.incr(count_key)
+    except ValueError:
+        cache.set(count_key, 1, timeout=window_seconds + 5)
+        count = 1
+
+    if count > limit:
+        over_limit = count - limit
+        backoff_seconds = min(MAX_RATE_LIMIT_BACKOFF_SECONDS, 2 ** min(over_limit + 1, 8))
+        cache.set(block_key, now + backoff_seconds, timeout=backoff_seconds)
+        return False, backoff_seconds
+
+    return True, 0
+
+
+def _rate_limited_json_response(retry_after, message):
+    response = JsonResponse({
+        'success': False,
+        'message': message,
+        'retry_after_seconds': retry_after,
+    }, status=429)
+    response['Retry-After'] = str(retry_after)
+    return response
+
+
+def _safe_csv_cell(value):
+    if value is None:
+        return ''
+    text = str(value)
+    if text and text[0] in ('=', '+', '-', '@'):
+        return "'" + text
+    return text
+
+
+def _validate_audio_upload(audio_file):
+    """Return error message string if invalid, otherwise None."""
+    if audio_file.size > MAX_AUDIO_FILE_SIZE_BYTES:
+        return "Fichier audio trop volumineux (max 25 MB)."
+
+    extension = os.path.splitext(audio_file.name or '')[1].lower()
+    if extension not in ALLOWED_AUDIO_EXTENSIONS:
+        return "Format audio non autorisé. Formats acceptés: WAV, M4A/MP4A, MP4, WEBM."
+
+    content_type = (audio_file.content_type or '').lower().strip()
+    if content_type and content_type not in ALLOWED_AUDIO_CONTENT_TYPES:
+        return "Type MIME audio non autorisé."
+
+    # Validation de durée robuste pour WAV. Pour les autres formats,
+    # la limite de taille + MIME/extension est appliquée ici.
+    if extension == '.wav':
+        try:
+            audio_file.seek(0)
+            with wave.open(audio_file, 'rb') as wav_file:
+                frame_rate = wav_file.getframerate()
+                frame_count = wav_file.getnframes()
+                if frame_rate <= 0:
+                    return "Fichier audio invalide (fréquence d'échantillonnage)."
+                duration_seconds = frame_count / float(frame_rate)
+        except (wave.Error, EOFError):
+            return "Fichier audio invalide ou non conforme au format WAV."
+        finally:
+            try:
+                audio_file.seek(0)
+            except Exception:
+                pass
+
+        if duration_seconds > MAX_AUDIO_DURATION_SECONDS:
+            return "Durée audio trop longue (max 15 minutes)."
+
+    return None
+
+
 # Helper functions
 def add_questionnaire_context(context, profil):
     """Ajouter les informations de questionnaire au contexte"""
-    has_questionnaire = Questionnaire.objects.filter(
-        profil=profil,
-        is_completed=True,
-    ).exists()
+    has_questionnaire = profil.has_completed_questionnaire()
+    questionnaire_required = profil.must_complete_questionnaire_for_extended_access()
     context['has_questionnaire'] = has_questionnaire
+    context['questionnaire_required'] = questionnaire_required
     return context
 
 
@@ -36,6 +157,13 @@ class ProfilView(LoginRequiredMixin, View):
         except Profil.DoesNotExist:
             messages.error(request, "Profil non trouve. Veuillez contacter l'administrateur.")
             return HttpResponseRedirect(reverse("polls:index"))
+
+        if profil.must_complete_questionnaire_for_extended_access():
+            messages.warning(
+                request,
+                "Veuillez completer le questionnaire pour acceder aux statistiques du profil."
+            )
+            return HttpResponseRedirect(reverse("polls:questionnaire"))
 
         journal_data = get_journal_data(profil)
 
@@ -107,6 +235,13 @@ class EnregistrerView(LoginRequiredMixin, View):
         except Profil.DoesNotExist:
             messages.error(request, "Profil utilisateur introuvable")
             return HttpResponseRedirect(reverse("polls:index"))
+
+        if profil.must_complete_questionnaire_for_extended_access():
+            messages.warning(
+                request,
+                "Veuillez completer le questionnaire avant d'enregistrer un nouveau reve."
+            )
+            return HttpResponseRedirect(reverse("polls:questionnaire"))
         
         # Récupérer les émotions pour le formulaire
         emotions = ReveEmotion.objects.all().order_by('ordre')
@@ -130,6 +265,18 @@ class EnregistrerView(LoginRequiredMixin, View):
     def post(self, request):
         """Gérer l'upload de l'audio et la sauvegarde du rêve"""
         try:
+            allowed, retry_after = _rate_limit(
+                request.user.id,
+                scope='audio_upload',
+                limit=UPLOAD_RATE_LIMIT,
+                window_seconds=UPLOAD_RATE_WINDOW_SECONDS,
+            )
+            if not allowed:
+                return _rate_limited_json_response(
+                    retry_after,
+                    "Trop de requêtes d'upload. Veuillez réessayer dans quelques instants.",
+                )
+
             # Vérifier que l'utilisateur a un profil
             try:
                 profil = request.user.profil
@@ -138,6 +285,12 @@ class EnregistrerView(LoginRequiredMixin, View):
                     'success': False,
                     'message': 'Profil utilisateur introuvable'
                 }, status=400)
+
+            if profil.must_complete_questionnaire_for_extended_access():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Veuillez completer le questionnaire avant d\'enregistrer un nouveau reve.'
+                }, status=403)
 
             # Récupérer existence_souvenir (par défaut True)
             existence_souvenir_str = request.POST.get('existence_souvenir', '1')
@@ -176,6 +329,25 @@ class EnregistrerView(LoginRequiredMixin, View):
                 return JsonResponse({
                     'success': False,
                     'message': 'Aucun fichier audio fourni'
+                }, status=400)
+
+            uploads_today = Reve.objects.filter(
+                profil=profil,
+                date=timezone.localdate(),
+                existence_souvenir=True,
+                audio__isnull=False,
+            ).count()
+            if uploads_today >= MAX_AUDIO_UPLOADS_PER_DAY:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Limite quotidienne atteinte: 7 uploads audio maximum par jour.',
+                }, status=429)
+
+            audio_error = _validate_audio_upload(audio_file)
+            if audio_error:
+                return JsonResponse({
+                    'success': False,
+                    'message': audio_error,
                 }, status=400)
 
             # Créer le rêve avec le fichier audio
@@ -518,6 +690,19 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
     """Exporte les rêves de l'utilisateur connecté en CSV."""
 
     def get(self, request):
+        allowed, retry_after = _rate_limit(
+            request.user.id,
+            scope='export_csv',
+            limit=EXPORT_RATE_LIMIT,
+            window_seconds=EXPORT_RATE_WINDOW_SECONDS,
+        )
+        if not allowed:
+            messages.error(
+                request,
+                f"Trop d'exports CSV. Réessayez dans {retry_after} secondes.",
+            )
+            return HttpResponseRedirect(reverse("polls:profil"))
+
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:
@@ -568,7 +753,7 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
             tags = ', '.join(reve.tags.values_list('libelle', flat=True))
             elements = ', '.join(reve.elements_reve or [])
 
-            writer.writerow([
+            row = [
                 reve.id,
                 reve.date.isoformat() if reve.date else '',
                 reve.created_at.isoformat() if reve.created_at else '',
@@ -591,7 +776,8 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
                 reve.transcription or '',
                 'oui' if reve.transcription_ready else 'non',
                 reve.audio.url if reve.audio else '',
-            ])
+            ]
+            writer.writerow([_safe_csv_cell(value) for value in row])
 
         return response
 
@@ -656,6 +842,17 @@ class QuestionnaireView(View):
         
         # Vérifier si l'utilisateur peut accéder au questionnaire
         profil = request.user.profil
+
+        completed_count = Questionnaire.objects.filter(
+            profil=profil,
+            is_completed=True,
+        ).count()
+        if completed_count >= MAX_QUESTIONNAIRE_SUBMISSIONS:
+            messages.info(
+                request,
+                "Vous avez déjà atteint la limite de 5 soumissions complètes du questionnaire.",
+            )
+            return HttpResponseRedirect(reverse("polls:profil"))
         
         if not profil.can_access_questionnaire():
             # Afficher la page d'attente
@@ -690,6 +887,23 @@ class QuestionnaireView(View):
         
         # Vérifier si l'utilisateur peut accéder au questionnaire
         profil = request.user.profil
+
+        completed_count = Questionnaire.objects.filter(
+            profil=profil,
+            is_completed=True,
+        ).count()
+        if completed_count >= MAX_QUESTIONNAIRE_SUBMISSIONS:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(
+                    {
+                        'success': False,
+                        'message': 'Limite atteinte: maximum 5 soumissions complètes du questionnaire.',
+                    },
+                    status=403,
+                )
+            messages.error(request, "Limite atteinte: maximum 5 soumissions complètes du questionnaire.")
+            return HttpResponseRedirect(reverse("polls:profil"))
+
         if not profil.can_access_questionnaire():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'message': 'Accès non autorisé.'}, status=403)
@@ -715,10 +929,20 @@ class QuestionnaireView(View):
             # Calculate and store section timing if provided
             section_duration = request.POST.get('section_duration')
             if section_duration:
-                if 'section_timings' not in request.session:
-                    request.session['section_timings'] = {}
-                request.session['section_timings'][f'section_{section}'] = float(section_duration)
-                request.session.modified = True
+                try:
+                    parsed_duration = float(section_duration)
+                    if (
+                        QUESTIONNAIRE_MIN_SECTION_DURATION_SECONDS
+                        <= parsed_duration
+                        <= QUESTIONNAIRE_MAX_SECTION_DURATION_SECONDS
+                    ):
+                        if 'section_timings' not in request.session:
+                            request.session['section_timings'] = {}
+                        request.session['section_timings'][f'section_{section}'] = parsed_duration
+                        request.session.modified = True
+                except (TypeError, ValueError):
+                    # Ignore invalid duration to avoid client-side metric poisoning.
+                    pass
 
             # --- Sauvegarde partielle en base de données ---
             # Champs par section (checkboxes booléennes vs radios True/False vs autres)
@@ -852,29 +1076,77 @@ class QuestionnaireView(View):
         form = QuestionnaireForm(request.POST, instance=instance)
         
         if form.is_valid():
-            questionnaire = form.save(commit=False)
-            questionnaire.profil = request.user.profil
-            questionnaire.user = request.user
-            questionnaire.is_completed = True
-            questionnaire.completed_at = timezone.now()
+            with transaction.atomic():
+                profil_locked = Profil.objects.select_for_update().get(pk=profil.pk)
+                completed_count = Questionnaire.objects.filter(
+                    profil=profil_locked,
+                    is_completed=True,
+                ).count()
 
-            section_timings = request.session.get('section_timings', {})
-            total_duration = None
-            if section_timings:
-                total_duration = int(sum(float(value) for value in section_timings.values()))
-            elif questionnaire.created_at:
-                total_duration = max(
-                    0,
-                    int((questionnaire.completed_at - questionnaire.created_at).total_seconds()),
+                if completed_count >= MAX_QUESTIONNAIRE_SUBMISSIONS:
+                    if is_ajax:
+                        return JsonResponse(
+                            {
+                                'success': False,
+                                'message': 'Limite atteinte: maximum 5 soumissions complètes du questionnaire.',
+                            },
+                            status=403,
+                        )
+                    messages.error(request, "Limite atteinte: maximum 5 soumissions complètes du questionnaire.")
+                    return HttpResponseRedirect(reverse("polls:profil"))
+
+                now_ts = int(time.time())
+                last_submit_at = int(request.session.get('questionnaire_last_submit_at', 0) or 0)
+                last_submit_id = request.session.get('questionnaire_last_submission_id')
+                duplicate_window_active = (
+                    not questionnaire_id
+                    and last_submit_id
+                    and (now_ts - last_submit_at) <= QUESTIONNAIRE_DUPLICATE_SUBMIT_WINDOW_SECONDS
                 )
+                if duplicate_window_active:
+                    messages.info(request, "Soumission déjà enregistrée.")
+                    return HttpResponseRedirect(reverse("polls:profil"))
 
-            questionnaire.completion_duration_seconds = total_duration
-            questionnaire.save()
+                questionnaire = form.save(commit=False)
+                questionnaire.profil = profil_locked
+                questionnaire.user = request.user
+                questionnaire.is_completed = True
+                questionnaire.completed_at = timezone.now()
+                questionnaire.submission_number = completed_count + 1
+
+                section_timings = request.session.get('section_timings', {})
+                total_duration = None
+                if section_timings:
+                    safe_values = []
+                    for value in section_timings.values():
+                        try:
+                            parsed = float(value)
+                            if (
+                                QUESTIONNAIRE_MIN_SECTION_DURATION_SECONDS
+                                <= parsed
+                                <= QUESTIONNAIRE_MAX_SECTION_DURATION_SECONDS
+                            ):
+                                safe_values.append(parsed)
+                        except (TypeError, ValueError):
+                            continue
+                    if safe_values:
+                        total_duration = int(sum(safe_values))
+                elif questionnaire.created_at:
+                    total_duration = max(
+                        0,
+                        int((questionnaire.completed_at - questionnaire.created_at).total_seconds()),
+                    )
+
+                questionnaire.completion_duration_seconds = total_duration
+                questionnaire.save()
             
             # Clear session data
             request.session.pop('questionnaire_data', None)
             request.session.pop('section_timings', None)
             request.session.pop('questionnaire_id', None)
+            request.session['questionnaire_last_submit_at'] = int(time.time())
+            request.session['questionnaire_last_submission_id'] = questionnaire.id
+            request.session.modified = True
             
             messages.success(request, "Merci d'avoir complété le questionnaire ! Vos réponses ont été enregistrées.")
             return HttpResponseRedirect(reverse("polls:profil"))
@@ -989,6 +1261,18 @@ class NotificationsListView(LoginRequiredMixin, View):
     
     def get(self, request):
         """Retourner les notifications au format JSON"""
+        allowed, retry_after = _rate_limit(
+            request.user.id,
+            scope='notifications_read',
+            limit=NOTIFICATIONS_READ_RATE_LIMIT,
+            window_seconds=NOTIFICATIONS_READ_RATE_WINDOW_SECONDS,
+        )
+        if not allowed:
+            return _rate_limited_json_response(
+                retry_after,
+                "Trop de requêtes notifications. Réessayez plus tard.",
+            )
+
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:
@@ -1032,6 +1316,18 @@ class NotificationMarkAsReadView(LoginRequiredMixin, View):
 
     def post(self, request, notification_id):
         """Marquer une notification comme lue"""
+        allowed, retry_after = _rate_limit(
+            request.user.id,
+            scope='notifications_mutation',
+            limit=NOTIFICATIONS_MUTATION_RATE_LIMIT,
+            window_seconds=NOTIFICATIONS_MUTATION_RATE_WINDOW_SECONDS,
+        )
+        if not allowed:
+            return _rate_limited_json_response(
+                retry_after,
+                "Trop d'actions sur les notifications. Réessayez plus tard.",
+            )
+
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:
@@ -1063,6 +1359,18 @@ class NotificationUnreadCountView(LoginRequiredMixin, View):
     
     def get(self, request):
         """Retourner le nombre de notifications non lues"""
+        allowed, retry_after = _rate_limit(
+            request.user.id,
+            scope='notifications_read',
+            limit=NOTIFICATIONS_READ_RATE_LIMIT,
+            window_seconds=NOTIFICATIONS_READ_RATE_WINDOW_SECONDS,
+        )
+        if not allowed:
+            return _rate_limited_json_response(
+                retry_after,
+                "Trop de requêtes notifications. Réessayez plus tard.",
+            )
+
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:
@@ -1089,6 +1397,18 @@ class NotificationDeleteView(LoginRequiredMixin, View):
 
     def delete(self, request, notification_id):
         """Supprimer une notification"""
+        allowed, retry_after = _rate_limit(
+            request.user.id,
+            scope='notifications_mutation',
+            limit=NOTIFICATIONS_MUTATION_RATE_LIMIT,
+            window_seconds=NOTIFICATIONS_MUTATION_RATE_WINDOW_SECONDS,
+        )
+        if not allowed:
+            return _rate_limited_json_response(
+                retry_after,
+                "Trop d'actions sur les notifications. Réessayez plus tard.",
+            )
+
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:

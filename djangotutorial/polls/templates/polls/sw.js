@@ -1,12 +1,12 @@
 // Service Worker - Journal des Rêves
 // Version : incrémenter à chaque déploiement pour forcer le rafraîchissement
-var CACHE_VERSION = 'reves-v1';
+var CACHE_VERSION = 'reves-v2';
 var CACHE_NAME = CACHE_VERSION + '-' + new Date().getTime();
 
 // Assets à mettre en cache dès l'installation
 var ASSETS_TO_CACHE = [
     '/polls/',
-    '/offline',
+    '/offline/',
     '/static/polls/style.css',
     '/static/polls/forms.css',
     '/static/polls/pages.css',
@@ -15,6 +15,27 @@ var ASSETS_TO_CACHE = [
     '/static/polls/icons/icon-192x192.png',
     '/static/polls/icons/icon-512x512.png',
 ];
+
+function canCacheStaticResponse(request, response) {
+    if (!response || response.status !== 200) return false;
+
+    var contentType = (response.headers.get('content-type') || '').toLowerCase();
+    var pathname = new URL(request.url).pathname;
+
+    if (pathname.endsWith('.css')) return contentType.indexOf('text/css') !== -1;
+    if (pathname.endsWith('.js')) return contentType.indexOf('javascript') !== -1;
+    if (pathname.endsWith('.png') || pathname.endsWith('.jpg') || pathname.endsWith('.jpeg') || pathname.endsWith('.webp') || pathname.endsWith('.svg') || pathname.endsWith('.woff2')) {
+        return contentType.indexOf('image/') !== -1 || contentType.indexOf('font/') !== -1;
+    }
+
+    return false;
+}
+
+function canCacheHtmlResponse(response) {
+    if (!response || response.status !== 200) return false;
+    var contentType = (response.headers.get('content-type') || '').toLowerCase();
+    return contentType.indexOf('text/html') !== -1;
+}
 
 // ─────────────────────────────────────────────
 // INSTALL : mise en cache des assets statiques
@@ -71,12 +92,16 @@ self.addEventListener('fetch', function(event) {
     // Assets statiques → Cache-first
     if (url.pathname.startsWith('/static/')) {
         event.respondWith(
-            caches.match(event.request).then(function(cached) {
-                return cached || fetch(event.request).then(function(response) {
-                    var clone = response.clone();
-                    caches.open(CACHE_NAME).then(function(cache) {
-                        cache.put(event.request, clone);
-                    });
+            caches.match(event.request, { ignoreSearch: true }).then(function(cached) {
+                if (cached) return cached;
+
+                return fetch(event.request).then(function(response) {
+                    if (canCacheStaticResponse(event.request, response)) {
+                        var clone = response.clone();
+                        caches.open(CACHE_NAME).then(function(cache) {
+                            cache.put(event.request, clone);
+                        });
+                    }
                     return response;
                 });
             })
@@ -87,14 +112,16 @@ self.addEventListener('fetch', function(event) {
     // Pages → Network-first, fallback cache, fallback /offline
     event.respondWith(
         fetch(event.request).then(function(response) {
-            var clone = response.clone();
-            caches.open(CACHE_NAME).then(function(cache) {
-                cache.put(event.request, clone);
-            });
+            if (canCacheHtmlResponse(response)) {
+                var clone = response.clone();
+                caches.open(CACHE_NAME).then(function(cache) {
+                    cache.put(event.request, clone);
+                });
+            }
             return response;
         }).catch(function() {
             return caches.match(event.request).then(function(cached) {
-                return cached || caches.match('/offline');
+                return cached || caches.match('/offline/');
             });
         })
     );

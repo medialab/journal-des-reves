@@ -1,56 +1,165 @@
 {% extends "polls/base.html" %}
+{% load static %}
 
 {% block title %}Bienvenue - Journal des Rêves{% endblock %}
 
 {% block content %}
-<div class="welcome-overlay active" id="welcomeOverlay">
-    <div class="welcome-modal">
-        <div class="welcome-header">
-            <div class="welcome-icon">🌙</div>
-        </div>
-        
-        <div class="welcome-body">
-            <h1 class="welcome-title">Bienvenue {{ user.first_name|default:user.username }} !</h1>
-            
-            <p class="welcome-subtitle">
-                Votre compte a été créé avec succès.
+
+<!-- Hero -->
+<section class="page-hero page-hero-small" style="text-align: center;">
+    <div class="container-small">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem; line-height: 1;">🌙</div>
+        <h1 class="page-title">Bienvenue, {{ user.first_name|default:user.username }} !</h1>
+        <p class="page-subtitle">Votre compte a été créé avec succès.</p>
+    </div>
+</section>
+
+<!-- Contenu -->
+<div class="page-content">
+    <div class="container-small">
+
+        <div class="welcome-card">
+            <p class="welcome-intro">
+                Vous êtes maintenant connecté et prêt à commencer votre journal des rêves.
             </p>
-            
-            <div class="welcome-content">
-                <p>
-                    Vous êtes maintenant connecté et prêt à commencer votre journal des rêves.
-                </p>
-                
-                <div class="welcome-features">
-                    <div class="feature">
-                        <span class="feature-icon">🎙️</span>
-                        <span class="feature-text">Enregistrez vos rêves en audio</span>
-                    </div>
-                    <div class="feature">
-                        <span class="feature-icon">📝</span>
-                        <span class="feature-text">Consultez votre journal</span>
-                    </div>
-                    <div class="feature">
-                        <span class="feature-icon">📊</span>
-                        <span class="feature-text">Répondez aux questionnaires</span>
-                    </div>
+
+            <div class="welcome-features-new">
+                <div class="welcome-feature-item">
+                    <span class="welcome-feature-emoji">🎙️</span>
+                    <span class="welcome-feature-label">Enregistrez vos rêves en audio</span>
+                </div>
+                <div class="welcome-feature-item">
+                    <span class="welcome-feature-emoji">📝</span>
+                    <span class="welcome-feature-label">Consultez votre journal</span>
+                </div>
+                <div class="welcome-feature-item">
+                    <span class="welcome-feature-emoji">📊</span>
+                    <span class="welcome-feature-label">Suivez vos statistiques</span>
                 </div>
             </div>
-        </div>
-        
-        <div class="welcome-footer">
-            <p class="welcome-hint">
-                N'oubliez pas : vous pourrez remplir le questionnaire dans <strong>une semaine</strong>.
+
+            <p class="welcome-note">
+                Le questionnaire sera disponible <strong>après une semaine</strong> d'utilisation.
             </p>
-            <a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
-                <span class="btn-icon">🎙️</span>
-                Enregistrer mon premier rêve
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="welcome-actions">
+            <a href="{% url 'polls:enregistrer' %}" class="welcome-btn-primary">
+                🎙️ Enregistrer mon premier rêve
             </a>
-            <a href="{% url 'polls:journal' %}" class="btn btn-secondary btn-large">
-                <span class="btn-icon">📝</span>
-                Voir mon journal
+            <a href="{% url 'polls:journal' %}" class="welcome-btn-secondary">
+                📝 Aller à mon journal
             </a>
         </div>
+
     </div>
 </div>
+
+<style>
+.welcome-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 4px 24px rgba(50, 69, 189, 0.07);
+    margin-bottom: 1.75rem;
+    text-align: center;
+}
+
+.welcome-intro {
+    color: #374151;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+}
+
+.welcome-features-new {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 420px;
+    margin: 0 auto 1.75rem;
+    text-align: left;
+}
+
+.welcome-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    background: #f0f4ff;
+    border-radius: 10px;
+    border-left: 4px solid #3245bd;
+}
+
+.welcome-feature-emoji {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.welcome-feature-label {
+    color: #1e2a6d;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.welcome-note {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-style: italic;
+    margin: 0;
+}
+
+.welcome-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.welcome-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: #3245bd;
+    color: white;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.welcome-btn-primary:hover {
+    background: #2338a8;
+    transform: translateY(-2px);
+}
+
+.welcome-btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: #f0f4ff;
+    color: #3245bd;
+    border: 2px solid #3245bd;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.welcome-btn-secondary:hover {
+    background: #dce4ff;
+    transform: translateY(-2px);
+}
+</style>
+
 {% endblock %}

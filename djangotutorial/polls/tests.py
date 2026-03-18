@@ -1,9 +1,15 @@
 import datetime
+import io
+import struct
+import wave
+from unittest.mock import patch
 
 from django.test import TestCase, Client
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from .models import Questionnaire, Profil, Reve, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite, ReveTag
 from .forms import QuestionnaireForm
 
@@ -70,6 +76,27 @@ def full_post_data():
     data.update(SECTION2_DATA)
     data.update(SECTION3_DATA)
     return data
+
+
+def make_wav_upload(filename='sample.wav', duration_seconds=1, framerate=8000):
+    """Create a tiny in-memory WAV upload for endpoint testing."""
+    frame_count = duration_seconds * framerate
+    amplitude = 1000
+    wav_bytes = io.BytesIO()
+
+    with wave.open(wav_bytes, 'wb') as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(framerate)
+        for _ in range(frame_count):
+            wav_file.writeframes(struct.pack('<h', amplitude))
+
+    wav_bytes.seek(0)
+    return SimpleUploadedFile(
+        filename,
+        wav_bytes.read(),
+        content_type='audio/wav',
+    )
 
 
 # ===========================================================================
@@ -699,6 +726,35 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
         count_after = Questionnaire.objects.filter(profil=self.profil).count()
         self.assertEqual(count_before, count_after)  # Pas de doublon
 
+    def test_double_submit_is_idempotent(self):
+        """Deux soumissions rapides ne doivent pas créer de doublon de questionnaire complété."""
+        first = self._final_post(full_post_data())
+        second = self._final_post(full_post_data())
+
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(
+            Questionnaire.objects.filter(profil=self.profil, is_completed=True).count(),
+            1,
+        )
+
+    def test_outlier_section_duration_ignored(self):
+        """Des timings client aberrants ne doivent pas polluer la métrique finale."""
+        self.client.post(
+            self.url,
+            {
+                'section': '1',
+                'section_duration': '999999',
+                **SECTION1_DATA,
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+
+        self._final_post(full_post_data())
+        q = Questionnaire.objects.get(profil=self.profil, is_completed=True)
+        self.assertIsNotNone(q.completion_duration_seconds)
+        self.assertLess(q.completion_duration_seconds, 3600)
+
 
 # ===========================================================================
 # TEST END-TO-END : Utilisateur remplit tout le questionnaire
@@ -904,6 +960,60 @@ class QuestionnaireEndToEndTest(TestCase):
         print(f"  - {q.nb_enfants_cohabitants} enfant(s) sans le foyer, {q.nb_enfants_moins14} de moins de 14 ans")
 
 
+class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
+    """Verifie les restrictions d'acces apres 7 jours sans questionnaire complete."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user, self.profil = make_user_with_profil(username='gate-user', days_old=10)
+        self.client.login(username='gate-user', password='testpass123')
+        self.profil_url = reverse('polls:profil')
+        self.enregistrer_url = reverse('polls:enregistrer')
+        self.questionnaire_url = reverse('polls:questionnaire')
+
+    def _complete_questionnaire_once(self):
+        Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            is_completed=True,
+            completed_at=timezone.now(),
+        )
+
+    def test_profil_redirects_to_questionnaire_when_missing_after_delay(self):
+        response = self.client.get(self.profil_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.questionnaire_url)
+
+    def test_enregistrer_get_redirects_to_questionnaire_when_missing_after_delay(self):
+        response = self.client.get(self.enregistrer_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.questionnaire_url)
+
+    def test_enregistrer_post_returns_403_when_missing_after_delay(self):
+        response = self.client.post(self.enregistrer_url, {'existence_souvenir': '0'})
+        self.assertEqual(response.status_code, 403)
+        payload = response.json()
+        self.assertFalse(payload['success'])
+
+    def test_profil_access_allowed_when_questionnaire_completed(self):
+        self._complete_questionnaire_once()
+        response = self.client.get(self.profil_url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_enregistrer_access_allowed_when_questionnaire_completed(self):
+        self._complete_questionnaire_once()
+        response = self.client.get(self.enregistrer_url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_enregistrer_access_allowed_before_seven_days_without_questionnaire(self):
+        self.client.logout()
+        young_user, _ = make_user_with_profil(username='young-user', days_old=3)
+        self.client.login(username='young-user', password='testpass123')
+
+        response = self.client.get(self.enregistrer_url)
+        self.assertEqual(response.status_code, 200)
+
+
 class QuestionnaireAdminSmokeTest(TestCase):
     """Vérifie que l'admin questionnaires se charge sans erreur."""
 
@@ -1020,3 +1130,193 @@ class ReveAdminSmokeTest(TestCase):
         self.assertIn('images_modalites_labels', content)
         self.assertIn('emotions_custom_labels', content)
         self.assertIn('temporalite_labels', content)
+
+
+class SecurityPermissionsUniformityTest(TestCase):
+    """Vérifie que les endpoints de données perso exigent auth + propriété."""
+
+    def setUp(self):
+        cache.clear()
+        self.client = Client()
+        self.user1, self.profil1 = make_user_with_profil(username='perm-user-1')
+        self.user2, self.profil2 = make_user_with_profil(username='perm-user-2')
+
+        self.reve_user1 = Reve.objects.create(
+            profil=self.profil1,
+            user=self.user1,
+            existence_souvenir=True,
+            transcription='Mon reve',
+            transcription_ready=True,
+        )
+
+        from .models import Notification
+        self.notification_user1 = Notification.objects.create(
+            profil=self.profil1,
+            notification_type=Notification.NotificationType.GENERAL,
+            title='Test',
+            message='Message',
+        )
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_personal_endpoints_require_auth(self):
+        endpoints = [
+            reverse('polls:profil'),
+            reverse('polls:export_reves_csv'),
+            reverse('polls:reve_audio', args=[self.reve_user1.id]),
+            reverse('polls:reve_transcription_update', args=[self.reve_user1.id]),
+            reverse('polls:notifications_list'),
+            reverse('polls:notification_unread_count'),
+        ]
+
+        for url in endpoints:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 302)
+
+    def test_resource_endpoints_enforce_ownership(self):
+        self.client.login(username='perm-user-2', password='testpass123')
+
+        audio_resp = self.client.get(reverse('polls:reve_audio', args=[self.reve_user1.id]))
+        self.assertEqual(audio_resp.status_code, 302)
+
+        transcription_resp = self.client.post(
+            reverse('polls:reve_transcription_update', args=[self.reve_user1.id]),
+            {'transcription': 'intrusion'},
+        )
+        self.assertEqual(transcription_resp.status_code, 404)
+
+        mark_resp = self.client.post(
+            reverse('polls:notification_mark_read', args=[self.notification_user1.id])
+        )
+        self.assertEqual(mark_resp.status_code, 404)
+
+
+class UploadAbuseProtectionTest(TestCase):
+    """Tests anti-abus upload audio."""
+
+    def setUp(self):
+        cache.clear()
+        self.client = Client()
+        # User newer than 7 days to bypass questionnaire mandatory gate for this specific test.
+        self.user, self.profil = make_user_with_profil(username='upload-user', days_old=3)
+        self.client.login(username='upload-user', password='testpass123')
+        self.url = reverse('polls:enregistrer')
+
+    def tearDown(self):
+        cache.clear()
+
+    def _valid_upload_payload(self):
+        return {
+            'existence_souvenir': '1',
+            'audio': make_wav_upload(),
+            'type_reve': Reve.TypeReve.NEUTRE,
+        }
+
+    def test_eighth_upload_of_the_day_is_refused(self):
+        for idx in range(7):
+            Reve.objects.create(
+                profil=self.profil,
+                user=self.user,
+                existence_souvenir=True,
+                audio=f'reves_audio/already-{idx}.wav',
+                transcription_ready=True,
+            )
+
+        with patch('polls.views.start_transcription_async', return_value=True):
+            response = self.client.post(self.url, self._valid_upload_payload())
+
+        self.assertEqual(response.status_code, 429)
+        payload = response.json()
+        self.assertFalse(payload['success'])
+        self.assertIn('7 uploads audio maximum', payload['message'])
+
+
+class NotificationRateLimitTest(TestCase):
+    """Rafales d'appels sur notifications: limitation active."""
+
+    def setUp(self):
+        cache.clear()
+        self.client = Client()
+        self.user, self.profil = make_user_with_profil(username='notif-user')
+        self.client.login(username='notif-user', password='testpass123')
+        from .models import Notification
+        self.notification = Notification.objects.create(
+            profil=self.profil,
+            notification_type=Notification.NotificationType.GENERAL,
+            title='Rafale',
+            message='Test limite',
+        )
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_mark_read_rafale_hits_rate_limit(self):
+        url = reverse('polls:notification_mark_read', args=[self.notification.id])
+
+        last_status = None
+        for _ in range(25):
+            resp = self.client.post(url)
+            last_status = resp.status_code
+            if resp.status_code == 429:
+                break
+
+        self.assertEqual(last_status, 429)
+
+
+class QuestionnaireSubmissionPolicyTest(TestCase):
+    """Numérotation des soumissions et limite max 5 questionnaires complets."""
+
+    def setUp(self):
+        cache.clear()
+        self.client = Client()
+        self.user, self.profil = make_user_with_profil(username='q-policy-user')
+        self.client.login(username='q-policy-user', password='testpass123')
+        self.url = reverse('polls:questionnaire')
+
+    def tearDown(self):
+        cache.clear()
+
+    def _submit_with_draft(self):
+        self.client.post(
+            self.url,
+            {'section': '1', 'section_duration': '45', **SECTION1_DATA},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        return self.client.post(self.url, full_post_data(), follow=False)
+
+    def test_submission_number_increments_until_five(self):
+        created_ids = []
+        for expected_number in range(1, 6):
+            response = self._submit_with_draft()
+            self.assertEqual(response.status_code, 302)
+            q = Questionnaire.objects.filter(
+                profil=self.profil,
+                is_completed=True,
+                submission_number=expected_number,
+            ).latest('id')
+            created_ids.append(q.id)
+
+            session = self.client.session
+            session['questionnaire_last_submit_at'] = 0
+            session['questionnaire_last_submission_id'] = None
+            session.save()
+
+        self.assertEqual(len(created_ids), 5)
+
+    def test_sixth_submission_is_blocked(self):
+        for _ in range(5):
+            response = self._submit_with_draft()
+            self.assertEqual(response.status_code, 302)
+            session = self.client.session
+            session['questionnaire_last_submit_at'] = 0
+            session['questionnaire_last_submission_id'] = None
+            session.save()
+
+        sixth = self._submit_with_draft()
+        self.assertEqual(sixth.status_code, 302)
+
+        self.assertEqual(
+            Questionnaire.objects.filter(profil=self.profil, is_completed=True).count(),
+            5,
+        )

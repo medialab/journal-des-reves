@@ -43,6 +43,7 @@
     animation: slideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     pointer-events: auto;
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
 }
 
@@ -420,6 +421,7 @@
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.96);
     box-shadow: 0 28px 60px rgba(11, 15, 24, 0.22), 0 10px 28px rgba(11, 15, 24, 0.08);
+    -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
     animation: panelIn 0.22s ease-out;
 }

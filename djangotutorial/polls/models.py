@@ -75,6 +75,14 @@ class Profil(models.Model):
         days_remaining = (one_week_after_creation - timezone.now()).days
         return max(0, days_remaining)
 
+    def has_completed_questionnaire(self):
+        """Indique si le profil a deja complete le questionnaire au moins une fois."""
+        return self.questionnaires.filter(is_completed=True).exists()
+
+    def must_complete_questionnaire_for_extended_access(self):
+        """Bloque certaines fonctionnalites apres 7 jours tant que le questionnaire n'est pas complete."""
+        return self.can_access_questionnaire() and not self.has_completed_questionnaire()
+
 
 # MODELES POUR LES REVES ========================
 
@@ -1025,6 +1033,13 @@ class Questionnaire(models.Model):
         null=True,
         blank=True,
         verbose_name="Durée de passation (secondes)"
+    )
+    submission_number = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        db_index=True,
+        verbose_name="Numéro de soumission complète"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
