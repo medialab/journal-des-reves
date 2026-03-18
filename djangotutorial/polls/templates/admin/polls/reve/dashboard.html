@@ -82,6 +82,31 @@
     font-size: 0.84rem;
   }
 
+  .page-switcher {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .page-switcher a {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #d0d7de;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    text-decoration: none;
+    color: #1f2937;
+    background: #fff;
+    font-size: 0.86rem;
+  }
+
+  .page-switcher a.active {
+    background: #1f2937;
+    color: #fff;
+    border-color: #1f2937;
+  }
+
   .dream-panels {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
@@ -106,7 +131,7 @@
 
   .recent-series {
     display: grid;
-    grid-template-columns: repeat(14, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: 0.55rem;
     align-items: end;
     min-height: 190px;
@@ -199,11 +224,6 @@
     border-radius: 20px;
     border: 1px solid rgba(100, 116, 139, 0.22);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  }
-
-  .emotion-pill,
-  .tag-pill,
-  .modality-pill {
     background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
   }
 
@@ -249,11 +269,8 @@
     font-weight: 800;
     font-size: 0.84rem;
     color: #fff;
+    background: linear-gradient(135deg, #334155, #64748b);
   }
-
-  .theme-rank,
-  .type-rank,
-  .temporality-badge { background: linear-gradient(135deg, #334155, #64748b); }
 
   .theme-name,
   .type-name,
@@ -314,13 +331,16 @@
 
   @media (max-width: 820px) {
     .recent-series {
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
     }
   }
 </style>
 {% endblock %}
 
 {% block object-tools-items %}
+  <li>
+    <a href="{{ data_url }}">Voir les lignes (Data)</a>
+  </li>
   <li>
     <a href="{{ csv_export_url }}" class="historylink">Exporter tous les rêves (CSV)</a>
   </li>
@@ -330,6 +350,11 @@
 {% block content %}
   {% if dashboard %}
     <div class="dream-dashboard">
+      <div class="page-switcher">
+        <a href="{{ request.path }}" class="active">Dashboard</a>
+        <a href="{{ data_url }}">Data (lignes)</a>
+      </div>
+
       <div class="dream-dashboard-grid">
         {% for card in dashboard.cards %}
           <section class="dream-card">
@@ -342,8 +367,8 @@
 
       <div class="dream-panels">
         <section class="dream-panel activity-panel">
-          <h2>Activité des rêves sur 14 jours</h2>
-          <p>Volume quotidien des enregistrements visibles avec les filtres actuels.</p>
+          <h2>Reve enregsitré par semaine</h2>
+          <p>Volume hebdomadaire des enregistrements visibles avec les filtres actifs.</p>
           <div class="recent-series">
             {% for item in dashboard.recent_series %}
               <div class="recent-series-item">
@@ -355,7 +380,7 @@
               </div>
             {% endfor %}
           </div>
-          <div class="activity-note">Chaque colonne correspond à un jour, sans code couleur réutilisé ailleurs dans le dashboard.</div>
+          <div class="activity-note">Chaque colonne correspond à une semaine ISO.</div>
         </section>
 
         <section class="dream-panel valence-panel">
@@ -477,6 +502,4 @@
       </div>
     </div>
   {% endif %}
-
-  {{ block.super }}
 {% endblock %}

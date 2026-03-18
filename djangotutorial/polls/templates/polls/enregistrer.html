@@ -66,6 +66,30 @@
 					</div>
 				</div>
 
+				<!-- Section Alternative: Mode texte -->
+				<div class="form-section optional-section section-text-dream" id="sectionTextDream" style="display: none;">
+					<div class="recorder-buttons" id="textChoiceButtons">
+						<button type="button" id="startTextBtn" class="btn btn-primary recorder-start-cta">Raconte-moi ton rêve</button>
+						<button type="button" id="noMemoryBtnText" class="btn btn-outline-light" style="width: 100%; max-width: 400px;">
+							Aucun souvenir de mon/mes rêve(s) cette nuit
+						</button>
+					</div>
+
+					<div id="textDreamComposer" class="text-dream-composer" style="display: none;">
+						<label class="form-label" for="dreamTextarea">
+							<span>Raconte-moi ton rêve</span>
+							<span class="text-secondary">(texte libre)</span>
+						</label>
+						<textarea
+							id="dreamTextarea"
+							name="transcription"
+							class="form-textarea"
+							placeholder="Raconte ici ton rêve en détail..."
+							rows="8"
+						></textarea>
+					</div>
+				</div>
+
 				<div id="questionsGrid" class="questions-grid optional-questions-grid" style="display: none;">
 					<!-- Section: Type de Reve -->
 					<div class="form-section optional-section">
@@ -246,12 +270,16 @@
 		</div>
 	</section>
 </div>
-
 <!-- Scripts -->
 <script>
+const RECORDING_MODE = '{{ recording_mode|default:"audio_recording" }}';
+
 document.addEventListener('DOMContentLoaded', function() {
-	setRecorderEntryLayout(true);
-	initRecorder();
+	setRecorderEntryLayout(RECORDING_MODE === 'audio_recording');
+	applyRecordingModeUI();
+	if (RECORDING_MODE === 'audio_recording') {
+		initRecorder();
+	}
 	initFormHandlers();
 });
 
@@ -260,6 +288,34 @@ let audioChunks = [];
 let recordingStartTime = null;
 let recordingTimerInterval = null;
 let currentAudioBlob = null;
+
+function applyRecordingModeUI() {
+	const sectionAudio = document.querySelector('.section-audio');
+	const sectionTextDream = document.getElementById('sectionTextDream');
+	const textChoiceButtons = document.getElementById('textChoiceButtons');
+	const textDreamComposer = document.getElementById('textDreamComposer');
+	const noMemoryBtn = document.getElementById('noMemoryBtn');
+	const noMemoryBtnText = document.getElementById('noMemoryBtnText');
+	const questionsGrid = document.getElementById('questionsGrid');
+	const audioInput = document.getElementById('audioInput');
+
+	if (RECORDING_MODE === 'text_only') {
+		if (sectionAudio) sectionAudio.style.display = 'none';
+		if (sectionTextDream) sectionTextDream.style.display = 'block';
+		if (textChoiceButtons) textChoiceButtons.style.display = 'flex';
+		if (textDreamComposer) textDreamComposer.style.display = 'none';
+		if (noMemoryBtn) noMemoryBtn.style.display = 'none';
+		if (noMemoryBtnText) noMemoryBtnText.style.display = 'block';
+		if (questionsGrid) questionsGrid.style.display = 'none';
+		if (audioInput) audioInput.removeAttribute('required');
+		setRecorderEntryLayout(true);
+	} else {
+		if (sectionAudio) sectionAudio.style.display = 'block';
+		if (sectionTextDream) sectionTextDream.style.display = 'none';
+		if (noMemoryBtn) noMemoryBtn.style.display = 'block';
+		if (noMemoryBtnText) noMemoryBtnText.style.display = 'none';
+	}
+}
 
 function setRecorderEntryLayout(isInitial) {
 	const form = document.getElementById('reve-form');
@@ -522,6 +578,10 @@ function initFormHandlers() {
 	const addElementBtn = document.getElementById('addElementBtn');
 	const customElementInput = document.getElementById('customElementInput');
 	const noMemoryBtn = document.getElementById('noMemoryBtn');
+	const noMemoryBtnText = document.getElementById('noMemoryBtnText');
+	const startTextBtn = document.getElementById('startTextBtn');
+	const textChoiceButtons = document.getElementById('textChoiceButtons');
+	const textDreamComposer = document.getElementById('textDreamComposer');
 	const startBtn = document.getElementById('startBtn');
 	const pauseBtn = document.getElementById('pauseBtn');
 	const stopBtn = document.getElementById('stopBtn');
@@ -529,12 +589,32 @@ function initFormHandlers() {
 	const questionsGrid = document.getElementById('questionsGrid');
 	const emotionsSection = document.getElementById('emotionsSection');
 	const audioInput = document.getElementById('audioInput');
+	const dreamTextarea = document.getElementById('dreamTextarea');
 
 	// Mode "Aucun souvenir"
 	let noMemoryMode = false;
 	let noMemorySubmitting = false;
 
-	noMemoryBtn.addEventListener('click', function() {
+	if (RECORDING_MODE === 'text_only' && startTextBtn) {
+		startTextBtn.addEventListener('click', function() {
+			if (textChoiceButtons) {
+				textChoiceButtons.style.display = 'none';
+			}
+			if (textDreamComposer) {
+				textDreamComposer.style.display = 'block';
+			}
+			if (questionsGrid) {
+				questionsGrid.style.display = 'flex';
+			}
+			setRecorderEntryLayout(false);
+			if (dreamTextarea) {
+				dreamTextarea.focus();
+			}
+			checkForm();
+		});
+	}
+
+	const handleNoMemory = function() {
 		if (noMemorySubmitting) {
 			return;
 		}
@@ -552,8 +632,15 @@ function initFormHandlers() {
 			emotionsSection.style.display = 'none';
 		}
 
-		noMemoryBtn.disabled = true;
-		startBtn.disabled = true;
+		if (noMemoryBtn) {
+			noMemoryBtn.disabled = true;
+		}
+		if (noMemoryBtnText) {
+			noMemoryBtnText.disabled = true;
+		}
+		if (startBtn) {
+			startBtn.disabled = true;
+		}
 		if (pauseBtn) {
 			pauseBtn.disabled = true;
 		}
@@ -562,7 +649,14 @@ function initFormHandlers() {
 		}
 
 		form.requestSubmit();
-	});
+	};
+
+	if (noMemoryBtn) {
+		noMemoryBtn.addEventListener('click', handleNoMemory);
+	}
+	if (noMemoryBtnText) {
+		noMemoryBtnText.addEventListener('click', handleNoMemory);
+	}
 
 	// Activer le bouton soumettre quand les champs requis sont remplis
 	const checkForm = () => {
@@ -574,9 +668,15 @@ function initFormHandlers() {
 
 		let isValid = true;
 
-		// Vérifier que l'audio est enregistré
-		if (!currentAudioBlob) {
-			isValid = false;
+		if (RECORDING_MODE === 'text_only') {
+			if (!dreamTextarea || !dreamTextarea.value.trim()) {
+				isValid = false;
+			}
+		} else {
+			// Vérifier que l'audio est enregistré
+			if (!currentAudioBlob) {
+				isValid = false;
+			}
 		}
 
 		// Vérifier les radios requis
@@ -619,6 +719,10 @@ function initFormHandlers() {
 			updateChoiceStyles();
 		});
 	});
+
+		if (dreamTextarea) {
+			dreamTextarea.addEventListener('input', checkForm);
+		}
 
 		const normalizeEmotion = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
 		const existingEmotionValues = () => {
@@ -850,6 +954,21 @@ function initFormHandlers() {
 
 .section-audio {
 	margin-bottom: 0.2rem;
+}
+
+.section-text-dream {
+	margin-bottom: 0.2rem;
+}
+
+.text-dream-composer {
+	width: 100%;
+	max-width: 100%;
+	padding-top: 0.2rem;
+}
+
+#dreamTextarea {
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #questionsGrid.optional-questions-grid {

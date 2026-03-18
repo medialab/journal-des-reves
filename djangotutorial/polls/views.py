@@ -228,6 +228,12 @@ class EnregistrerView(LoginRequiredMixin, View):
     La transcription est traitée de manière asynchrone avec Whisper
     """
 
+    def _get_recording_mode(self, user):
+        """Déterminer le mode d'enregistrement selon le groupe de l'utilisateur"""
+        if user.groups.filter(name='text_only').exists():
+            return 'text_only'
+        return 'audio_recording'  # Mode par défaut
+
     def get(self, request):
         """Afficher la page d'enregistrement"""
         try:
@@ -255,6 +261,7 @@ class EnregistrerView(LoginRequiredMixin, View):
             "custom_emotions": custom_emotions,
             "custom_elements": custom_elements,
             "images_modalites": images_modalites,
+            "recording_mode": self._get_recording_mode(request.user),
         }
         
         # Ajouter les infos questionnaire
@@ -292,6 +299,8 @@ class EnregistrerView(LoginRequiredMixin, View):
                     'message': 'Veuillez completer le questionnaire avant d\'enregistrer un nouveau reve.'
                 }, status=403)
 
+            recording_mode = self._get_recording_mode(request.user)
+
             # Récupérer existence_souvenir (par défaut True)
             existence_souvenir_str = request.POST.get('existence_souvenir', '1')
             existence_souvenir = existence_souvenir_str == '1'
@@ -313,6 +322,7 @@ class EnregistrerView(LoginRequiredMixin, View):
             # Sinon, traitement normal avec audio
             # Récupérer les données du formulaire
             audio_file = request.FILES.get('audio')
+            transcription = request.POST.get('transcription', '').strip()
             type_reve = request.POST.get('type_reve', '').strip()
             etendue_reve = request.POST.get('etendue_reve', '')
             sens = request.POST.get('sens', '')
@@ -325,35 +335,43 @@ class EnregistrerView(LoginRequiredMixin, View):
             images_modalites_ids = request.POST.getlist('images_modalites')
 
             # Validation
-            if not audio_file:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Aucun fichier audio fourni'
-                }, status=400)
+            if recording_mode == 'text_only':
+                if not transcription:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Veuillez saisir une transcription.'
+                    }, status=400)
+            else:
+                if not audio_file:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Aucun fichier audio fourni'
+                    }, status=400)
 
-            uploads_today = Reve.objects.filter(
-                profil=profil,
-                date=timezone.localdate(),
-                existence_souvenir=True,
-                audio__isnull=False,
-            ).count()
-            if uploads_today >= MAX_AUDIO_UPLOADS_PER_DAY:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Limite quotidienne atteinte: 7 uploads audio maximum par jour.',
-                }, status=429)
+                uploads_today = Reve.objects.filter(
+                    profil=profil,
+                    date=timezone.localdate(),
+                    existence_souvenir=True,
+                    audio__isnull=False,
+                ).count()
+                if uploads_today >= MAX_AUDIO_UPLOADS_PER_DAY:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Limite quotidienne atteinte: 7 uploads audio maximum par jour.',
+                    }, status=429)
 
-            audio_error = _validate_audio_upload(audio_file)
-            if audio_error:
-                return JsonResponse({
-                    'success': False,
-                    'message': audio_error,
-                }, status=400)
+                audio_error = _validate_audio_upload(audio_file)
+                if audio_error:
+                    return JsonResponse({
+                        'success': False,
+                        'message': audio_error,
+                    }, status=400)
 
             # Créer le rêve avec le fichier audio
             reve = Reve.objects.create(
                 profil=profil,
-                audio=audio_file,
+                audio=audio_file if recording_mode == 'audio_recording' else None,
+                transcription=transcription if transcription else None,
                 type_reve=type_reve if type_reve else None,
                 etendue_reve=int(etendue_reve) if etendue_reve else None,
                 sens=int(sens) if sens else None,
@@ -365,7 +383,7 @@ class EnregistrerView(LoginRequiredMixin, View):
                 temps_difficile='difficile' in temps_selected,
                 commentaire_libre=commentaire_libre if commentaire_libre else None,
                 existence_souvenir=True,
-                transcription_ready=False
+                transcription_ready=recording_mode == 'text_only'
             )
 
             # Ajouter les émotions
@@ -426,12 +444,17 @@ class EnregistrerView(LoginRequiredMixin, View):
                 images_modalites = ReveImageModalite.objects.filter(id__in=images_modalites_ids)
                 reve.images_modalites.set(images_modalites)
 
-            # Lancer la transcription en arrière-plan de manière asynchrone et non-bloquante
-            start_transcription_async(reve.id)
+            # Lancer la transcription async uniquement quand l'entrée est audio
+            if recording_mode == 'audio_recording':
+                start_transcription_async(reve.id)
 
             return JsonResponse({
                 'success': True,
-                'message': 'Rêve enregistré ! La transcription arrivera dans quelques minutes...',
+                'message': (
+                    'Rêve enregistré ! La transcription arrivera dans quelques minutes...'
+                    if recording_mode == 'audio_recording'
+                    else 'Rêve enregistré !'
+                ),
                 'reve_id': reve.id,
             })
 

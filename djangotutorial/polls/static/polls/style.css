@@ -292,7 +292,7 @@ img {
     font-weight: 700;
     font-family: var(--font-display);
     color: var(--primary);
-    z-index: calc(var(--z-sticky) + 10);
+    z-index: calc(var(--z-sticky) + 3);
     text-decoration: none;
     transition: color var(--transition-base);
     margin-right: auto;
@@ -314,7 +314,7 @@ img {
     background: none;
     border: none;
     padding: 0.5rem;
-    z-index: calc(var(--z-sticky) + 10);
+    z-index: calc(var(--z-sticky) + 8);
 }
 
 .hamburger span {
@@ -436,6 +436,10 @@ html.is-mobile-pwa .notification-bell {
     align-items: center;
     gap: 2rem;
     list-style: none;
+}
+
+.nav-backdrop {
+    display: none;
 }
 
 .nav-link {
@@ -1340,6 +1344,16 @@ select:focus {
 .login-page .signup-link .btn {
     width: 100%;
     max-width: 400px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    line-height: 1.28;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.login-page .signup-link .btn.btn-outline-light {
+    font-size: 0.97rem;
 }
 
 .login-page .signup-link .btn-outline-light {
@@ -1356,13 +1370,68 @@ select:focus {
 
 .login-page .forgot-password-link a {
     color: var(--primary);
-    font-size: 1.06rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
 .login-page .forgot-password-link a:hover {
     color: var(--primary-light);
     text-decoration: underline;
+}
+
+/* Signup page: keep content readable on mobile and simplify consent cards */
+.signup-page .checkbox-group {
+    gap: 0.7rem;
+}
+
+.signup-page .checkbox-item {
+    margin-bottom: 0;
+}
+
+.signup-page .checkbox-item .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 14px;
+    background: var(--white);
+    text-align: left;
+    line-height: 1.35;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.signup-page .checkbox-item .checkbox-label:hover {
+    border-color: var(--primary-light);
+    background: rgba(50, 69, 189, 0.04);
+}
+
+.signup-page .checkbox-item .checkbox-input {
+    margin-top: 0.15rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+}
+
+.signup-page .checkbox-item .checkbox-label span {
+    font-size: 0.98rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+.signup-page .page-hero-small {
+    padding: calc(80px + var(--spacing-md)) 0 var(--spacing-sm);
+}
+
+.signup-page .page-title {
+    margin-bottom: 0.2rem;
+}
+
+.signup-page .page-content {
+    padding-top: var(--spacing-sm);
 }
 
 /* ============================================
@@ -2078,25 +2147,58 @@ select:focus {
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
+    /* Django debug toolbar can overlay the hamburger on mobile Safari in dev. */
+    #djDebug {
+        display: none !important;
+    }
+
+    body.nav-open {
+        overflow: hidden;
+    }
+
+    .nav-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 15, 30, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-base);
+        z-index: calc(var(--z-sticky) - 1);
+    }
+
+    .nav-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     .hamburger {
         display: flex;
+        z-index: calc(var(--z-sticky) + 8);
+    }
+
+    .navbar-logo {
+        z-index: 1;
     }
     
     .nav-menu {
         position: fixed;
         top: 0;
         right: -100%;
-        width: 80%;
-        max-width: 300px;
+        width: min(84vw, 312px);
         height: 100vh;
         height: calc(var(--app-vh, 1vh) * 100);
         height: 100dvh;
         flex-direction: column;
         align-items: flex-start;
+        justify-content: flex-start;
+        gap: 0.1rem;
         background: var(--white);
-        padding: 6rem 2rem 2rem;
+        padding: 3.9rem 0.9rem 0.75rem;
         box-shadow: var(--shadow-2xl);
         transition: right var(--transition-base);
+        z-index: calc(var(--z-sticky) + 7);
+        overflow: clip;
     }
 
     html.is-mobile-pwa .navbar {
@@ -2104,17 +2206,18 @@ select:focus {
     }
 
     html.is-mobile-pwa .nav-menu {
-        top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+        top: calc(env(safe-area-inset-top, 0px) + 0.28rem);
         right: -105%;
-        width: min(86vw, 340px);
-        height: calc(100vh - env(safe-area-inset-top, 0px) - 0.5rem);
-        height: calc(var(--app-vh, 1vh) * 100 - env(safe-area-inset-top, 0px) - 0.5rem);
-        height: calc(100dvh - env(safe-area-inset-top, 0px) - 0.5rem);
-        border-radius: 18px 0 0 18px;
+        width: min(84vw, 320px);
+        height: calc(100vh - env(safe-area-inset-top, 0px) - 0.28rem);
+        height: calc(var(--app-vh, 1vh) * 100 - env(safe-area-inset-top, 0px) - 0.28rem);
+        height: calc(100dvh - env(safe-area-inset-top, 0px) - 0.28rem);
+        border-radius: 16px 0 0 16px;
         background: rgba(255, 255, 255, 0.97);
         -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
-        padding: 5.5rem 1.4rem 1.4rem;
+        padding: 3.55rem 0.78rem max(0.56rem, env(safe-area-inset-bottom, 0px));
+        gap: 0;
     }
     
     .nav-menu.active {
@@ -2123,17 +2226,72 @@ select:focus {
     
     .nav-link {
         width: 100%;
-        padding: 1rem 0;
-        font-size: 1.125rem;
+        padding: 0.38rem 0;
+        font-size: 0.92rem;
+        line-height: 1.18;
     }
 
     .nav-action-btn {
         width: 100%;
         justify-content: flex-start;
-        padding: 1rem 0;
-        font-size: 1.125rem;
+        padding: 0.38rem 0;
+        font-size: 0.92rem;
+        line-height: 1.18;
     }
-    
+
+    .nav-icon svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .nav-menu > li {
+        width: 100%;
+        margin: 0;
+    }
+
+    .nav-user {
+        margin-top: 0.08rem;
+    }
+
+    .nav-username {
+        font-size: 0.86rem;
+    }
+
+    .nav-logout {
+        padding: 0.38rem 0;
+        font-size: 0.92rem;
+        line-height: 1.18;
+    }
+
+    /* Safari mobile: slightly larger, more breathable menu typography. */
+    html.is-safari .nav-menu {
+        width: min(86vw, 330px);
+        padding: 4.2rem 1.08rem 1rem;
+        gap: 0.2rem;
+    }
+
+    html.is-safari .nav-link,
+    html.is-safari .nav-action-btn,
+    html.is-safari .nav-logout {
+        padding: 0.56rem 0;
+        font-size: 1.04rem;
+        line-height: 1.26;
+    }
+
+    html.is-safari .nav-icon svg {
+        width: 1.14rem;
+        height: 1.14rem;
+    }
+
+    html.is-safari .nav-username {
+        font-size: 0.95rem;
+    }
+
+    html.is-safari.is-mobile-pwa .nav-menu {
+        width: min(86vw, 334px);
+        padding: 3.85rem 1rem max(0.8rem, env(safe-area-inset-bottom, 0px));
+    }
+
     .hero-buttons {
         flex-direction: column;
         align-items: stretch;
@@ -2181,7 +2339,53 @@ select:focus {
     .login-page .login-hero-cta {
         margin-top: 0.75rem;
     }
+
+    .signup-page .container-small {
+        max-width: 100%;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .signup-page .form-card {
+        padding: 1rem 0.85rem;
+        border-radius: 16px;
+    }
+
+    .signup-page .page-hero-small {
+        padding: calc(76px + 0.85rem) 0 0.6rem;
+    }
+
+    .signup-page .journal-kicker {
+        font-size: 0.68rem;
+        letter-spacing: 0.16em;
+    }
+
+    .signup-page .page-title {
+        font-size: clamp(1.95rem, 8vw, 2.35rem);
+        line-height: 1.12;
+    }
+
+    .signup-page .page-content {
+        padding-top: 0.5rem;
+    }
+
+    .signup-page .consent-section {
+        padding: 1rem 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .signup-page .checkbox-item .checkbox-label {
+        padding: 0.56rem 0.66rem;
+        border-radius: 10px;
+        gap: 0.6rem;
+    }
+
+    .signup-page .checkbox-item .checkbox-label span {
+        font-size: 0.93rem;
+        line-height: 1.33;
+    }
 }
+
 
 /* ============================================
    ALERTS & MESSAGES

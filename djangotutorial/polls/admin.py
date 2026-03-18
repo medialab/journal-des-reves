@@ -2,10 +2,17 @@ import csv
 from collections import Counter
 from datetime import timedelta
 
+from django import forms
 from django.contrib import admin
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import Group, User
+from django.contrib import messages
 from django.db import models
 from django.db.models import Count
 from django.http import HttpResponse
+from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -31,9 +38,176 @@ class ProfilAdmin(ModelAdmin):
     list_filter = ['consent_data_processing', 'consent_date']
 
 
+class ProfilInline(admin.StackedInline):
+    model = Profil
+    can_delete = False
+    fk_name = 'user'
+    extra = 0
+    verbose_name_plural = 'Profil associé'
+    fields = (
+        'email',
+        'consent_data_processing',
+        'consent_password_account',
+        'consent_quote_expressions',
+        'consent_date',
+        'welcome_email_sent',
+        'created_at',
+    )
+    readonly_fields = ('created_at',)
+
+
+class GroupBulkUpdateForm(forms.Form):
+    mode = forms.ChoiceField(
+        label='Mode de mise à jour',
+        choices=(
+            ('replace', 'Remplacer les groupes'),
+            ('add', 'Ajouter aux groupes existants'),
+            ('remove', 'Retirer des groupes existants'),
+        ),
+        initial='replace',
+    )
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        label='Groupes',
+    )
+
+
+class UserAdmin(DjangoUserAdmin):
+    inlines = (ProfilInline,)
+    actions = ('bulk_update_groups', 'delete_selected', 'quick_delete_users')
+    actions_on_top = True
+    actions_on_bottom = True
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'groups_display',
+        'is_staff',
+        'is_active',
+        'is_superuser',
+        'last_login',
+        'date_joined',
+        'delete_link',
+    )
+    list_filter = (
+        'is_active',
+        'is_staff',
+        'is_superuser',
+        'groups',
+        'date_joined',
+        'last_login',
+    )
+    search_fields = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'groups__name',
+        'profil__email',
+    )
+    list_select_related = ()
+
+    @admin.display(description='Groupes')
+    def groups_display(self, obj):
+        values = [group.name for group in obj.groups.all()]
+        return ', '.join(values) if values else '—'
+
+    @admin.display(description='Action')
+    def delete_link(self, obj):
+        delete_url = reverse('admin:auth_user_delete', args=[obj.pk])
+        return format_html(
+            '<a href="{}" style="display:inline-block;padding:0.2rem 0.55rem;border-radius:999px;border:1px solid #dc2626;color:#dc2626;font-weight:600;text-decoration:none;">Supprimer</a>',
+            delete_url,
+        )
+
+    @admin.action(description='Modifier les groupes (choix multiples)')
+    def bulk_update_groups(self, request, queryset):
+        if 'apply' in request.POST:
+            form = GroupBulkUpdateForm(request.POST)
+            if form.is_valid():
+                selected_groups = list(form.cleaned_data['groups'])
+                mode = form.cleaned_data['mode']
+                updated_count = 0
+
+                for user in queryset:
+                    if mode == 'replace':
+                        user.groups.set(selected_groups)
+                    elif mode == 'add':
+                        user.groups.add(*selected_groups)
+                    elif mode == 'remove':
+                        user.groups.remove(*selected_groups)
+                    updated_count += 1
+
+                self.message_user(
+                    request,
+                    f'Groupes mis à jour pour {updated_count} utilisateur(s).',
+                    level=messages.SUCCESS,
+                )
+                return None
+        else:
+            form = GroupBulkUpdateForm()
+
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta,
+            'users': queryset,
+            'form': form,
+            'action_name': 'bulk_update_groups',
+            'action_checkbox_name': ACTION_CHECKBOX_NAME,
+            'title': 'Modifier les groupes des utilisateurs sélectionnés',
+        }
+        return TemplateResponse(request, 'admin/auth/user/group_bulk_update.html', context)
+
+    @admin.action(description='Suppression rapide des utilisateurs sélectionnés')
+    def quick_delete_users(self, request, queryset):
+        # Éviter l'auto-suppression de l'admin connecté.
+        skipped_self = queryset.filter(pk=request.user.pk).count()
+        target_qs = queryset.exclude(pk=request.user.pk)
+        target_count = target_qs.count()
+
+        if target_count == 0:
+            self.message_user(
+                request,
+                'Aucun utilisateur supprimé (vous ne pouvez pas supprimer votre propre compte depuis cette action).',
+                level=messages.WARNING,
+            )
+            return
+
+        try:
+            target_qs.delete()
+        except Exception as exc:
+            self.message_user(
+                request,
+                f'Échec de suppression: {exc}',
+                level=messages.ERROR,
+            )
+            return
+
+        suffix = f' ({skipped_self} compte admin ignoré)' if skipped_self else ''
+        self.message_user(
+            request,
+            f'{target_count} utilisateur(s) supprimé(s) avec succès{suffix}.',
+            level=messages.SUCCESS,
+        )
+
+class GroupAdmin(DjangoGroupAdmin):
+    list_display = ('name', 'users_count', 'permissions_count')
+    search_fields = ('name',)
+
+    @admin.display(description='Utilisateurs')
+    def users_count(self, obj):
+        return obj.user_set.count()
+
+    @admin.display(description='Permissions')
+    def permissions_count(self, obj):
+        return obj.permissions.count()
+
+
 # Reve Admin
 class ReveAdmin(ModelAdmin):
-    change_list_template = 'admin/polls/reve/change_list.html'
+    change_list_template = 'admin/polls/reve/data_change_list.html'
     list_display = [
         'dreamer',
         'date',
@@ -106,6 +280,11 @@ class ReveAdmin(ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path(
+                'dashboard/',
+                self.admin_site.admin_view(self.dashboard_view),
+                name='polls_reve_dashboard',
+            ),
+            path(
                 'export-csv/',
                 self.admin_site.admin_view(self.export_all_as_csv_view),
                 name='polls_reve_export_csv',
@@ -163,14 +342,33 @@ class ReveAdmin(ModelAdmin):
             excerpt = f'{excerpt[:97]}...'
         return excerpt
 
+    def dashboard_view(self, request):
+        changelist = self.get_changelist_instance(request)
+        queryset = changelist.queryset
+        query_string = request.GET.urlencode()
+        data_url = reverse('admin:polls_reve_changelist')
+        csv_url = reverse('admin:polls_reve_export_csv')
+        if query_string:
+            data_url = f'{data_url}?{query_string}'
+            csv_url = f'{csv_url}?{query_string}'
+
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta,
+            'title': 'Dashboard rêves',
+            'dashboard': self.build_dashboard_context(queryset),
+            'data_url': data_url,
+            'csv_export_url': csv_url,
+        }
+        return TemplateResponse(request, 'admin/polls/reve/dashboard.html', context)
+
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         response = super().changelist_view(request, extra_context=extra_context)
 
         if hasattr(response, 'context_data') and response.context_data.get('cl'):
-            queryset = response.context_data['cl'].queryset
-            response.context_data['dashboard'] = self.build_dashboard_context(queryset)
             response.context_data['csv_export_url'] = f"{reverse('admin:polls_reve_export_csv')}?{request.GET.urlencode()}"
+            response.context_data['dashboard_url'] = f"{reverse('admin:polls_reve_dashboard')}?{request.GET.urlencode()}"
 
         return response
 
@@ -201,20 +399,26 @@ class ReveAdmin(ModelAdmin):
         }
 
     def build_recent_series(self, queryset):
+        # Agrégation hebdomadaire (12 semaines glissantes, semaine ISO lundi->dimanche)
         today = timezone.localdate()
-        start_day = today - timedelta(days=13)
-        counts = {
-            item['date']: item['count']
-            for item in queryset.filter(date__gte=start_day).values('date').annotate(count=Count('id'))
-        }
-        max_count = max(counts.values(), default=0)
+        current_week_start = today - timedelta(days=today.weekday())
+        weeks = []
+        for offset in range(11, -1, -1):
+            week_start = current_week_start - timedelta(weeks=offset)
+            week_end = week_start + timedelta(days=6)
+            weeks.append((week_start, week_end))
+
+        counts = []
+        for week_start, week_end in weeks:
+            count = queryset.filter(date__gte=week_start, date__lte=week_end).count()
+            counts.append(count)
+
+        max_count = max(counts, default=0)
         series = []
-        for day_offset in range(14):
-            day = start_day + timedelta(days=day_offset)
-            count = counts.get(day, 0)
+        for (week_start, _week_end), count in zip(weeks, counts):
             height = int((count / max_count) * 100) if max_count else 0
             series.append({
-                'label': day.strftime('%d/%m'),
+                'label': f"S{week_start.isocalendar().week:02d}",
                 'count': count,
                 'height': max(height, 10) if count else 0,
             })
@@ -384,7 +588,7 @@ class ReveAdmin(ModelAdmin):
 
 # Questionnaire Admin
 class QuestionnaireAdmin(ModelAdmin):
-    change_list_template = 'admin/polls/questionnaire/change_list.html'
+    change_list_template = 'admin/polls/questionnaire/data_change_list.html'
     list_display = [
         'user',
         'profil',
@@ -424,6 +628,11 @@ class QuestionnaireAdmin(ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path(
+                'dashboard/',
+                self.admin_site.admin_view(self.dashboard_view),
+                name='polls_questionnaire_dashboard',
+            ),
+            path(
                 'export-csv/',
                 self.admin_site.admin_view(self.export_all_as_csv_view),
                 name='polls_questionnaire_export_csv',
@@ -460,14 +669,33 @@ class QuestionnaireAdmin(ModelAdmin):
             return f'{minutes} min {remaining_seconds:02d}s'
         return f'{remaining_seconds}s'
 
+    def dashboard_view(self, request):
+        changelist = self.get_changelist_instance(request)
+        queryset = changelist.queryset
+        query_string = request.GET.urlencode()
+        data_url = reverse('admin:polls_questionnaire_changelist')
+        csv_url = reverse('admin:polls_questionnaire_export_csv')
+        if query_string:
+            data_url = f'{data_url}?{query_string}'
+            csv_url = f'{csv_url}?{query_string}'
+
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta,
+            'title': 'Dashboard questionnaires',
+            'dashboard': self.build_dashboard_context(queryset),
+            'data_url': data_url,
+            'csv_export_url': csv_url,
+        }
+        return TemplateResponse(request, 'admin/polls/questionnaire/dashboard.html', context)
+
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         response = super().changelist_view(request, extra_context=extra_context)
 
         if hasattr(response, 'context_data') and response.context_data.get('cl'):
-            queryset = response.context_data['cl'].queryset
-            response.context_data['dashboard'] = self.build_dashboard_context(queryset)
             response.context_data['csv_export_url'] = f"{reverse('admin:polls_questionnaire_export_csv')}?{request.GET.urlencode()}"
+            response.context_data['dashboard_url'] = f"{reverse('admin:polls_questionnaire_dashboard')}?{request.GET.urlencode()}"
 
         return response
 
@@ -668,6 +896,11 @@ class ReveElementCustomAdmin(ModelAdmin):
     autocomplete_fields = ['profil']
 
 
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+admin.site.register(User, UserAdmin)
+admin.site.register(Group, GroupAdmin)
 admin.site.register(Profil, ProfilAdmin)
 admin.site.register(Reve, ReveAdmin)
 admin.site.register(Questionnaire, QuestionnaireAdmin)

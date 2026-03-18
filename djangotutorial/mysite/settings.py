@@ -194,24 +194,41 @@ UNFOLD = {
         "show_all_applications": False,
         "navigation": [
             {
-                "title": "Utilisateurs & Questionnaires",
+                "title": "Utilisateurs",
                 "separator": True,
                 "collapsible": True,
                 "items": [
+                    {
+                        "title": "Utilisateurs",
+                        "icon": "account_circle",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                    {
+                        "title": "Groupes",
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
                     {
                         "title": "Profils",
                         "icon": "people",
                         "link": reverse_lazy("admin:polls_profil_changelist"),
                     },
+                ],
+            },
+            {
+                "title": "Questionnaires",
+                "separator": True,
+                "collapsible": True,
+                "items": [
                     {
-                        "title": "Questionnaires",
-                        "icon": "description",
-                        "link": reverse_lazy("admin:polls_questionnaire_changelist"),
+                        "title": "Dashboard",
+                        "icon": "analytics",
+                        "link": reverse_lazy("admin:polls_questionnaire_dashboard"),
                     },
                     {
-                        "title": "Utilisateurs",
-                        "icon": "account_circle",
-                        "link": reverse_lazy("admin:auth_user_changelist"),
+                        "title": "Data (lignes)",
+                        "icon": "description",
+                        "link": reverse_lazy("admin:polls_questionnaire_changelist"),
                     },
                 ],
             },
@@ -221,7 +238,12 @@ UNFOLD = {
                 "collapsible": True,
                 "items": [
                     {
-                        "title": "Rêves",
+                        "title": "Rêves dashboard",
+                        "icon": "analytics",
+                        "link": reverse_lazy("admin:polls_reve_dashboard"),
+                    },
+                    {
+                        "title": "Rêves data (lignes)",
                         "icon": "favorite",
                         "link": reverse_lazy("admin:polls_reve_changelist"),
                     },
@@ -254,18 +276,6 @@ UNFOLD = {
                         "title": "Notifications",
                         "icon": "notifications",
                         "link": reverse_lazy("admin:polls_notification_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Administration",
-                "separator": True,
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": "Groupes",
-                        "icon": "group",
-                        "link": reverse_lazy("admin:auth_group_changelist"),
                     },
                 ],
             },

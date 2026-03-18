@@ -19,11 +19,13 @@
                 const isiOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
                 const isAndroid = /Android/i.test(ua);
                 const isMobile = isiOS || isAndroid || /Mobile/i.test(ua);
+                const isSafari = /Safari/i.test(ua) && !/(Chrome|CriOS|FxiOS|Firefox|EdgiOS|EdgA|Edg|OPiOS|OPR|SamsungBrowser|Android)/i.test(ua);
                 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
                 document.documentElement.classList.toggle('is-standalone', !!isStandalone);
                 document.documentElement.classList.toggle('is-mobile-pwa', !!(isStandalone && isMobile));
                 document.documentElement.classList.toggle('is-ios-pwa', !!(isStandalone && isiOS));
+                document.documentElement.classList.toggle('is-safari', !!isSafari);
             }
 
             updateViewportUnit();
@@ -35,7 +37,7 @@
         })();
     </script>
     <title>{% block title %}Journal des Rêves{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=26">
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=33">
     <link rel="stylesheet" href="{% static 'polls/forms.css' %}?v=27">
     <link rel="stylesheet" href="{% static 'polls/pages.css' %}?v=27">
     <link rel="stylesheet" href="{% static 'polls/notifications.css' %}?v=20260316-notifs">
@@ -172,6 +174,8 @@
     </div>
 </header>
 
+<div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
+
 <!-- Messages de notification -->
 {% if messages %}
 <div class="messages-container">
@@ -248,14 +252,73 @@
         }
     }
 
-    // Hamburger mobile
-    const hamburger = document.getElementById("hamburger");
-    const navMenu = document.getElementById("navMenu");
+    // Hamburger mobile + fermeture moderne au clic hors navbar
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('navMenu');
+    const navBackdrop = document.getElementById('navBackdrop');
 
-    if (hamburger) {
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
+    function isMobileNavContext() {
+        return window.matchMedia('(max-width: 768px)').matches || document.documentElement.classList.contains('is-mobile-pwa');
+    }
+
+    function openMobileNav() {
+        if (!hamburger || !navMenu || !navBackdrop) return;
+        hamburger.classList.add('active');
+        navMenu.classList.add('active');
+        navBackdrop.classList.add('active');
+        document.body.classList.add('nav-open');
+    }
+
+    function closeMobileNav() {
+        if (!hamburger || !navMenu || !navBackdrop) return;
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+        navBackdrop.classList.remove('active');
+        document.body.classList.remove('nav-open');
+    }
+
+    if (hamburger && navMenu && navBackdrop) {
+        hamburger.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const isOpen = navMenu.classList.contains('active');
+            if (isOpen) {
+                closeMobileNav();
+            } else {
+                openMobileNav();
+            }
+        });
+
+        navBackdrop.addEventListener('click', closeMobileNav);
+
+        document.addEventListener('click', (event) => {
+            if (!isMobileNavContext()) return;
+            if (!navMenu.classList.contains('active')) return;
+
+            const clickInsideMenu = navMenu.contains(event.target);
+            const clickOnHamburger = hamburger.contains(event.target);
+            if (!clickInsideMenu && !clickOnHamburger) {
+                closeMobileNav();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && navMenu.classList.contains('active')) {
+                closeMobileNav();
+            }
+        });
+
+        navMenu.querySelectorAll('a, button').forEach((el) => {
+            el.addEventListener('click', () => {
+                if (isMobileNavContext()) {
+                    closeMobileNav();
+                }
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (!isMobileNavContext()) {
+                closeMobileNav();
+            }
         });
     }
 

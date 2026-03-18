@@ -207,10 +207,11 @@ class QuestionnaireFormValidationTest(TestCase):
         form = QuestionnaireForm(data=data)
         self.assertFalse(form.is_valid())
 
-    # --- statut_couple : conj_* effacé si pas en couple ---
-    def test_conj_fields_cleared_when_not_in_couple(self):
+    # --- composition_logement_conjoint : conj_* effacé si ne vit pas avec conjoint ---
+    def test_conj_fields_cleared_when_not_living_with_partner(self):
         data = self._valid_data()
-        data['statut_couple'] = '2'  # Non
+        data['statut_couple'] = '1'  # Peut être en couple
+        data.pop('composition_logement_conjoint', None)  # mais ne vit pas avec conjoint·e
         data['conj_niv_diplome'] = '5'
         data['conj_csp'] = '203'
         form = QuestionnaireForm(data=data)
@@ -218,9 +219,10 @@ class QuestionnaireFormValidationTest(TestCase):
         self.assertIsNone(form.cleaned_data.get('conj_niv_diplome'))
         self.assertIsNone(form.cleaned_data.get('conj_csp'))
 
-    def test_conj_fields_kept_when_in_couple(self):
+    def test_conj_fields_kept_when_living_with_partner(self):
         data = self._valid_data()
-        data['statut_couple'] = '1'  # Oui
+        data['statut_couple'] = '2'  # Le statut n'est plus le critère
+        data['composition_logement_conjoint'] = 'on'
         data['conj_niv_diplome'] = '5'
         data['conj_csp'] = '203'
         form = QuestionnaireForm(data=data)
@@ -1065,6 +1067,12 @@ class QuestionnaireAdminSmokeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Questionnaires')
 
+    def test_questionnaire_dashboard_loads(self):
+        response = self.client.get(reverse('admin:polls_questionnaire_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Dashboard')
+        self.assertContains(response, 'Data')
+
 
 class ReveAdminSmokeTest(TestCase):
     """Vérifie que l'admin des rêves expose le dashboard et les variables utiles."""
@@ -1108,8 +1116,14 @@ class ReveAdminSmokeTest(TestCase):
     def test_reve_changelist_loads(self):
         response = self.client.get(reverse('admin:polls_reve_changelist'))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Dashboard rêves')
+
+    def test_reve_dashboard_loads(self):
+        response = self.client.get(reverse('admin:polls_reve_dashboard'))
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Rêves visibles')
         self.assertContains(response, 'Tonalité agrégée')
+        self.assertContains(response, 'Reve enregsitré par semaine')
         self.assertContains(response, 'Joie')
         self.assertNotContains(response, 'Étendue du souvenir')
         self.assertNotContains(response, 'Sens principal')

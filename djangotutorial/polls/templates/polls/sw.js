@@ -1,11 +1,10 @@
 // Service Worker - Journal des Rêves
 // Version : incrémenter à chaque déploiement pour forcer le rafraîchissement
-var CACHE_VERSION = 'reves-v2';
+var CACHE_VERSION = 'reves-v3';
 var CACHE_NAME = CACHE_VERSION + '-' + new Date().getTime();
 
 // Assets à mettre en cache dès l'installation
 var ASSETS_TO_CACHE = [
-    '/polls/',
     '/offline/',
     '/static/polls/style.css',
     '/static/polls/forms.css',
@@ -29,12 +28,6 @@ function canCacheStaticResponse(request, response) {
     }
 
     return false;
-}
-
-function canCacheHtmlResponse(response) {
-    if (!response || response.status !== 200) return false;
-    var contentType = (response.headers.get('content-type') || '').toLowerCase();
-    return contentType.indexOf('text/html') !== -1;
 }
 
 // ─────────────────────────────────────────────
@@ -73,7 +66,7 @@ self.addEventListener('activate', function(event) {
 });
 
 // ─────────────────────────────────────────────
-// FETCH : stratégie Network-first pour les pages,
+// FETCH : stratégie Network-only pour les pages,
 //         Cache-first pour les assets statiques
 // ─────────────────────────────────────────────
 self.addEventListener('fetch', function(event) {
@@ -109,20 +102,14 @@ self.addEventListener('fetch', function(event) {
         return;
     }
 
-    // Pages → Network-first, fallback cache, fallback /offline
+    // Pages dynamiques → Network-only, fallback /offline
+    // Important: ne pas mettre en cache les pages HTML qui embarquent
+    // des tokens CSRF (logout/forms), sinon tokens périmés en POST.
     event.respondWith(
         fetch(event.request).then(function(response) {
-            if (canCacheHtmlResponse(response)) {
-                var clone = response.clone();
-                caches.open(CACHE_NAME).then(function(cache) {
-                    cache.put(event.request, clone);
-                });
-            }
             return response;
         }).catch(function() {
-            return caches.match(event.request).then(function(cached) {
-                return cached || caches.match('/offline/');
-            });
+            return caches.match('/offline/');
         })
     );
 });

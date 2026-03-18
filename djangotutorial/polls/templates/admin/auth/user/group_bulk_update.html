@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+  <p>{{ users|length }} utilisateur(s) sélectionné(s).</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% for user in users %}
+      <input type="hidden" name="{{ action_checkbox_name }}" value="{{ user.pk }}">
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_name }}">
+    <input type="hidden" name="apply" value="1">
+
+    <div style="margin-top: 1rem; display: flex; gap: 0.6rem; align-items: center;">
+      <button type="submit" class="default">Appliquer</button>
+      <a href="{% url 'admin:auth_user_changelist' %}">Annuler</a>
+    </div>
+  </form>
+{% endblock %}

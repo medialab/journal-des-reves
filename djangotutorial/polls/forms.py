@@ -715,8 +715,8 @@ class QuestionnaireForm(forms.ModelForm):
             cleaned_data['nb_enfants_cohabitants'] = None
             cleaned_data['nb_enfants_moins14'] = None
 
-        # Questions conjoint uniquement si en couple = Oui.
-        if cleaned_data.get('statut_couple') != 1:
+        # Questions conjoint uniquement si la personne vit avec son/sa conjoint·e.
+        if not cleaned_data.get('composition_logement_conjoint'):
             cleaned_data['conj_niv_diplome'] = None
             cleaned_data['conj_csp'] = None
 

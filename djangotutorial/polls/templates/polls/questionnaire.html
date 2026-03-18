@@ -1655,6 +1655,11 @@
             compositionEnfants.addEventListener('change', updateSectionTwoFields);
         }
 
+        const compositionConjoint = document.querySelector('input[name="composition_logement_conjoint"]');
+        if (compositionConjoint) {
+            compositionConjoint.addEventListener('change', updateSectionTwoFields);
+        }
+
         document.querySelectorAll('input[name="statut_couple"]').forEach(radio => {
             radio.addEventListener('change', updateSectionTwoFields);
         });
@@ -1687,9 +1692,9 @@
         }
 
         const conjointGroup = document.getElementById('conjoint_mobilite_group');
-        const statutCoupleOui = document.querySelector('input[name="statut_couple"][value="1"]');
-        if (conjointGroup && statutCoupleOui) {
-            const showConjoint = statutCoupleOui.checked;
+        const compositionConjoint = document.querySelector('input[name="composition_logement_conjoint"]');
+        if (conjointGroup && compositionConjoint) {
+            const showConjoint = compositionConjoint.checked;
             conjointGroup.style.display = showConjoint ? 'block' : 'none';
 
             if (!showConjoint) {
