@@ -73,11 +73,46 @@ class GroupBulkUpdateForm(forms.Form):
     )
 
 
+class UserAdminForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.order_by('name'),
+        required=False,
+        label='Groupes',
+        widget=forms.CheckboxSelectMultiple,
+        help_text='Cochez les groupes à attribuer à cet utilisateur.',
+    )
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+
 class UserAdmin(DjangoUserAdmin):
+    form = UserAdminForm
     inlines = (ProfilInline,)
     actions = ('bulk_update_groups', 'delete_selected', 'quick_delete_users')
     actions_on_top = True
     actions_on_bottom = True
+    filter_horizontal = ('user_permissions',)
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Informations personnelles', {'fields': ('first_name', 'last_name', 'email')}),
+        (
+            'Groupes',
+            {
+                'description': 'Affectez les groupes de façon simple en cochant les options nécessaires.',
+                'fields': ('groups',),
+            },
+        ),
+        (
+            'Permissions avancees',
+            {
+                'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions'),
+                'classes': ('collapse',),
+            },
+        ),
+        ('Dates importantes', {'fields': ('last_login', 'date_joined'), 'classes': ('collapse',)}),
+    )
     list_display = (
         'username',
         'email',

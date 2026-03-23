@@ -38,7 +38,7 @@
         </div>
         {% endif %}
 
-        <div class="form-card"{% if not is_authenticated %} style="opacity: 0.4; pointer-events: none;"{% endif %}>
+        <div class="form-card{% if not is_authenticated %} questionnaire-form-disabled{% endif %}">
             <!-- INTRO SCREEN -->
             <div class="questionnaire-intro" id="introScreen">
                 <h1 class="questionnaire-title">
@@ -68,7 +68,7 @@
                 <span class="step-number" id="stepNumber">1</span> / <span class="step-total">3</span>
             </div>
 
-            <form method="post" id="questionnaireForm" class="modern-form">
+            <form method="post" id="questionnaireForm" class="modern-form" data-save-url="{% url 'polls:questionnaire' %}">
                 {% csrf_token %}
 
                 <!-- ========== SECTION 4: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL ========== -->
@@ -112,7 +112,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group" id="images_options_group" style="display: none;">
+                    <div class="form-group is-hidden-inline" id="images_options_group">
                         <label class="form-label">Les images dans vos rêves sont plutôt :</label>
                         <div class="checkbox-group inline-boolean-group">
                             <label class="checkbox-label choice-label"><input type="checkbox" name="img_coul" {% if form.img_coul.value %}checked{% endif %}><span class="checkbox-text">En couleur</span></label>
@@ -177,7 +177,7 @@
                         </div>
                     </div>
 
-                    <div id="reveil_nuit_details" style="display: none;">
+                    <div id="reveil_nuit_details" class="is-hidden-inline">
                         <div class="form-group">
                             <label class="form-label" for="id_nuits_reveil">Combien de nuits par semaine cela vous arrive-t-il ?</label>
                             <input type="number" id="id_nuits_reveil" name="nuits_reveil" min="0" max="7" class="form-input" value="{{ form.nuits_reveil.value|default:'' }}">
@@ -196,8 +196,8 @@
                         </div>
                     </div>
 
-                    <div class="form-group" id="aide_sommeil_options" style="display: none;">
-                        <p class="form-label" style="margin-bottom: 0.35rem;">Précisez :</p>
+                    <div class="form-group is-hidden-inline" id="aide_sommeil_options">
+                        <p class="form-label form-label-tight-bottom">Précisez :</p>
                         <div class="checkbox-group inline-boolean-group">
                             <label class="checkbox-label choice-label"><input type="checkbox" name="aide_medic" {% if form.aide_medic.value %}checked{% endif %}><span class="checkbox-text">Médicaments</span></label>
                             <label class="checkbox-label choice-label"><input type="checkbox" name="aide_tisane" {% if form.aide_tisane.value %}checked{% endif %}><span class="checkbox-text">Tisane</span></label>
@@ -220,7 +220,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group" id="pens_autre_txt_group" style="display: none;">
+                    <div class="form-group is-hidden-inline" id="pens_autre_txt_group">
                         <label class="form-label" for="id_pens_autre_txt">Précisez si autre</label>
                         <textarea id="id_pens_autre_txt" name="pens_autre_txt" class="form-textarea" rows="3">{{ form.pens_autre_txt.value|default:'' }}</textarea>
                     </div>
@@ -325,7 +325,7 @@
                         {% if form.discri_presence.errors %}<div class="error-message">{{ form.discri_presence.errors }}</div>{% endif %}
                     </div>
 
-                    <div id="discri_details_group" style="display: none;">
+                    <div id="discri_details_group" class="is-hidden-inline">
                         <div class="form-group">
                             <label class="form-label">Pour quelle(s) raison(s) ? (plusieurs réponses possibles)</label>
                             <div class="checkbox-group inline-boolean-group">
@@ -344,7 +344,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="form-group" id="discri_autre_precision_group" style="display: none;">
+                        <div class="form-group is-hidden-inline" id="discri_autre_precision_group">
                             <label class="form-label" for="id_discri_autre_precision">Précisez :</label>
                             <textarea id="id_discri_autre_precision" name="discri_autre_precision" class="form-textarea" rows="3">{{ form.discri_autre_precision.value|default:'' }}</textarea>
                             {% if form.discri_autre_precision.errors %}<div class="error-message">{{ form.discri_autre_precision.errors }}</div>{% endif %}
@@ -602,7 +602,7 @@
                     </div>
 
                     <!-- Avez-vous déjà travaillé ? (conditionnel) -->
-                    <div class="form-group" id="a_deja_travaille_group" style="display: none;">
+                    <div class="form-group is-hidden-inline" id="a_deja_travaille_group">
                         <label class="form-label">Avez-vous déjà travaillé au moins à mi-temps pendant au moins 6 mois ?</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
@@ -618,7 +618,7 @@
                     </div>
 
                     <!-- Profession (sous-catégorie) -->
-                    <div class="form-group" id="profession_group" style="display: none;">
+                    <div class="form-group is-hidden-inline" id="profession_group">
                         <label class="form-label" for="id_profession">Dans votre emploi (ou dernier emploi), quelle est/était votre profession ?</label>
                         <select id="id_profession" name="profession" class="form-input">
                             <option value="">Sélectionnez une sous-catégorie...</option>
@@ -678,7 +678,7 @@
                     </div>
 
                     <!-- Fonction de management/autorité (conditionnel) -->
-                    <div class="form-group" id="fonction_management_group" style="display: none;">
+                    <div class="form-group is-hidden-inline" id="fonction_management_group">
                         <label class="form-label">Exercez-vous (ou aviez-vous) une fonction de management ou d'autorité dans votre travail ?</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
@@ -729,7 +729,7 @@
                         </div>
                     </div>
 
-                    <div id="composition_enfants_group" style="display: none;">
+                    <div id="composition_enfants_group" class="is-hidden-inline">
                         <div class="form-group">
                             <label class="form-label" for="id_nb_enfants_cohabitants">Combien d'enfants vivent avec vous (même en garde alternée) ?</label>
                             <input type="number" id="id_nb_enfants_cohabitants" name="nb_enfants_cohabitants" min="0" max="19" class="form-input" value="{{ form.nb_enfants_cohabitants.value|default:'' }}">
@@ -784,7 +784,7 @@
                         {% if form.mere_csp.errors %}<div class="error-message">{{ form.mere_csp.errors }}</div>{% endif %}
                     </div>
 
-                    <div id="conjoint_mobilite_group" style="display: none;">
+                    <div id="conjoint_mobilite_group" class="is-hidden-inline">
                         <div class="form-group">
                             <label class="form-label">Quel est le plus haut diplôme de votre conjoint·e ?</label>
                             <select id="id_conj_niv_diplome" name="conj_niv_diplome" class="form-input">
@@ -817,13 +817,13 @@
 
                 <!-- Boutons de navigation -->
                 <div class="form-actions hidden" id="formActions">
-                    <button type="button" class="btn btn-outline" id="prevBtn" style="display:none;">
+                    <button type="button" class="btn btn-outline is-hidden-inline" id="prevBtn">
                         ← Précédent
                     </button>
                     <button type="button" class="btn btn-primary" id="nextBtn">
                         Suivant →
                     </button>
-                    <button type="submit" class="btn btn-success" id="submitBtn" style="display:none;">
+                    <button type="submit" class="btn btn-success is-hidden-inline" id="submitBtn">
                         ✓ Soumettre
                     </button>
                 </div>
@@ -832,1016 +832,5 @@
     </div>
 </section>
 
-<style>
-    .page-content.questionnaire-intro-active {
-        min-height: calc(100vh - 110px);
-        display: flex;
-        align-items: center;
-    }
-
-    .page-content.questionnaire-intro-active .container-small {
-        width: 100%;
-    }
-
-    /* A l'arrivee: pas d'effet carte blanche derriere l'intro */
-    .page-content.questionnaire-intro-active .form-card {
-        background: transparent;
-        box-shadow: none;
-        border: none;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    .page-content.questionnaire-intro-active #questionnaireForm {
-        margin: 0;
-        padding: 0;
-        border: none;
-    }
-
-    .page-content.questionnaire-intro-active #formActions {
-        display: none !important;
-        margin: 0;
-        padding: 0;
-        border-top: none !important;
-    }
-
-    .page-content .container-small {
-        max-width: min(1200px, 100%);
-        padding-left: 0.7rem;
-        padding-right: 0.7rem;
-    }
-
-    .page-content .form-card {
-        padding: 0.9rem;
-    }
-
-    .questionnaire-title {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .questionnaire-title-icon {
-        display: inline-flex;
-        width: 1.15em;
-        height: 1.15em;
-    }
-
-    .questionnaire-title-icon svg {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Titres de sous-sections (bleu du site) */
-    #questionnaireForm .subsection-violet {
-        color: #3245bd;
-        font-size: 1.05rem;
-        font-weight: 700;
-        margin: 1.45rem 0 0.65rem;
-        padding-bottom: 0.45rem;
-        border-bottom: 2px solid rgba(50, 69, 189, 0.18);
-        line-height: 1.35;
-    }
-
-    #questionnaireForm .subsection-violet + .form-group {
-        margin-top: 0.5rem;
-    }
-
-    #questionnaireForm .section-header {
-        margin-bottom: 1.25rem;
-    }
-
-    #questionnaireForm .section-title {
-        margin-bottom: 0.45rem;
-    }
-
-    #questionnaireForm .section-description {
-        margin-bottom: 0;
-        color: var(--gray-500);
-    }
-
-    #questionnaireForm .form-group + .form-group {
-        margin-top: 0.66rem;
-    }
-
-    #questionnaireForm .form-group > .form-label {
-        margin-bottom: 0.2rem;
-        line-height: 1.4;
-    }
-
-    #questionnaireForm section[data-section="3"] .question-row-two {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(260px, 1fr));
-        gap: 0.7rem 1rem;
-        align-items: start;
-    }
-
-    #questionnaireForm section[data-section="3"] .question-row-two .form-group + .form-group {
-        margin-top: 0;
-    }
-
-    /* Présentation compacte des réponses (style enregistrer.html) */
-    #questionnaireForm .radio-label,
-    #questionnaireForm .checkbox-label {
-        padding: 0.24rem 0.48rem;
-    }
-
-    #questionnaireForm .radio-group,
-    #questionnaireForm .checkbox-group {
-        gap: 0.35rem;
-        margin-top: 0.2rem;
-    }
-
-    #questionnaireForm .radio-text,
-    #questionnaireForm .checkbox-text {
-        font-size: 0.92rem;
-        font-weight: 500;
-        color: var(--gray-600);
-    }
-
-    #questionnaireForm .question-hint {
-        margin: 0.35rem 0 0.5rem;
-        font-size: 0.88rem;
-        color: var(--gray-500);
-        line-height: 1.35;
-    }
-
-    /* Même rendu visuel qu'enregistrer.html au clic */
-    #questionnaireForm .choice-label {
-        border-radius: 0.75rem;
-        border: 1px solid rgba(50, 69, 189, 0.2) !important;
-        box-shadow: none;
-        transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
-    }
-
-    #questionnaireForm .choice-label:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(50, 69, 189, 0.06);
-    }
-
-    #questionnaireForm .choice-label.is-dim {
-        opacity: 0.62;
-    }
-
-    #questionnaireForm .choice-label.is-selected {
-        background: rgba(50, 69, 189, 0.09);
-        border-color: rgba(50, 69, 189, 0.42) !important;
-    }
-
-    #questionnaireForm .choice-label.is-selected .radio-text,
-    #questionnaireForm .choice-label.is-selected .checkbox-text {
-        color: #1e3a8a !important;
-        font-weight: 600;
-    }
-
-    #questionnaireForm .inline-boolean-group {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
-        gap: 0.35rem;
-    }
-
-    #questionnaireForm .compact-inline-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.28rem;
-    }
-
-    #questionnaireForm .compact-choices .choice-label {
-        padding: 0.28rem 0.56rem;
-        border-radius: 0.65rem;
-        white-space: nowrap;
-    }
-
-    #questionnaireForm .compact-choices .radio-text,
-    #questionnaireForm .compact-choices .checkbox-text {
-        font-size: 0.9rem;
-        line-height: 1.18;
-    }
-
-    /* Groupes d'options d'endormissement: toutes les options sur une meme ligne */
-    #questionnaireForm .checkbox-group.sleep-choices-row {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        align-items: center !important;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.2rem;
-        gap: 0.4rem;
-    }
-
-    #questionnaireForm .checkbox-group.sleep-choices-row .checkbox-label.choice-label {
-        display: inline-flex !important;
-        width: auto !important;
-        max-width: none !important;
-        flex: 0 0 auto !important;
-        min-width: max-content;
-        margin: 0 !important;
-    }
-
-    /* Question discrimination: les 3 choix restent sur la meme ligne */
-    #questionnaireForm .discri-presence-row {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.2rem;
-    }
-
-    #questionnaireForm .discri-presence-row .choice-label {
-        flex: 0 0 auto;
-        min-width: max-content;
-    }
-
-    #questionnaireForm .focus-card {
-        margin-top: 0.55rem;
-        padding: 0.82rem 0.9rem;
-        border-radius: 1rem;
-        border: 1px solid rgba(50, 69, 189, 0.24);
-        background: linear-gradient(180deg, rgba(50, 69, 189, 0.09) 0%, rgba(50, 69, 189, 0.05) 100%);
-    }
-
-    #questionnaireForm .focus-card .form-group {
-        margin-top: 0;
-        padding-top: 0.52rem;
-        padding-bottom: 0.52rem;
-        border-top: 1px dashed rgba(50, 69, 189, 0.2);
-    }
-
-    #questionnaireForm .focus-card .form-group:first-child {
-        border-top: none;
-        padding-top: 0;
-    }
-
-    #questionnaireForm .focus-card .form-group:last-child {
-        padding-bottom: 0;
-    }
-
-    #questionnaireForm .focus-card #conjoint_mobilite_group {
-        margin-top: 0.2rem;
-    }
-
-    #questionnaireForm .focus-card + .form-group {
-        margin-top: 0.68rem;
-    }
-
-    /* Page 3: memes largeurs utiles que la page 2 pour les champs */
-    #questionnaireForm section[data-section="3"] select.form-input,
-    #questionnaireForm section[data-section="3"] input[type="number"].form-input,
-    #questionnaireForm section[data-section="3"] input[type="time"].form-input {
-        width: min(560px, 100%);
-    }
-
-    /* Page 3: réduire les espaces avant la carte parents/conjoint */
-    #questionnaireForm section[data-section="3"] .composition-logement-group {
-        margin-bottom: 0.24rem;
-    }
-
-    #questionnaireForm section[data-section="3"] #composition_enfants_group {
-        margin-top: 0.16rem;
-    }
-
-    #questionnaireForm section[data-section="3"] #composition_enfants_group .form-group + .form-group {
-        margin-top: 0.45rem;
-    }
-
-    #questionnaireForm section[data-section="3"] + section[data-section="3"] {
-        margin-top: -0.1rem;
-    }
-
-    #questionnaireForm section[data-section="3"] .focus-card {
-        margin-top: 0.24rem;
-    }
-
-    /* Section sommeil: eviter les champs pleine largeur */
-    #questionnaireForm section[data-section="1"] .focus-card input[type="time"].form-input {
-        width: min(260px, 100%);
-    }
-
-    #questionnaireForm section[data-section="1"] .focus-card input[type="number"].form-input {
-        width: min(300px, 100%);
-    }
-
-    /* Section sommeil: booleens compacts, non etires sur toute la ligne */
-    #questionnaireForm section[data-section="1"] .focus-card .inline-boolean-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-        justify-content: flex-start;
-    }
-
-    #questionnaireForm section[data-section="1"] .focus-card .inline-boolean-group .choice-label {
-        width: auto;
-        max-width: none;
-        flex: 0 0 auto;
-    }
-
-    #questionnaireForm .radio-grid-2 {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(240px, 1fr));
-        gap: 0.35rem;
-    }
-
-    #questionnaireForm .radio-grid-2 .radio-text {
-        font-size: 0.88rem;
-        line-height: 1.35;
-    }
-
-    #questionnaireForm .inline-boolean-group .choice-label {
-        margin-bottom: 0;
-    }
-
-    #questionnaireForm .detresse-card {
-        margin-top: 1.45rem;
-        padding: 1.2rem;
-        border-radius: 1rem;
-        border: 1px solid rgba(50, 69, 189, 0.24);
-        background: linear-gradient(180deg, rgba(50, 69, 189, 0.09) 0%, rgba(50, 69, 189, 0.05) 100%);
-    }
-
-    #questionnaireForm .detresse-title {
-        margin: 0 0 0.9rem;
-        color: #3245bd;
-        font-size: 1rem;
-        font-weight: 700;
-    }
-
-    #questionnaireForm .detresse-row {
-        padding: 0.95rem 0;
-        border-top: 1px dashed rgba(50, 69, 189, 0.24);
-    }
-
-    #questionnaireForm .detresse-row:first-of-type {
-        border-top: none;
-        padding-top: 0.2rem;
-    }
-
-    #questionnaireForm .detresse-question {
-        margin: 0 0 0.45rem;
-        color: #1e3a8a;
-        font-size: 0.93rem;
-        font-weight: 600;
-    }
-
-    #questionnaireForm .detresse-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(120px, 1fr));
-        gap: 0.35rem;
-    }
-
-    #questionnaireForm .detresse-choice {
-        min-height: 48px;
-        align-items: center;
-    }
-
-    #questionnaireForm .detresse-choice .radio-text {
-        font-size: 0.82rem;
-        line-height: 1.2;
-    }
-
-    #questionnaireForm .form-section.active {
-        animation: sectionFadeIn 0.24s ease-out;
-    }
-
-    @keyframes sectionFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(4px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @media (max-width: 700px) {
-        .page-content.questionnaire-intro-active {
-            min-height: auto;
-            display: block;
-        }
-
-        .page-content .container-small {
-            padding-left: 0.42rem;
-            padding-right: 0.42rem;
-        }
-
-        .page-content .form-card {
-            padding: 0.52rem;
-        }
-
-        #questionnaireForm .subsection-violet {
-            margin: 1.2rem 0 0.55rem;
-        }
-
-        #questionnaireForm .form-group + .form-group {
-            margin-top: 0.54rem;
-        }
-
-        #questionnaireForm .inline-boolean-group {
-            grid-template-columns: 1fr;
-        }
-
-        #questionnaireForm .radio-grid-2 {
-            grid-template-columns: 1fr;
-        }
-
-        #questionnaireForm .detresse-grid {
-            grid-template-columns: 1fr;
-        }
-
-        #questionnaireForm section[data-section="3"] .question-row-two {
-            grid-template-columns: 1fr;
-        }
-
-        #questionnaireForm .focus-card {
-            padding: 0.62rem;
-        }
-
-        #questionnaireForm section[data-section="1"] .focus-card input[type="time"].form-input,
-        #questionnaireForm section[data-section="1"] .focus-card input[type="number"].form-input {
-            width: 100%;
-        }
-
-        #questionnaireForm section[data-section="3"] select.form-input,
-        #questionnaireForm section[data-section="3"] input[type="number"].form-input,
-        #questionnaireForm section[data-section="3"] input[type="time"].form-input {
-            width: 100%;
-        }
-
-        #questionnaireForm .compact-inline-row {
-            gap: 0.22rem;
-        }
-
-        #questionnaireForm .checkbox-group.sleep-choices-row {
-            gap: 0.35rem;
-        }
-
-        #questionnaireForm .checkbox-group.sleep-choices-row .checkbox-label.choice-label {
-            display: inline-flex !important;
-            width: auto !important;
-            flex: 0 0 auto !important;
-            min-width: max-content;
-        }
-    }
-</style>
-
-<script>
-    // ============================================
-    // QUESTIONNAIRE STATE & TIMING
-    // ============================================
-    let currentSection = 1;
-    const totalSections = 3;
-    let questionnaireStarted = false;
-    
-    // Timing tracking
-    let startTime = null;                    // Global start time (when "Commencer" is clicked)
-    let sectionStartTime = null;             // Start time for current section
-    const sectionTimings = {};               // { section: { startTime, endTime, duration } }
-    
-    // ============================================
-    // EVENT LISTENERS
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Ensure action bar cannot create a separator line before questionnaire starts.
-        setFormActionsVisibility(false);
-
-        // Start button - Intro screen
-        document.getElementById('startBtn').addEventListener('click', startQuestionnaire);
-        
-        // Next/Previous buttons
-        document.getElementById('nextBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            saveCurrentSectionAndContinue(1);
-        });
-        document.getElementById('prevBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            changeSection(-1);
-        });
-        
-        // Form submission
-        document.getElementById('questionnaireForm').addEventListener('submit', submitQuestionnaire);
-        
-        // Conditional fields
-        document.getElementById('id_travail_statut').addEventListener('change', updateConditionalFields);
-        document.querySelectorAll('input[name="a_deja_travaille"]').forEach(radio => {
-            radio.addEventListener('change', updateConditionalFields);
-        });
-        document.getElementById('id_profession').addEventListener('change', updateManagementFieldVisibility);
-        
-        // Login modal fallback
-        const questionnaireModal = document.getElementById('questionnaireLoginModal');
-        if (questionnaireModal) {
-            const originalOpenModal = window.openLoginModal;
-            window.openLoginModal = function(event) {
-                questionnaireModal.style.display = 'none';
-                if (originalOpenModal) originalOpenModal(event);
-            };
-        }
-        
-        // Initialize conditional fields
-        updateConditionalFields();
-        updateSocialConditionsFields();
-        updateSectionTwoFields();
-        updateSectionThreeFields();
-        bindSocialConditionsListeners();
-
-        const besoinSomInput = document.getElementById('id_besoin_som');
-        if (besoinSomInput) {
-            besoinSomInput.addEventListener('focus', function() {
-                if (!this.value) {
-                    this.value = '00:00';
-                }
-            });
-        }
-    });
-
-    // ============================================
-    // INTRO SCREEN - QUESTIONNAIRE START
-    // ============================================
-    function setFormActionsVisibility(isVisible) {
-        const formActions = document.getElementById('formActions');
-        if (!formActions) return;
-
-        if (isVisible) {
-            formActions.classList.remove('hidden');
-            formActions.style.removeProperty('display');
-            formActions.style.removeProperty('border-top');
-            formActions.style.removeProperty('padding-top');
-            formActions.style.removeProperty('margin-top');
-            return;
-        }
-
-        formActions.classList.add('hidden');
-        formActions.style.display = 'none';
-        formActions.style.borderTop = 'none';
-        formActions.style.paddingTop = '0';
-        formActions.style.marginTop = '0';
-    }
-
-    function startQuestionnaire() {
-        if (questionnaireStarted) return;
-        
-        questionnaireStarted = true;
-        startTime = Date.now();
-        sectionStartTime = Date.now();
-        
-        // Hide intro
-        const intro = document.getElementById('introScreen');
-        intro.classList.add('hidden');
-
-        // Exit centered intro layout once questionnaire starts
-        const questionnairePage = document.getElementById('questionnairePage');
-        questionnairePage.classList.remove('questionnaire-intro-active');
-        
-        // Show progress indicator and first section
-        document.getElementById('stepIndicator').classList.remove('hidden');
-        setFormActionsVisibility(true);
-        
-        // Activate first section
-        currentSection = 1;
-        showSection(currentSection);
-        
-        updateUI();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ============================================
-    // SECTION NAVIGATION WITH AJAX
-    // ============================================
-    function saveCurrentSectionAndContinue(direction) {
-        // Validate section
-        if (!validateSection(currentSection)) {
-            return;
-        }
-        
-        // Save current section data via AJAX
-        const formData = new FormData(document.getElementById('questionnaireForm'));
-        
-        // Add timing data
-        const sectionEndTime = Date.now();
-        const sectionDuration = (sectionEndTime - sectionStartTime) / 1000; // seconds
-        
-        formData.append('section', currentSection);
-        formData.append('section_duration', sectionDuration);
-        
-        // Display loading state (optional)
-        const nextBtn = document.getElementById('nextBtn');
-        const originalText = nextBtn.textContent;
-        nextBtn.disabled = true;
-        nextBtn.textContent = '⏳ Enregistrement...';
-        
-        // Send AJAX request
-        fetch('{% url "polls:questionnaire" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Store timing data
-                sectionTimings[currentSection] = {
-                    startTime: sectionStartTime,
-                    endTime: sectionEndTime,
-                    duration: sectionDuration
-                };
-                
-                // Reset button
-                nextBtn.disabled = false;
-                nextBtn.textContent = originalText;
-                
-                // Continue navigation
-                changeSection(direction);
-                
-                // Start timer for next section
-                sectionStartTime = Date.now();
-            } else {
-                throw new Error(data.message || 'Erreur lors de l\'enregistrement');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            nextBtn.disabled = false;
-            nextBtn.textContent = originalText;
-            alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
-        });
-    }
-
-    function changeSection(direction) {
-        const nextSection = currentSection + direction;
-        
-        if (nextSection < 1 || nextSection > totalSections) {
-            if (nextSection > totalSections) {
-                // Ready to submit
-                document.getElementById('questionnaireForm').submit();
-            }
-            return;
-        }
-
-        // Show next section only
-        currentSection = nextSection;
-        showSection(currentSection);
-        
-        updateUI();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function showSection(sectionNumber) {
-        document.querySelectorAll('#questionnaireForm .form-section').forEach(section => {
-            section.classList.add('hidden');
-            section.classList.remove('active');
-        });
-
-        const targetSections = document.querySelectorAll(`#questionnaireForm [data-section="${sectionNumber}"]`);
-        if (targetSections.length > 0) {
-            targetSections.forEach(section => {
-                section.classList.remove('hidden');
-                section.classList.add('active');
-            });
-
-            // Place le focus sur le premier champ du premier bloc visible.
-            const firstFocusable = targetSections[0].querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])');
-            if (firstFocusable) {
-                firstFocusable.focus({ preventScroll: true });
-            }
-        }
-    }
-
-    function updateUI() {
-        // Update progress bar
-        const progress = (currentSection / totalSections) * 100;
-        const progressFill = document.getElementById('progressFill');
-        if (progressFill) {
-            progressFill.style.width = progress + '%';
-        }
-        document.getElementById('stepNumber').textContent = currentSection;
-
-        // Show/hide buttons
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        
-        prevBtn.style.display = currentSection === 1 ? 'none' : 'inline-flex';
-        nextBtn.style.display = currentSection === totalSections ? 'none' : 'inline-flex';
-        submitBtn.style.display = currentSection === totalSections ? 'inline-flex' : 'none';
-    }
-
-    // ============================================
-    // FORM VALIDATION
-    // ============================================
-    function validateSection(section) {
-        // Optional validation - currently lets pass through
-        // Add required field validation here if needed
-        return true;
-    }
-
-    // ============================================
-    // FORM SUBMISSION WITH FINAL TIMING
-    // ============================================
-    function submitQuestionnaire(e) {
-        // Don't prevent default - let Django handle it normally
-        // But capture final timing data
-        const questEnd = Date.now();
-        const totalDuration = (questEnd - startTime) / 1000; // seconds
-        
-        // Store final timing in hidden field(s) if needed
-        console.log('Questionnaire completed in', totalDuration, 'seconds');
-        console.log('Section timings:', sectionTimings);
-        
-        // Optional: Send timing data via AJAX before submitting
-        // For now, just submit the form normally
-    }
-
-    // ============================================
-    // CONDITIONAL FIELDS VISIBILITY
-    // ============================================
-    function updateConditionalFields() {
-        const status = document.getElementById('id_travail_statut').value;
-        const adejaTravauilleGroup = document.getElementById('a_deja_travaille_group');
-        const professionGroup = document.getElementById('profession_group');
-        const fonctionManagementGroup = document.getElementById('fonction_management_group');
-        
-        // Show "A déjà travaillé" if status != 1 (not currently employed)
-        if (status === '2' || status === '3' || status === '4' || status === '5' || status === '6' || status === '7') {
-            adejaTravauilleGroup.style.display = 'block';
-        } else {
-            adejaTravauilleGroup.style.display = 'none';
-            document.querySelectorAll('input[name="a_deja_travaille"]').forEach(radio => radio.checked = false);
-        }
-        
-        // Show "Profession" if employed (status 1) OR if "a_deja_travaille" = yes
-        const adejaTravailled = document.querySelector('input[name="a_deja_travaille"]:checked');
-        const showProfession = status === '1' || (adejaTravailled && adejaTravailled.value === 'True');
-        professionGroup.style.display = showProfession ? 'block' : 'none';
-        
-        // Show "Fonction management" if profession is filled
-        const profession = document.getElementById('id_profession').value.trim();
-        fonctionManagementGroup.style.display = showProfession && profession ? 'block' : 'none';
-    }
-    
-    function updateManagementFieldVisibility() {
-        const profession = document.getElementById('id_profession').value.trim();
-        const status = document.getElementById('id_travail_statut').value;
-        const adejaTravailled = document.querySelector('input[name="a_deja_travaille"]:checked');
-        const showProfession = status === '1' || (adejaTravailled && adejaTravailled.value === 'True');
-        fonctionManagementGroup.style.display = showProfession && profession ? 'block' : 'none';
-    }
-
-    function bindSocialConditionsListeners() {
-        const modImg = document.getElementById('id_mod_img');
-        if (modImg) {
-            modImg.addEventListener('change', updateSocialConditionsFields);
-        }
-
-        document.querySelectorAll('input[name="reveil_nuit"]').forEach(radio => {
-            radio.addEventListener('change', updateSocialConditionsFields);
-        });
-
-        document.querySelectorAll('input[name="aide_sommeil"]').forEach(radio => {
-            radio.addEventListener('change', updateSocialConditionsFields);
-        });
-
-        const pensRien = document.getElementById('id_pens_rien');
-        if (pensRien) {
-            pensRien.addEventListener('change', function() {
-                toggleExclusiveGroup('id_pens_rien', '.pens-option');
-                updateSocialConditionsFields();
-            });
-        }
-
-        const contRien = document.getElementById('id_cont_rien');
-        if (contRien) {
-            contRien.addEventListener('change', function() {
-                toggleExclusiveGroup('id_cont_rien', '.cont-option');
-            });
-        }
-
-        document.querySelectorAll('.pens-option').forEach(input => {
-            input.addEventListener('change', function() {
-                const pensRienCheckbox = document.getElementById('id_pens_rien');
-                if (pensRienCheckbox && this.checked) {
-                    pensRienCheckbox.checked = false;
-                    pensRienCheckbox.disabled = false;
-                }
-                updateSocialConditionsFields();
-            });
-        });
-
-        document.querySelectorAll('.cont-option').forEach(input => {
-            input.addEventListener('change', function() {
-                const contRienCheckbox = document.getElementById('id_cont_rien');
-                if (contRienCheckbox && this.checked) {
-                    contRienCheckbox.checked = false;
-                    contRienCheckbox.disabled = false;
-                }
-            });
-        });
-
-        const pensAutre = document.getElementById('id_pens_autre');
-        if (pensAutre) {
-            pensAutre.addEventListener('change', updateSocialConditionsFields);
-        }
-
-        const compositionEnfants = document.getElementById('id_composition_logement_enfants');
-        if (compositionEnfants) {
-            compositionEnfants.addEventListener('change', updateSectionTwoFields);
-        }
-
-        const compositionConjoint = document.querySelector('input[name="composition_logement_conjoint"]');
-        if (compositionConjoint) {
-            compositionConjoint.addEventListener('change', updateSectionTwoFields);
-        }
-
-        document.querySelectorAll('input[name="statut_couple"]').forEach(radio => {
-            radio.addEventListener('change', updateSectionTwoFields);
-        });
-
-        document.querySelectorAll('input[name="discri_presence"]').forEach(radio => {
-            radio.addEventListener('change', updateSectionThreeFields);
-        });
-
-        const discriAutre = document.getElementById('id_discri_autre');
-        if (discriAutre) {
-            discriAutre.addEventListener('change', updateSectionThreeFields);
-        }
-    }
-
-    function updateSectionTwoFields() {
-        const compositionEnfants = document.getElementById('id_composition_logement_enfants');
-        const enfantsGroup = document.getElementById('composition_enfants_group');
-        if (!compositionEnfants || !enfantsGroup) {
-            return;
-        }
-
-        const shouldShow = compositionEnfants.checked;
-        enfantsGroup.style.display = shouldShow ? 'block' : 'none';
-
-        if (!shouldShow) {
-            const nbEnfants = document.getElementById('id_nb_enfants_cohabitants');
-            const nbMoins14 = document.getElementById('id_nb_enfants_moins14');
-            if (nbEnfants) nbEnfants.value = '';
-            if (nbMoins14) nbMoins14.value = '';
-        }
-
-        const conjointGroup = document.getElementById('conjoint_mobilite_group');
-        const compositionConjoint = document.querySelector('input[name="composition_logement_conjoint"]');
-        if (conjointGroup && compositionConjoint) {
-            const showConjoint = compositionConjoint.checked;
-            conjointGroup.style.display = showConjoint ? 'block' : 'none';
-
-            if (!showConjoint) {
-                const conjNivDiplome = document.getElementById('id_conj_niv_diplome');
-                const conjCsp = document.getElementById('id_conj_csp');
-                if (conjNivDiplome) conjNivDiplome.value = '';
-                if (conjCsp) conjCsp.value = '';
-            }
-        }
-    }
-
-    function updateSocialConditionsFields() {
-        toggleExclusiveGroup('id_pens_rien', '.pens-option');
-        toggleExclusiveGroup('id_cont_rien', '.cont-option');
-
-        const modImg = document.getElementById('id_mod_img');
-        const imagesGroup = document.getElementById('images_options_group');
-        if (modImg && imagesGroup) {
-            imagesGroup.style.display = modImg.checked ? 'block' : 'none';
-            if (!modImg.checked) {
-                ['img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns'].forEach(name => {
-                    const el = document.querySelector(`input[name="${name}"]`);
-                    if (el) el.checked = false;
-                });
-            }
-        }
-
-        const reveilYes = document.querySelector('input[name="reveil_nuit"][value="True"]');
-        const reveilDetails = document.getElementById('reveil_nuit_details');
-        if (reveilDetails && reveilYes) {
-            const shouldShow = reveilYes.checked;
-            reveilDetails.style.display = shouldShow ? 'block' : 'none';
-            if (!shouldShow) {
-                const nuits = document.getElementById('id_nuits_reveil');
-                const duree = document.getElementById('id_duree_eveil');
-                if (nuits) nuits.value = '';
-                if (duree) duree.value = '';
-            }
-        }
-
-        const aideYes = document.querySelector('input[name="aide_sommeil"][value="True"]');
-        const aideGroup = document.getElementById('aide_sommeil_options');
-        if (aideGroup && aideYes) {
-            const shouldShow = aideYes.checked;
-            aideGroup.style.display = shouldShow ? 'block' : 'none';
-            if (!shouldShow) {
-                ['aide_medic', 'aide_tisane', 'aide_autre'].forEach(name => {
-                    const el = document.querySelector(`input[name="${name}"]`);
-                    if (el) el.checked = false;
-                });
-            }
-        }
-
-        const pensAutre = document.getElementById('id_pens_autre');
-        const pensAutreTxtGroup = document.getElementById('pens_autre_txt_group');
-        if (pensAutre && pensAutreTxtGroup) {
-            pensAutreTxtGroup.style.display = pensAutre.checked ? 'block' : 'none';
-            if (!pensAutre.checked) {
-                const txt = document.getElementById('id_pens_autre_txt');
-                if (txt) txt.value = '';
-            }
-        }
-    }
-
-    function updateSectionThreeFields() {
-        const discriDetailsGroup = document.getElementById('discri_details_group');
-        const discriAutre = document.getElementById('id_discri_autre');
-        const discriAutrePrecisionGroup = document.getElementById('discri_autre_precision_group');
-        const discriAutrePrecision = document.getElementById('id_discri_autre_precision');
-
-        const discriPresence = document.querySelector('input[name="discri_presence"]:checked');
-        const showDiscriDetails = discriPresence && (discriPresence.value === '1' || discriPresence.value === '2');
-
-        if (discriDetailsGroup) {
-            discriDetailsGroup.style.display = showDiscriDetails ? 'block' : 'none';
-        }
-
-        if (!showDiscriDetails) {
-            document.querySelectorAll('.discri-reason, .discri-context').forEach(input => {
-                input.checked = false;
-            });
-            if (discriAutrePrecision) {
-                discriAutrePrecision.value = '';
-            }
-        }
-
-        const showAutrePrecision = showDiscriDetails && discriAutre && discriAutre.checked;
-        if (discriAutrePrecisionGroup) {
-            discriAutrePrecisionGroup.style.display = showAutrePrecision ? 'block' : 'none';
-        }
-        if (!showAutrePrecision && discriAutrePrecision) {
-            discriAutrePrecision.value = '';
-        }
-    }
-
-    function toggleExclusiveGroup(masterCheckboxId, optionsSelector) {
-        const master = document.getElementById(masterCheckboxId);
-        if (!master) return;
-
-        const options = document.querySelectorAll(optionsSelector);
-        if (master.checked) {
-            options.forEach(input => {
-                input.checked = false;
-                input.disabled = true;
-            });
-        } else {
-            options.forEach(input => {
-                input.disabled = false;
-            });
-        }
-    }
-
-    function updateChoiceStyles() {
-        const form = document.getElementById('questionnaireForm');
-        if (!form) return;
-
-        const groups = {};
-        form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
-            const groupName = input.name;
-            if (!groups[groupName]) {
-                groups[groupName] = [];
-            }
-            groups[groupName].push(input);
-        });
-
-        Object.values(groups).forEach(inputs => {
-            const anyChecked = inputs.some(input => input.checked);
-            inputs.forEach(input => {
-                const label = input.closest('label');
-                if (!label || !label.classList.contains('choice-label')) {
-                    return;
-                }
-                label.classList.toggle('is-selected', input.checked);
-                label.classList.toggle('is-dim', anyChecked && !input.checked);
-            });
-        });
-    }
-
-    document.addEventListener('change', function(event) {
-        const target = event.target;
-        if (target.matches('#questionnaireForm input[type="radio"], #questionnaireForm input[type="checkbox"]')) {
-            updateChoiceStyles();
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        updateChoiceStyles();
-    });
-</script>
+<script src="{% static 'polls/js/questionnaire.js' %}"></script>
 {% endblock %}

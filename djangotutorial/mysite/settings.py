@@ -332,7 +332,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Django Debug Toolbar
 INTERNAL_IPS = [
@@ -381,10 +381,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Mettre à jour la session à chaque requête (glisse la fenêtre de 30j à chaque visite)
 SESSION_SAVE_EVERY_REQUEST = True
-
-# Se souvenir de l'utilisateur lors de la connexion (remember me)
-# Les utilisateurs peuvent cocher "Remember me" lors de la connexion
-REMEMBER_ME_DURATION = 30 * 24 * 60 * 60  # 30 days
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CSRF COOKIE CONFIGURATION
@@ -499,3 +495,4 @@ LOGGING = {
         },
     },
 }
+

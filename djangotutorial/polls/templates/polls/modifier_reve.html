@@ -20,7 +20,7 @@
 				{% endfor %}
 			{% endif %}
 
-			<form method="post" id="reve-form" class="form-card">
+			<form method="post" id="reve-form" class="form-card" data-submit-url="{% url 'polls:modifier_reve' reve.id %}" data-redirect-url="{% url 'polls:journal' %}">
 				{% csrf_token %}
 
 				<!-- Section: Transcription -->
@@ -29,7 +29,7 @@
 						<label class="form-label" for="transcription">
 							<span>Transcription du rêve :</span>
 						</label>
-						<textarea name="transcription" id="transcription" class="form-textarea" rows="10" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; font-family: inherit;">{{ reve.transcription }}</textarea>
+						<textarea name="transcription" id="transcription" class="form-textarea form-textarea-reve-transcription" rows="10">{{ reve.transcription }}</textarea>
 					</div>
 				</div>
 
@@ -202,18 +202,18 @@
 				</div>
 
 				<!-- Boutons d'action -->
-				<div class="form-actions" id="formActions" style="display: flex; justify-content: space-between; align-items: center;">
-					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large" style="min-height: 60px; padding: 1rem 1.5rem; border: 2px solid var(--color-primary); color: var(--color-primary); background: white; white-space: normal; line-height: 1.4;">
+				<div class="form-actions form-actions-layout" id="formActions">
+					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large btn-form-action-base btn-form-action-outline">
 						Annuler
 					</a>
-					<button type="submit" id="submitBtn" class="btn btn-primary btn-large" style="min-height: 60px; padding: 1rem 1.5rem; white-space: normal; line-height: 1.4;">
+					<button type="submit" id="submitBtn" class="btn btn-primary btn-large btn-form-action-base">
 						Enregistrer les modifications
 					</button>
 				</div>
 			</form>
 
 			<!-- Message de succès -->
-			<div id="successMessage" class="success-card" style="display: none;">
+			<div id="successMessage" class="success-card success-card-hidden">
 				<div class="success-icon">✓</div>
 				<h2 class="success-title">Modifications enregistrées !</h2>
 				<p class="success-text">Votre rêve a été mis à jour avec succès.</p>
@@ -225,241 +225,6 @@
 	</section>
 </div>
 
-<!-- Scripts -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-	initFormHandlers();
-});
-
-function initFormHandlers() {
-	const form = document.getElementById('reve-form');
-	const submitBtn = document.getElementById('submitBtn');
-	const successMessage = document.getElementById('successMessage');
-	const emotionsGroup = document.getElementById('emotionsGroup');
-	const addEmotionBtn = document.getElementById('addEmotionBtn');
-	const customEmotionInput = document.getElementById('customEmotionInput');
-	const elementsGroup = document.getElementById('elementsGroup');
-	const addElementBtn = document.getElementById('addElementBtn');
-	const customElementInput = document.getElementById('customElementInput');
-
-	const updateChoiceStyles = () => {
-		const groups = {};
-		form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
-			const groupName = input.name;
-			if (!groups[groupName]) {
-				groups[groupName] = [];
-			}
-			groups[groupName].push(input);
-		});
-
-		Object.values(groups).forEach(inputs => {
-			const anyChecked = inputs.some(input => input.checked);
-			inputs.forEach(input => {
-				const label = input.closest('label');
-				if (!label) {
-					return;
-				}
-				label.classList.toggle('is-selected', input.checked);
-				label.classList.toggle('is-dim', anyChecked && !input.checked);
-			});
-		});
-	};
-
-	form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(field => {
-		field.addEventListener('change', () => {
-			updateChoiceStyles();
-		});
-	});
-
-	const normalizeEmotion = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
-	const existingEmotionValues = () => {
-		return Array.from(emotionsGroup.querySelectorAll('input[name="emotions_reve"], input[name="emotions_custom"]'))
-			.map(input => normalizeEmotion(input.value));
-	};
-
-	const normalizeElement = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
-	const existingElementValues = () => {
-		if (!elementsGroup) {
-			return [];
-		}
-		return Array.from(elementsGroup.querySelectorAll('input[name="elements_reve"], input[name="elements_custom"]'))
-			.map(input => normalizeElement(input.value));
-	};
-
-	const addCustomEmotion = () => {
-		const rawValue = customEmotionInput.value;
-		const cleanedValue = rawValue.trim();
-		if (!cleanedValue) {
-			return;
-		}
-
-		const normalizedValue = normalizeEmotion(cleanedValue);
-		if (existingEmotionValues().includes(normalizedValue)) {
-			customEmotionInput.value = '';
-			return;
-		}
-
-		const label = document.createElement('label');
-		label.className = 'checkbox-label choice-label custom-emotion is-selected';
-		const input = document.createElement('input');
-		input.type = 'checkbox';
-		input.name = 'emotions_custom';
-		input.value = cleanedValue;
-		input.checked = true;
-		const text = document.createElement('span');
-		text.className = 'checkbox-text';
-		text.textContent = cleanedValue;
-		label.appendChild(input);
-		label.appendChild(text);
-		emotionsGroup.appendChild(label);
-
-		input.addEventListener('change', () => {
-			updateChoiceStyles();
-		});
-
-		customEmotionInput.value = '';
-		updateChoiceStyles();
-	};
-
-	const addCustomElement = () => {
-		if (!elementsGroup || !customElementInput) {
-			return;
-		}
-
-		const rawValue = customElementInput.value;
-		const cleanedValue = rawValue.trim();
-		if (!cleanedValue) {
-			return;
-		}
-
-		const normalizedValue = normalizeElement(cleanedValue);
-		if (existingElementValues().includes(normalizedValue)) {
-			customElementInput.value = '';
-			return;
-		}
-
-		const label = document.createElement('label');
-		label.className = 'checkbox-label choice-label custom-element is-selected';
-		const input = document.createElement('input');
-		input.type = 'checkbox';
-		input.name = 'elements_custom';
-		input.value = cleanedValue;
-		input.checked = true;
-		const text = document.createElement('span');
-		text.className = 'checkbox-text';
-		text.textContent = cleanedValue;
-		label.appendChild(input);
-		label.appendChild(text);
-		elementsGroup.appendChild(label);
-
-		input.addEventListener('change', () => {
-			updateChoiceStyles();
-		});
-
-		customElementInput.value = '';
-		updateChoiceStyles();
-	};
-
-	if (addEmotionBtn && customEmotionInput && emotionsGroup) {
-		addEmotionBtn.addEventListener('click', addCustomEmotion);
-		customEmotionInput.addEventListener('keydown', (event) => {
-			if (event.key === 'Enter') {
-				event.preventDefault();
-				addCustomEmotion();
-			}
-		});
-	}
-
-	if (addElementBtn && customElementInput && elementsGroup) {
-		addElementBtn.addEventListener('click', addCustomElement);
-		customElementInput.addEventListener('keydown', (event) => {
-			if (event.key === 'Enter') {
-				event.preventDefault();
-				addCustomElement();
-			}
-		});
-	}
-
-	// Gestion de la soumission du formulaire
-	form.addEventListener('submit', async function(e) {
-		e.preventDefault();
-
-		const formData = new FormData(form);
-		const formActions = document.getElementById('formActions');
-
-		try {
-			// Cacher le formulaire
-			form.style.display = 'none';
-			if (formActions) {
-				formActions.style.display = 'none';
-			}
-			
-			// Afficher un message de chargement
-			const loadingMessage = document.createElement('div');
-			loadingMessage.id = 'loadingMessage';
-			loadingMessage.className = 'success-card';
-			loadingMessage.innerHTML = `
-				<div class="success-icon" style="background: linear-gradient(135deg, #94a3b8, #64748b);">⏳</div>
-				<h2 class="success-title">Enregistrement en cours...</h2>
-				<p class="success-text">Veuillez patienter un instant.</p>
-			`;
-			form.parentElement.appendChild(loadingMessage);
-
-			const response = await fetch('{% url "polls:modifier_reve" reve.id %}', {
-				method: 'POST',
-				body: formData,
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest',
-				}
-			});
-
-			const data = await response.json();
-
-			if (data.success) {
-				// Retirer le message de chargement
-				if (loadingMessage && loadingMessage.parentNode) {
-					loadingMessage.parentNode.removeChild(loadingMessage);
-				}
-				
-				// Afficher le message de succès
-				setTimeout(() => {
-					successMessage.style.display = 'block';
-				}, 100);
-				
-				// Redirection après 3 secondes
-				setTimeout(() => {
-					window.location.href = '{% url "polls:journal" %}';
-				}, 3000);
-			} else {
-				// En cas d'erreur, retirer le loading et réafficher le formulaire
-				if (loadingMessage && loadingMessage.parentNode) {
-					loadingMessage.parentNode.removeChild(loadingMessage);
-				}
-				form.style.display = 'block';
-				if (formActions) {
-					formActions.style.display = 'flex';
-				}
-				alert('Erreur: ' + data.message);
-			}
-		} catch (error) {
-			console.error('Erreur:', error);
-			// En cas d'erreur, retirer le loading et réafficher le formulaire
-			const loadingMsg = document.getElementById('loadingMessage');
-			if (loadingMsg && loadingMsg.parentNode) {
-				loadingMsg.parentNode.removeChild(loadingMsg);
-			}
-			form.style.display = 'block';
-			if (formActions) {
-				formActions.style.display = 'flex';
-			}
-			alert('Une erreur est survenue');
-		}
-	});
-
-	// Initialiser les styles au chargement
-	updateChoiceStyles();
-}
-
-</script>
+<script src="{% static 'polls/js/modifier_reve.js' %}"></script>
 
 {% endblock %}
