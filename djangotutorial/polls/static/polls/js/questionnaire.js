@@ -198,21 +198,48 @@ function showSection(sectionNumber) {
 }
 
 function updateUI() {
-	const progress = (currentSection / totalSections) * 100;
-	const progressFill = document.getElementById('progressFill');
-	if (progressFill) {
-		progressFill.style.width = progress + '%';
-	}
-	document.getElementById('stepNumber').textContent = currentSection;
+    const progress = (currentSection / totalSections) * 100;
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) {
+        progressFill.style.width = progress + '%';
+    }
+
+    document.getElementById('stepNumber').textContent = currentSection;
 
 	const prevBtn = document.getElementById('prevBtn');
 	const nextBtn = document.getElementById('nextBtn');
 	const submitBtn = document.getElementById('submitBtn');
 
-	prevBtn.style.display = currentSection === 1 ? 'none' : 'inline-flex';
-	nextBtn.style.display = currentSection === totalSections ? 'none' : 'inline-flex';
-	submitBtn.style.display = currentSection === totalSections ? 'inline-flex' : 'none';
+	// submit uniquement visible à la dernière section
+	if (submitBtn) {
+		// Certaines règles CSS utilisent `!important` sur `.form-actions > button`
+		// qui peuvent annuler la classe `.is-hidden-inline`. On force donc
+		// aussi la valeur inline de `display` avec la priorité `important`.
+		if (currentSection === totalSections) {
+			submitBtn.classList.remove('is-hidden-inline');
+			submitBtn.style.setProperty('display', 'inline-flex', 'important');
+		} else {
+			submitBtn.classList.add('is-hidden-inline');
+			submitBtn.style.setProperty('display', 'none', 'important');
+		}
+	}
+
+	// boutons prev/next (aussi forcés en important pour éviter les règles globales)
+	if (prevBtn) prevBtn.style.setProperty('display', currentSection === 1 ? 'none' : 'inline-flex', 'important');
+	if (nextBtn) nextBtn.style.setProperty('display', currentSection === totalSections ? 'none' : 'inline-flex', 'important');
+
+	// si on est sur la première section, appliquer une classe pour aligner
+	// le bouton "Suivant" à droite et ajouter un contour blanc
+	const formActions = document.getElementById('formActions');
+	if (formActions) {
+		if (currentSection === 1) {
+			formActions.classList.add('first-page');
+		} else {
+			formActions.classList.remove('first-page');
+		}
+	}
 }
+
 
 function validateSection(_section) {
 	return true;
