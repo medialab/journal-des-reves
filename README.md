@@ -1,15 +1,11 @@
-# Site Reves
+# Site Rêves
 
-Je construis `Site Reves`, une application Django pour collecter des recits de reves
-dans un cadre de recherche en sciences sociales.
+Je construis `Site Reves`, un site PWA avec un back-end Django pour collecter des récits de reves dans le cadre de ma thèse en sociologie.
 
-## Resume rapide
+## Résume rapide
 
-- Je permets l'inscription, la connexion et la gestion de profil.
-- Je propose un journal de reves avec saisie texte et audio.
-- Je lance la transcription audio automatiquement en arriere-plan.
-- Je gere des notifications (rappels quotidiens et questionnaire).
-- Je fournis une experience PWA avec session persistante.
+Sur ce site, je propose d'une part un journal de rêves avec saisie audio,lance la transcription audio automatiquement en arrière-plan et de remplir un questionnaire socio-démographique. 
+Pour que tout se passe bien, je permets l'inscription, la connexion et la gestion de profil et je gère des notifications (rappels quotidiens).
 
 ## Architecture du site
 
