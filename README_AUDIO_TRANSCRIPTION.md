@@ -15,7 +15,7 @@ Je veux un flux fiable:
 
 ## 2. Architecture audio -> texte
 
-### 2.1 Cote navigateur
+### 2.1 Côté navigateur
 
 Le front capture le micro avec `MediaRecorder`.
 
@@ -23,25 +23,24 @@ Fichier principal:
 
 - `djangotutorial/polls/templates/polls/enregistrer.html`
 
-### 2.2 Cote backend Django
+### 2.2 Côté backend Django
 
-Je cree ensuite le reve et je lance la transcription asynchrone.
+Je crée ensuite le rêve et je lance la transcription asynchrone.
 
 Fichiers cles:
-
 - `djangotutorial/polls/views.py`
 - `djangotutorial/polls/services/transcription_service.py`
 - `djangotutorial/polls/management/commands/transcribe_dreams.py`
 
-### 2.3 Cote transcription
+### 2.3 Côté transcription
 
-La commande charge Whisper localement (modele par defaut `large-v3`) et met a jour
-la base quand le texte est pret.
+La commande charge Whisper localement (j'ai pris le gros modèle que le petit était troop nul :  par defaut `large-v3`) et met a jour
+la base quand le texte est prêt.
 
-## 3. Flux complet (debutant)
+## 3. Flux complet 
 
 1. Je clique sur enregistrer.
-2. Le navigateur cree un `Blob` audio.
+2. Le navigateur crée un `Blob` audio.
 3. Le formulaire envoie le fichier au backend.
 4. Django cree l'objet `Reve`.
 5. Django appelle `start_transcription_async(reve_id)`.
