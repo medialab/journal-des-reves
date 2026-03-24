@@ -18,13 +18,18 @@ Pour que tout se passe bien, je permets l'inscription, la connexion et la gestio
 - `scripts/notifications/`: scripts utilitaires pour initialisation/scheduler.
 - `docs/assets/`: assets de documentation.
 
-## Lancer en local
+## Lancer en local et faire les migrations 
 
 ```bash
 source mon_env/bin/activate
 cd djangotutorial
-python manage.py migrate
 python manage.py runserver
+```
+```bash
+source mon_env/bin/activate
+cd djangotutorial
+python manage.py makemigrations
+python manage.py migrate
 ```
 
 Acces principal: `http://localhost:8000/polls/`
