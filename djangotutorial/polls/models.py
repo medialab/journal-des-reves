@@ -6,7 +6,7 @@ import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-# PROFIL USER ------------------------
+# PROFIL USER : ------------------------
 
 class Profil(models.Model):
     user = models.OneToOneField(

@@ -20,36 +20,23 @@
 
         <div class="welcome-card">
             <p class="welcome-intro">
-                Vous êtes maintenant connecté et prêt à commencer votre journal des rêves.
-            </p>
-
-            <div class="welcome-features-new">
-                <div class="welcome-feature-item">
-                    <span class="welcome-feature-emoji">🎙️</span>
-                    <span class="welcome-feature-label">Enregistrez vos rêves en audio</span>
-                </div>
-                <div class="welcome-feature-item">
-                    <span class="welcome-feature-emoji">📝</span>
-                    <span class="welcome-feature-label">Consultez votre journal</span>
-                </div>
-                <div class="welcome-feature-item">
-                    <span class="welcome-feature-emoji">📊</span>
-                    <span class="welcome-feature-label">Suivez vos statistiques</span>
-                </div>
-            </div>
-
-            <p class="welcome-note">
-                Le questionnaire sera disponible <strong>après une semaine</strong> d'utilisation.
+                <p>Vous êtes maintenant connecté et prêt à commencer votre journal des rêves.</p>
+                <p>Le questionnaire sera disponible <strong>après une semaine</strong> d'utilisation. </p>
+                <p></p>
+                <p>🎙️ Enregistrez vos rêves en audio </p>
+                <p>📝 Consultez votre journal de rêve </p>
+               <p> 📊 Suivre vos statistiques </p>
+               
             </p>
         </div>
 
         <!-- Boutons d'action -->
         <div class="welcome-actions">
             <a href="{% url 'polls:enregistrer' %}" class="welcome-btn-primary">
-                🎙️ Enregistrer mon premier rêve
+                Enregistrer mon premier rêve
             </a>
             <a href="{% url 'polls:journal' %}" class="welcome-btn-secondary">
-                📝 Aller à mon journal
+                Aller à mon journal
             </a>
         </div>
 
@@ -125,8 +112,8 @@
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    background: #3245bd;
-    color: white;
+    background: #ffd700;
+    color: #2338a8;
     border-radius: 10px;
     padding: 1rem 1.5rem;
     font-size: 1rem;
@@ -137,6 +124,7 @@
 
 .welcome-btn-primary:hover {
     background: #2338a8;
+    color: white;
     transform: translateY(-2px);
 }
 
