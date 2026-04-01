@@ -113,6 +113,7 @@ if DEBUG:
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'reves.middleware.RequestAuditLogMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -473,24 +474,90 @@ WEBPUSH_SETTINGS = {
     "VAPID_ADMIN_EMAIL": os.getenv("VAPID_ADMIN_EMAIL", "contact@reves-etude.fr"),
 }
 
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+        'application_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(LOGS_DIR / 'application.log'),
+            'when': 'midnight',
+            'backupCount': int(os.getenv('DJANGO_LOG_BACKUP_COUNT', '30')),
+            'encoding': 'utf-8',
+            'formatter': 'standard',
+        },
+        'access_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(LOGS_DIR / 'access.log'),
+            'when': 'midnight',
+            'backupCount': int(os.getenv('DJANGO_LOG_BACKUP_COUNT', '30')),
+            'encoding': 'utf-8',
+            'formatter': 'standard',
+        },
+        'security_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(LOGS_DIR / 'security.log'),
+            'when': 'midnight',
+            'backupCount': int(os.getenv('DJANGO_LOG_BACKUP_COUNT', '60')),
+            'encoding': 'utf-8',
+            'formatter': 'standard',
+        },
+        'transcription_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(BASE_DIR / 'transcription.log'),
+            'when': 'midnight',
+            'backupCount': int(os.getenv('DJANGO_LOG_BACKUP_COUNT', '30')),
+            'encoding': 'utf-8',
+            'formatter': 'standard',
         },
     },
     'loggers': {
+        'django': {
+            'handlers': ['console', 'application_file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console', 'application_file'],
+            'level': os.getenv('DJANGO_REQUEST_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['console', 'application_file'],
+            'level': os.getenv('DJANGO_SERVER_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
         'django.security': {
-            'handlers': ['console'],
+            'handlers': ['console', 'security_file'],
             'level': os.getenv('DJANGO_SECURITY_LOG_LEVEL', 'WARNING'),
             'propagate': False,
         },
         'django.contrib.auth': {
-            'handlers': ['console'],
+            'handlers': ['console', 'security_file'],
             'level': os.getenv('DJANGO_AUTH_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.access': {
+            'handlers': ['console', 'access_file'],
+            'level': os.getenv('DJANGO_ACCESS_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'transcription': {
+            'handlers': ['console', 'transcription_file'],
+            'level': os.getenv('DJANGO_TRANSCRIPTION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
     },

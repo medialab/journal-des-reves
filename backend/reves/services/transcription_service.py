@@ -8,18 +8,8 @@ import logging
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-# Configuration du logging
+# Logger configuré centralement via settings.LOGGING
 logger = logging.getLogger('transcription')
-
-# Créer un handler file si non existant
-if not logger.handlers:
-    handler = logging.FileHandler('transcription.log')
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
 
 
 class TranscriptionThread(threading.Thread):
