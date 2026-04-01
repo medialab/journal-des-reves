@@ -12,7 +12,7 @@ from pathlib import Path
 
 # Obtenir le répertoire du script
 SCRIPT_DIR = Path(__file__).parent.absolute()
-DJANGO_DIR = SCRIPT_DIR / 'djangotutorial'
+DJANGO_DIR = SCRIPT_DIR.parent.parent / 'backend'
 
 def run_command(cmd, description):
     """Exécuter une commande et afficher le résultat"""
@@ -63,11 +63,11 @@ def main():
     
     test_code = """
 import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 import django
 django.setup()
 
-from polls.models import Profil, Notification
+from reves.models import Profil, Notification
 from django.utils import timezone
 
 # Compter les profils
@@ -117,8 +117,8 @@ print("\\n✅ Système de notifications prêt à l'emploi!")
    $ crontab -e
    
    Ajouter:
-   0 8 * * * cd /path/to/site_reves/djangotutorial && python3 manage.py send_daily_reminder
-   0 10 * * * cd /path/to/site_reves/djangotutorial && python3 manage.py send_questionnaire_reminder
+    0 8 * * * cd /path/to/site_reves/backend && python3 manage.py send_daily_reminder
+    0 10 * * * cd /path/to/site_reves/backend && python3 manage.py send_questionnaire_reminder
    
    Avec APScheduler:
    $ pip install django-apscheduler

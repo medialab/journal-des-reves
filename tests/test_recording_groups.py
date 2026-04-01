@@ -8,12 +8,12 @@ import sys
 import django
 
 # Configuration Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
-sys.path.insert(0, '/home/maudyaiche/dev/site_reves/djangotutorial')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+sys.path.insert(0, '/home/maudyaiche/dev/site_reves/backend')
 django.setup()
 
 from django.contrib.auth.models import User, Group
-from polls.models import Profil
+from reves.models import Profil
 
 def create_test_users():
     """Créer deux utilisateurs de test avec groupes différents"""

@@ -1,0 +1,119 @@
+{% extends "polls/base.html" %}
+{% load static %}
+
+{% block title %}Journal – {{ user.first_name }}{% endblock %}
+
+{% block content %}
+<div class="page active">
+	<section class="page-hero page-hero-small">
+		<div class="container-small journal-hero">
+			<h1 class="page-title">Bonjour {{ user.first_name }}</h1>
+			<div class="hero-buttons">
+				<a href="{% url 'polls:enregistrer' %}" class="btn btn-primary btn-large">
+					Ajouter un rêve
+					<span class="btn-arrow">→</span>
+				</a>
+				<a href="{% url 'polls:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
+					Remplissez le questionnaire
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="page-content">
+		<div class="container">
+			<div class="journal-grid journal-full-width">
+				<div class="journal-column">
+					<div class="dreams-container">
+						{% if reves %}
+							<div class="dreams-list">
+								{% for reve in reves %}
+									<div class="dream-card js-dream-card" data-reve-id="{{ reve.id }}">
+										<!-- Header avec date -->
+									<div class="dream-header dream-header-layout">
+										<div class="dream-header-meta">
+											<span class="dream-icon">🌙</span>
+											<span class="dream-date">{{ reve.date|date:"d M Y" }}</span>
+										</div>
+										<a href="{% url 'polls:modifier_reve' reve.id %}" class="dream-edit-btn" title="Modifier ce rêve">
+											<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="dream-edit-icon">
+												<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#3b82f6" stroke="#3b82f6" stroke-width="0.5"/>
+											</svg>
+										</a>
+										</div>
+
+										<!-- Contenu -->
+										<div class="dream-content">
+											{% if not reve.existence_souvenir %}
+												<div class="dream-empty">
+													<p><em>Aucun souvenir de rêve cette nuit</em></p>
+												</div>
+											{% else %}
+													<!-- Texte complet -->
+													<div class="dream-text">
+														{% if reve.transcription %}
+															{{ reve.transcription }}
+														{% else %}
+															<em>Transcription en cours...</em>
+														{% endif %}
+													</div>
+
+													<!-- Émotions -->
+													{% if reve.emotions_reve.exists or reve.emotions_custom.exists %}
+														<div class="dream-emotions">
+															<span class="emotions-label">Émotions</span>
+															<div class="emotions-chips">
+																{% for emotion in reve.emotions_reve.all %}
+																	<span class="emotion-chip">{{ emotion.libelle }}</span>
+																{% endfor %}
+																{% for emotion in reve.emotions_custom.all %}
+																	<span class="emotion-chip custom">{{ emotion.libelle }}</span>
+																{% endfor %}
+															</div>
+														</div>
+													{% endif %}
+
+													<!-- Étendue -->
+													{% if reve.etendue_reve %}
+														<div class="dream-etendue">
+															<span class="etendue-label">Étendue du souvenir</span>
+															<span class="etendue-value">{{ reve.get_etendue_reve_display }}</span>
+														</div>
+													{% endif %}
+
+													<!-- Actions -->
+													<div class="dream-actions">
+														{% if reve.audio %}
+															<a href="{% url 'polls:reve_audio_short' reve.id %}" class="btn btn-small btn-muted" target="_blank" rel="noopener">
+																🎧 Écouter
+															</a>
+														{% endif %}
+													</div>
+												{% endif %}
+											</div>
+									</div>
+								{% endfor %}
+							</div>
+							<div class="load-more-container is-hidden" id="loadMoreContainer">
+								<button type="button" id="loadMoreDreams" class="btn btn-outline btn-large">Afficher plus</button>
+							</div>
+						{% else %}
+							<div class="empty-state">
+								<h3>Commencez votre journal</h3>
+								<p>Enregistrez votre premier rêve pour obtenir des statistiques personnalisées.</p>
+								<a href="{% url 'polls:enregistrer' %}" class="btn btn-large journal-empty-btn">
+									Enregistrer un rêve
+								</a>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<script src="{% static 'polls/js/journal.js' %}"></script>
+
+{% endblock %}
+

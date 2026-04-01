@@ -7,12 +7,12 @@ import os
 import sys
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
-sys.path.insert(0, '/home/maudyaiche/dev/site_reves/djangotutorial')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+sys.path.insert(0, '/home/maudyaiche/dev/site_reves/backend')
 django.setup()
 
 from django.contrib.auth.models import User, Group
-from polls.models import Reve, Profil
+from reves.models import Reve, Profil
 
 def test_integration():
     """Test intégration complet"""

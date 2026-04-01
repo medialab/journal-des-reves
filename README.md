@@ -9,12 +9,12 @@ Pour que tout se passe bien, je permets l'inscription, la connexion et la gestio
 
 ## Architecture du site
 
-- `djangotutorial/mysite/`: configuration Django (settings, urls, wsgi/asgi).
-- `djangotutorial/polls/models.py`: coeur metier (`Profil`, `Reve`, `Questionnaire`, `Notification`).
-- `djangotutorial/polls/views.py`: vues pages + endpoints API.
-- `djangotutorial/polls/templates/`: interfaces HTML.
-- `djangotutorial/polls/static/`: CSS/JS (UI, notifications, logique front).
-- `djangotutorial/polls/management/commands/`: taches planifiees.
+- `backend/config/`: configuration Django (settings, urls, wsgi/asgi).
+- `backend/reves/models.py`: coeur metier (`Profil`, `Reve`, `Questionnaire`, `Notification`).
+- `backend/reves/views.py`: vues pages + endpoints API.
+- `backend/reves/templates/`: interfaces HTML.
+- `backend/reves/static/`: CSS/JS (UI, notifications, logique front).
+- `backend/reves/management/commands/`: taches planifiees.
 - `scripts/notifications/`: scripts utilitaires pour initialisation/scheduler.
 - `docs/assets/`: assets de documentation.
 
@@ -22,12 +22,12 @@ Pour que tout se passe bien, je permets l'inscription, la connexion et la gestio
 
 ```bash
 source mon_env/bin/activate
-cd djangotutorial
+cd backend
 python manage.py runserver
 ```
 ```bash
 source mon_env/bin/activate
-cd djangotutorial
+cd backend
 python manage.py makemigrations
 python manage.py migrate
 ```

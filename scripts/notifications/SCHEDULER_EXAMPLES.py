@@ -3,7 +3,7 @@ EXEMPLE d'intégration avec APScheduler pour les tâches planifiées en backgrou
 Ce fichier est un exemple - pour l'utiliser, installez django-apscheduler:
     pip install django-apscheduler
 
-Intégration dans polls/apps.py
+Intégration dans reves/apps.py
 """
 
 # ============================================
@@ -11,7 +11,7 @@ Intégration dans polls/apps.py
 # ============================================
 
 """
-# Dans polls/apps.py, remplacez le contenu par:
+# Dans reves/apps.py, remplacez le contenu par:
 
 from django.apps import AppConfig
 import logging
@@ -20,9 +20,9 @@ from django.core.management import call_command
 
 logger = logging.getLogger(__name__)
 
-class PollsConfig(AppConfig):
+class RevesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'polls'
+    name = 'reves'
     
     def ready(self):
         '''Initialiser le scheduler au démarrage de l'app'''
@@ -80,16 +80,16 @@ Configuration dans settings.py:
 
     CELERY_BEAT_SCHEDULE = {
         'send_daily_reminder': {
-            'task': 'polls.tasks.send_daily_reminder_task',
+            'task': 'reves.tasks.send_daily_reminder_task',
             'schedule': crontab(hour=8, minute=0),  # 8h du matin
         },
         'send_questionnaire_reminder': {
-            'task': 'polls.tasks.send_questionnaire_reminder_task',
+            'task': 'reves.tasks.send_questionnaire_reminder_task',
             'schedule': crontab(hour=10, minute=0),  # 10h
         },
     }
 
-Créer polls/tasks.py:
+Créer reves/tasks.py:
 
     from celery import shared_task
     from django.core.management import call_command
@@ -114,8 +114,8 @@ Créer polls/tasks.py:
             logger.error(f'❌ Error: {e}')
 
 Lancer:
-    celery -A mysite worker -l info
-    celery -A mysite beat -l info
+    celery -A config worker -l info
+    celery -A config beat -l info
 """
 
 # ============================================
@@ -126,7 +126,7 @@ Lancer:
 Créer /usr/local/bin/reves_notifications.sh:
 
 #!/bin/bash
-cd /home/maudyaiche/dev/site_reves/djangotutorial
+cd /home/maudyaiche/dev/site_reves/backend
 /usr/bin/python3 manage.py send_daily_reminder >> /var/log/reves_daily.log 2>&1
 /usr/bin/python3 manage.py send_questionnaire_reminder >> /var/log/reves_questionnaire.log 2>&1
 
@@ -148,8 +148,8 @@ Installation:
 Créer /etc/supervisor/conf.d/reves_scheduler.conf:
 
 [program:reves_notification_worker]
-command=bash -c 'while true; do /usr/bin/python3 /home/maudyaiche/dev/site_reves/djangotutorial/manage.py send_daily_reminder && sleep 300; done'
-directory=/home/maudyaiche/dev/site_reves/djangotutorial
+command=bash -c 'while true; do /usr/bin/python3 /home/maudyaiche/dev/site_reves/backend/manage.py send_daily_reminder && sleep 300; done'
+directory=/home/maudyaiche/dev/site_reves/backend
 user=www-data
 autostart=true
 autorestart=true
@@ -181,7 +181,7 @@ call_command('send_daily_reminder')
 call_command('send_questionnaire_reminder')
 
 # Et vérifier:
-from polls.models import Notification
+from reves.models import Notification
 Notification.objects.all().count()
 """
 
@@ -190,16 +190,16 @@ Notification.objects.all().count()
 # ============================================
 
 EXAMPLE_POLLS_APPS = """
-# polls/apps.py
+# reves/apps.py
 
 from django.apps import AppConfig
 import logging
 
 logger = logging.getLogger(__name__)
 
-class PollsConfig(AppConfig):
+class RevesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'polls'
+    name = 'reves'
     scheduler_started = False
     
     def ready(self):
@@ -208,7 +208,7 @@ class PollsConfig(AppConfig):
         from django.core.management import call_command
         
         # Éviter de démarrer plusieurs fois
-        if PollsConfig.scheduler_started:
+        if RevesConfig.scheduler_started:
             return
         
         try:
@@ -243,7 +243,7 @@ class PollsConfig(AppConfig):
             
             # Démarrer
             scheduler.start()
-            PollsConfig.scheduler_started = True
+            RevesConfig.scheduler_started = True
             logger.info('✅ Notification scheduler started')
             
         except Exception as e:

@@ -20,7 +20,7 @@ ENV/
 db.sqlite3
 db.sqlite3-journal
 /media/
-djangotutorial/media/
+backend/media/
 /staticfiles/
 /static/
 
