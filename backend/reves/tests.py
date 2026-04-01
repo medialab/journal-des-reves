@@ -1432,6 +1432,27 @@ class SecureDreamAudioAccessTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
+    def test_audio_is_served_inline(self):
+        self.client.login(username='audio-owner', password='testpass123')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('inline', response['Content-Disposition'])
+
+    def test_audio_content_type_matches_file_extension(self):
+        webm_reve = Reve.objects.create(
+            user=self.owner_user,
+            profil=self.owner_profil,
+            audio=SimpleUploadedFile('dream.webm', b'test-webm-content', content_type='audio/webm'),
+            existence_souvenir=True,
+        )
+        webm_url = reverse('polls:reve_audio_short', args=[webm_reve.id])
+
+        self.client.login(username='audio-owner', password='testpass123')
+        response = self.client.get(webm_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'audio/webm')
+
     def test_superuser_can_access_audio(self):
         self.client.login(username='audio-admin', password='adminpass123')
         response = self.client.get(self.url)

@@ -84,9 +84,10 @@
 													<!-- Actions -->
 													<div class="dream-actions">
 														{% if reve.audio %}
-															<a href="{% url 'polls:reve_audio_short' reve.id %}" class="btn btn-small btn-muted" target="_blank" rel="noopener">
-																🎧 Écouter
-															</a>
+															<audio controls preload="none" class="dream-audio-player">
+																<source src="{% url 'polls:reve_audio_short' reve.id %}">
+																Votre navigateur ne supporte pas la lecture audio intégrée.
+															</audio>
 														{% endif %}
 													</div>
 												{% endif %}

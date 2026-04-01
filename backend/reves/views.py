@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login
 from django.core.cache import cache
 import uuid
 import os
+import mimetypes
 import json
 import csv
 import time
@@ -681,12 +682,28 @@ class ReveDetailView(LoginRequiredMixin, generic.DetailView):
 
 class ReveAudioDownloadView(View):
     """
-    Vue sécurisée pour télécharger les fichiers audio
+    Vue sécurisée pour lire les fichiers audio
     Vérifie que l'utilisateur est propriétaire du rêve
     """
 
+    AUDIO_MIME_BY_EXTENSION = {
+        '.wav': 'audio/wav',
+        '.m4a': 'audio/mp4',
+        '.mp4a': 'audio/mp4',
+        '.mp4': 'audio/mp4',
+        '.webm': 'audio/webm',
+    }
+
+    def _get_audio_content_type(self, audio_name):
+        extension = os.path.splitext(audio_name or '')[1].lower()
+        if extension in self.AUDIO_MIME_BY_EXTENSION:
+            return self.AUDIO_MIME_BY_EXTENSION[extension]
+
+        guessed_type, _ = mimetypes.guess_type(audio_name or '')
+        return guessed_type or 'application/octet-stream'
+
     def get(self, request, reve_id):
-        """Télécharger le fichier audio d'un rêve"""
+        """Retourne le fichier audio d'un rêve en lecture inline."""
         if not request.user.is_authenticated:
             return HttpResponse(status=403)
 
@@ -706,13 +723,14 @@ class ReveAudioDownloadView(View):
             return HttpResponse(status=404)
 
         try:
-            # Ouvrir le fichier audio
+            audio_name = os.path.basename(reve.audio.name or f'reve-{reve.id}.wav')
             response = FileResponse(
                 reve.audio.open('rb'),
-                as_attachment=True,
-                filename=f'reve-{reve.id}.wav'
+                as_attachment=False,
+                filename=audio_name,
+                content_type=self._get_audio_content_type(audio_name),
             )
-            response['Content-Type'] = 'audio/wav'
+            response['Content-Disposition'] = f'inline; filename="{audio_name}"'
             return response
         except Exception as error:
             messages.error(request, f"Erreur lors du téléchargement: {error}")

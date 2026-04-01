@@ -767,6 +767,12 @@
     flex: 0 1 auto;
 }
 
+.dream-audio-player {
+    width: 100%;
+    max-width: 340px;
+    min-width: 220px;
+}
+
 .journal-column {
     display: block !important;
     width: 100% !important;

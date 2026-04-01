@@ -1,6 +1,7 @@
 let currentSection = 1;
 const totalSections = 3;
 let questionnaireStarted = false;
+const REQUIRED_QUESTION_MESSAGE = 'Vous avez oublié de remplir cette question.';
 
 let startTime = null;
 let sectionStartTime = null;
@@ -42,6 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	updateSectionTwoFields();
 	updateSectionThreeFields();
 	bindSocialConditionsListeners();
+	addRequiredAsterisks();
+	normalizeServerValidationMessages();
 
 	const besoinSomInput = document.getElementById('id_besoin_som');
 	if (besoinSomInput) {
@@ -251,8 +254,14 @@ function validateSection(sectionNumber) {
 	const sections = document.querySelectorAll(`#questionnaireForm [data-section="${sectionNumber}"]`);
 	if (sections.length === 0) return true;
 
-	const errors = [];
+	const errors = new Set();
 	let firstErrorElement = null;
+
+	const addError = (element) => {
+		if (!element) return;
+		errors.add(element);
+		if (!firstErrorElement) firstErrorElement = element;
+	};
 
 	// Vérifier tous les form-group visibles dans la section
 	sections.forEach(section => {
@@ -274,16 +283,9 @@ function validateSection(sectionNumber) {
 
 			// Vérifier les radios
 			if (radios.length > 0) {
-				const name = radios[0].name;
 				const isChecked = Array.from(radios).some(r => r.checked);
 				if (!isChecked) {
-					const label = group.querySelector('.form-label');
-					const fieldName = label ? label.textContent.trim() : name;
-					errors.push({
-						element: group,
-						message: `${fieldName} est obligatoire`
-					});
-					if (!firstErrorElement) firstErrorElement = group;
+					addError(group);
 				}
 			}
 
@@ -291,52 +293,28 @@ function validateSection(sectionNumber) {
 			else if (checkboxes.length > 0) {
 				const isChecked = Array.from(checkboxes).some(cb => cb.checked);
 				if (!isChecked) {
-					const label = group.querySelector('.form-label');
-					const fieldName = label ? label.textContent.trim() : 'Ce champ';
-					errors.push({
-						element: group,
-						message: `${fieldName} - sélectionnez au moins une option`
-					});
-					if (!firstErrorElement) firstErrorElement = group;
+					addError(group);
 				}
 			}
 
 			// Vérifier les inputs texte/time/number
 			textInputs.forEach(input => {
 				if (!input.value || input.value.trim() === '') {
-					const label = group.querySelector('label[for="' + input.id + '"]');
-					const fieldName = label ? label.textContent.trim() : input.name;
-					errors.push({
-						element: group,
-						message: `${fieldName} est obligatoire`
-					});
-					if (!firstErrorElement) firstErrorElement = group;
+					addError(group);
 				}
 			});
 
 			// Vérifier les selects
 			selects.forEach(select => {
 				if (!select.value || select.value === '') {
-					const label = group.querySelector('label[for="' + select.id + '"]');
-					const fieldName = label ? label.textContent.trim() : select.name;
-					errors.push({
-						element: group,
-						message: `${fieldName} est obligatoire`
-					});
-					if (!firstErrorElement) firstErrorElement = group;
+					addError(group);
 				}
 			});
 
 			// Vérifier les textareas
 			textareas.forEach(textarea => {
 				if (!textarea.value || textarea.value.trim() === '') {
-					const label = group.querySelector('label[for="' + textarea.id + '"]');
-					const fieldName = label ? label.textContent.trim() : textarea.name;
-					errors.push({
-						element: group,
-						message: `${fieldName} est obligatoire`
-					});
-					if (!firstErrorElement) firstErrorElement = group;
+					addError(group);
 				}
 			});
 		});
@@ -347,13 +325,7 @@ function validateSection(sectionNumber) {
 			const checkboxes = compositionGroup.querySelectorAll('input[type="checkbox"]');
 			const isChecked = Array.from(checkboxes).some(cb => cb.checked);
 			if (!isChecked) {
-				const label = compositionGroup.querySelector('.form-label');
-				const fieldName = label ? label.textContent.trim() : 'Composition du logement';
-				errors.push({
-					element: compositionGroup,
-					message: `${fieldName} - sélectionnez au moins une option`
-				});
-				if (!firstErrorElement) firstErrorElement = compositionGroup;
+				addError(compositionGroup);
 			}
 		}
 
@@ -370,26 +342,20 @@ function validateSection(sectionNumber) {
 			if (radios.length > 0) {
 				const isChecked = Array.from(radios).some(r => r.checked);
 				if (!isChecked) {
-					const question = row.querySelector('.detresse-question');
-					const fieldName = question ? question.textContent.trim() : 'Question';
-					errors.push({
-						element: row,
-						message: `${fieldName} est obligatoire`
-					});
-					if (!firstErrorElement) firstErrorElement = row;
+					addError(row);
 				}
 			}
 		});
 	});
 
 	// Afficher les messages d'erreur
-	if (errors.length > 0) {
-		errors.forEach(error => {
-			error.element.classList.add('has-error');
+	if (errors.size > 0) {
+		errors.forEach(element => {
+			element.classList.add('has-error');
 			const errorMsg = document.createElement('div');
 			errorMsg.className = 'field-error-message';
-			errorMsg.textContent = '⚠ ' + error.message;
-			error.element.appendChild(errorMsg);
+			errorMsg.textContent = '⚠ ' + REQUIRED_QUESTION_MESSAGE;
+			element.appendChild(errorMsg);
 		});
 
 		// Scroller vers le premier champ en erreur
@@ -401,6 +367,29 @@ function validateSection(sectionNumber) {
 	}
 
 	return true;
+}
+
+function normalizeServerValidationMessages() {
+	document.querySelectorAll('#questionnaireForm .error-message').forEach(errorNode => {
+		errorNode.textContent = REQUIRED_QUESTION_MESSAGE;
+	});
+}
+
+function addRequiredAsterisks() {
+	const labels = document.querySelectorAll(
+		'#questionnaireForm .form-group > .form-label, #questionnaireForm .detresse-row > .detresse-question'
+	);
+
+	labels.forEach(labelNode => {
+		if (labelNode.querySelector('.required-asterisk')) return;
+		if (labelNode.textContent.includes('*')) return;
+
+		const marker = document.createElement('span');
+		marker.className = 'required-asterisk';
+		marker.setAttribute('aria-hidden', 'true');
+		marker.textContent = ' *';
+		labelNode.appendChild(marker);
+	});
 }
 
 function submitQuestionnaire(_e) {

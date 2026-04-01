@@ -733,6 +733,12 @@ html.is-mobile-pwa .notification-bell {
     line-height: 1.4;
 }
 
+#questionnaireForm .required-asterisk {
+    color: #ef4444;
+    font-size: 0.85em;
+    font-weight: 700;
+}
+
 #questionnaireForm section[data-section="3"] .question-row-two {
     display: grid;
     grid-template-columns: repeat(2, minmax(260px, 1fr));
