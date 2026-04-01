@@ -47,7 +47,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from .models import Questionnaire, Profil, Reve, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite, ReveTag
-from .forms import QuestionnaireForm
+from .forms import QuestionnaireForm, SignUpForm
 
 
 def make_user_with_profil(username='testuser', days_old=10):
@@ -591,6 +591,37 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
         )
         self.assertEqual(resp.status_code, 403)
+
+
+class SignupQuestionnaireBypassTest(TestCase):
+    """Vérifie le bypass questionnaire pour un nouvel inscrit sans altérer created_at."""
+
+    def test_signup_sets_trick_date_and_keeps_real_created_at(self):
+        form = SignUpForm(data={
+            'username': 'nouveau_user',
+            'email': 'nouveau@example.com',
+            'password1': 'MotDePasseSecurise123!',
+            'password2': 'MotDePasseSecurise123!',
+            'consent_data_processing': True,
+            'consent_password_account': True,
+            'consent_quote_expressions': True,
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+        user = form.save()
+        profil = user.profil
+
+        # created_at reste la vraie date de création.
+        now = timezone.now()
+        self.assertLess((now - profil.created_at).total_seconds(), 60)
+
+        # Le bypass se fait via une date de référence artificielle plus ancienne.
+        self.assertIsNotNone(profil.created_at_trick)
+        self.assertGreaterEqual((profil.created_at - profil.created_at_trick).days, 7)
+
+        # L'accès questionnaire doit être immédiat grâce à created_at_trick.
+        self.assertTrue(profil.can_access_questionnaire())
+        self.assertEqual(profil.days_until_questionnaire_access(), 0)
 
 
 class QuestionnaireViewFinalSubmitTest(TestCase):

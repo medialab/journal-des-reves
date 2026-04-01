@@ -860,5 +860,11 @@ class SignUpForm(UserCreationForm):
                 consent_date=timezone.now(),
                 welcome_email_sent=False  # L'email sera envoyé à la première connexion
             )
+
+            # Ruse temporaire: conserver toute la logique de délai (7 jours)
+            # mais rendre les nouveaux inscrits immédiatement éligibles,
+            # sans toucher la vraie date de création du profil.
+            profil.created_at_trick = timezone.now() - timezone.timedelta(days=8)
+            profil.save(update_fields=['created_at_trick'])
         
         return user

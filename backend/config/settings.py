@@ -461,7 +461,7 @@ PWA_APP_SHORTCUTS = [
 ]
 
 # Service worker personnalisé (cache les assets du site)
-PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'reves', 'templates', 'polls', 'sw.js')
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'reves', 'templates', 'reves', 'sw.js')
 
 # =============================================================================
 # WEBPUSH CONFIGURATION (django-webpush)

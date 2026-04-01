@@ -61,20 +61,34 @@ class Profil(models.Model):
         verbose_name="Date de création du profil"
     )
 
+    # Date de référence optionnelle utilisée pour l'éligibilité questionnaire.
+    # Elle permet un contournement temporaire sans perdre la vraie date de création.
+    created_at_trick = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date de référence questionnaire (temporaire)"
+    )
+
+    def questionnaire_access_reference_date(self):
+        """Date utilisée pour la logique des 7 jours questionnaire."""
+        return self.created_at_trick or self.created_at
+
     def can_access_questionnaire(self):
         """Vérifie si l'utilisateur peut accéder au questionnaire (1 semaine après création)"""
-        if not self.created_at:
+        reference_date = self.questionnaire_access_reference_date()
+        if not reference_date:
             return False
         from django.utils import timezone
         one_week_ago = timezone.now() - timezone.timedelta(days=7)
-        return self.created_at <= one_week_ago
+        return reference_date <= one_week_ago
 
     def days_until_questionnaire_access(self):
         """Retourne le nombre de jours restants avant l'accès au questionnaire"""
-        if not self.created_at:
+        reference_date = self.questionnaire_access_reference_date()
+        if not reference_date:
             return 7
         from django.utils import timezone
-        one_week_after_creation = self.created_at + timezone.timedelta(days=7)
+        one_week_after_creation = reference_date + timezone.timedelta(days=7)
         days_remaining = (one_week_after_creation - timezone.now()).days
         return max(0, days_remaining)
 

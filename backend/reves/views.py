@@ -176,7 +176,7 @@ class ProfilView(LoginRequiredMixin, View):
         # Ajouter les infos questionnaire
         context = add_questionnaire_context(context, profil)
 
-        return render(request, "polls/profil.html", context)
+        return render(request, "reves/profil.html", context)
     
     def post(self, request):
         """Gérer la mise à jour du profil"""
@@ -215,7 +215,7 @@ class ProfilView(LoginRequiredMixin, View):
             }, status=400)
 
 class DescriptionView(View):
-    template_name = "polls/description.html"
+    template_name = "reves/description.html"
     
     def get(self, request):
         return render(request, self.template_name)
@@ -267,7 +267,7 @@ class EnregistrerView(LoginRequiredMixin, View):
         # Ajouter les infos questionnaire
         context = add_questionnaire_context(context, profil)
         
-        return render(request, "polls/enregistrer.html", context)
+        return render(request, "reves/enregistrer.html", context)
 
     def post(self, request):
         """Gérer l'upload de l'audio et la sauvegarde du rêve"""
@@ -516,7 +516,7 @@ class ModifierReveView(LoginRequiredMixin, View):
         # Ajouter les infos questionnaire
         context = add_questionnaire_context(context, profil)
         
-        return render(request, "polls/modifier_reve.html", context)
+        return render(request, "reves/modifier_reve.html", context)
 
     def post(self, request, reve_id):
         """Gérer la mise à jour du rêve"""
@@ -667,12 +667,12 @@ class JournalView(LoginRequiredMixin, View):
         # Ajouter les infos questionnaire
         context = add_questionnaire_context(context, profil)
 
-        return render(request, "polls/journal.html", context)
+        return render(request, "reves/journal.html", context)
 
 
 class ReveDetailView(LoginRequiredMixin, generic.DetailView):
     model = Reve
-    template_name = "polls/reve_detail.html"
+    template_name = "reves/detail.html"
     context_object_name = "reve"
 
     def get_queryset(self):
@@ -863,8 +863,8 @@ class QuestionnaireView(View):
     Affiche le formulaire et traite la soumission
     Restriction : accessible uniquement 1 semaine après la création du profil
     """
-    template_name = "polls/questionnaire.html"
-    waiting_template_name = "polls/questionnaire_waiting.html"
+    template_name = "reves/questionnaire.html"
+    waiting_template_name = "reves/questionnaire_waiting.html"
     
     def get(self, request):
         """Afficher le formulaire de questionnaire ou la page d'attente"""
@@ -890,7 +890,7 @@ class QuestionnaireView(View):
         if not profil.can_access_questionnaire():
             # Afficher la page d'attente
             from django.utils import timezone
-            access_date = profil.created_at + timezone.timedelta(days=7)
+            access_date = profil.questionnaire_access_reference_date() + timezone.timedelta(days=7)
             context = {
                 'days_remaining': profil.days_until_questionnaire_access(),
                 'access_date': access_date,
@@ -1202,7 +1202,7 @@ class WelcomeView(LoginRequiredMixin, View):
     Vue d'accueil après création de compte
     Affiche une page de bienvenue avec un modal élégant
     """
-    template_name = "polls/welcome.html"
+    template_name = "reves/welcome.html"
     
     def get(self, request):
         """Afficher la page de bienvenue"""
@@ -1277,7 +1277,7 @@ class AccueilView(View):
     Page d'accueil publique
     Visible pour tous les utilisateurs (connectés ou non)
     """
-    template_name = "polls/index.html"
+    template_name = "reves/index.html"
     
     def get(self, request):
         """Afficher la page d'accueil"""
