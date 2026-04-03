@@ -68,7 +68,7 @@
                 <span class="step-number" id="stepNumber">1</span> / <span class="step-total">3</span>
             </div>
 
-            <form method="post" id="questionnaireForm" class="modern-form" data-save-url="{% url 'reves:questionnaire' %}">
+            <form method="post" id="questionnaireForm" class="modern-form" data-save-url="{% url 'reves:questionnaire' %}" novalidate>
                 {% csrf_token %}
 
                 <!-- ========== SECTION 1: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL ========== -->
@@ -254,7 +254,7 @@
                             {% for value, label in form.perception_financiere.field.choices %}
                             {% if value != '' %}
                             <label class="radio-label choice-label">
-                                <input type="radio" name="perception_financiere" value="{{ value }}" {% if form.perception_financiere.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <input type="radio" name="perception_financiere" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.perception_financiere.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                 <span class="radio-text">{{ label }}</span>
                             </label>
                             {% endif %}
@@ -269,7 +269,7 @@
                             {% for value, label in form.perception_risque_pauvrete.field.choices %}
                             {% if value != '' %}
                             <label class="radio-label choice-label">
-                                <input type="radio" name="perception_risque_pauvrete" value="{{ value }}" {% if form.perception_risque_pauvrete.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <input type="radio" name="perception_risque_pauvrete" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.perception_risque_pauvrete.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                 <span class="radio-text">{{ label }}</span>
                             </label>
                             {% endif %}
@@ -284,7 +284,7 @@
                             {% for value, label in form.position_subjective_classe.field.choices %}
                             {% if value != '' %}
                             <label class="radio-label choice-label">
-                                <input type="radio" name="position_subjective_classe" value="{{ value }}" {% if form.position_subjective_classe.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <input type="radio" name="position_subjective_classe" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.position_subjective_classe.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                 <span class="radio-text">{{ label }}</span>
                             </label>
                             {% endif %}
@@ -299,7 +299,7 @@
                             {% for value, label in form.perception_mobilite.field.choices %}
                             {% if value != '' %}
                             <label class="radio-label choice-label">
-                                <input type="radio" name="perception_mobilite" value="{{ value }}" {% if form.perception_mobilite.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <input type="radio" name="perception_mobilite" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.perception_mobilite.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                 <span class="radio-text">{{ label }}</span>
                             </label>
                             {% endif %}
@@ -316,7 +316,7 @@
                             {% for value, label in form.discri_presence.field.choices %}
                             {% if value != '' %}
                             <label class="radio-label choice-label">
-                                <input type="radio" name="discri_presence" value="{{ value }}" {% if form.discri_presence.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <input type="radio" name="discri_presence" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.discri_presence.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                 <span class="radio-text">{{ label }}</span>
                             </label>
                             {% endif %}
@@ -393,7 +393,7 @@
                                 {% for value, label in form.det_1.field.choices %}
                                 {% if value != '' %}
                                 <label class="radio-label choice-label detresse-choice">
-                                    <input type="radio" name="det_1" value="{{ value }}" {% if form.det_1.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <input type="radio" name="det_1" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.det_1.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                     <span class="radio-text">{{ label }}</span>
                                 </label>
                                 {% endif %}
@@ -408,7 +408,7 @@
                                 {% for value, label in form.det_2.field.choices %}
                                 {% if value != '' %}
                                 <label class="radio-label choice-label detresse-choice">
-                                    <input type="radio" name="det_2" value="{{ value }}" {% if form.det_2.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <input type="radio" name="det_2" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.det_2.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                     <span class="radio-text">{{ label }}</span>
                                 </label>
                                 {% endif %}
@@ -423,7 +423,7 @@
                                 {% for value, label in form.det_3.field.choices %}
                                 {% if value != '' %}
                                 <label class="radio-label choice-label detresse-choice">
-                                    <input type="radio" name="det_3" value="{{ value }}" {% if form.det_3.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <input type="radio" name="det_3" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.det_3.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                     <span class="radio-text">{{ label }}</span>
                                 </label>
                                 {% endif %}
@@ -438,7 +438,7 @@
                                 {% for value, label in form.det_4.field.choices %}
                                 {% if value != '' %}
                                 <label class="radio-label choice-label detresse-choice">
-                                    <input type="radio" name="det_4" value="{{ value }}" {% if form.det_4.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <input type="radio" name="det_4" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.det_4.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                     <span class="radio-text">{{ label }}</span>
                                 </label>
                                 {% endif %}
@@ -453,7 +453,7 @@
                                 {% for value, label in form.det_5.field.choices %}
                                 {% if value != '' %}
                                 <label class="radio-label choice-label detresse-choice">
-                                    <input type="radio" name="det_5" value="{{ value }}" {% if form.det_5.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <input type="radio" name="det_5" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.det_5.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                     <span class="radio-text">{{ label }}</span>
                                 </label>
                                 {% endif %}
@@ -697,7 +697,7 @@
                         <label class="form-label">Êtes-vous en couple ?</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
-                                <input type="radio" name="statut_couple" value="1" {% if form.statut_couple.value == "1" %}checked{% endif %}>
+                                <input type="radio" name="statut_couple" value="1" required {% if form.statut_couple.value == "1" %}checked{% endif %}>
                                 <span class="radio-text">Oui</span>
                             </label>
                             <label class="radio-label choice-label">
@@ -779,9 +779,6 @@
                         {% if form.mere_csp.errors %}<div class="error-message">{{ form.mere_csp.errors }}</div>{% endif %}
                     </div>
 
-                    </div>
-                    </div>
-
                     <div id="conjoint_mobilite_group" class="is-hidden-inline">
                         <div class="form-group">
                             <label class="form-label">Quel est le plus haut diplôme de votre conjoint·e ?</label>
@@ -810,6 +807,9 @@
                     </div>
 
                     </div>
+                    </div>
+
+                    </div>
 
                 </section>
 
@@ -821,7 +821,7 @@
                     <button type="button" class="btn btn-primary" id="nextBtn" onclick="saveCurrentSectionAndContinue(1); return false;">
                         Suivant →
                     </button>
-                    <button type="submit" class="btn btn-success is-hidden-inline" id="submitBtn">
+                    <button type="button" class="btn btn-success is-hidden-inline" id="submitBtn" onclick="submitAfterValidation(); return false;">
                         ✓ Soumettre
                     </button>
                 </div>

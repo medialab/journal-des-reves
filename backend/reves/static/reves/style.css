@@ -1416,23 +1416,9 @@ html.is-mobile-pwa .notification-bell {
         align-items: stretch !important;
     }
 
-    /* Questionnaire garde le layout flex pour les boutons compacts */
-    #questionnaireForm .form-actions {
-        display: flex !important;
-        grid-template-columns: unset;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
     .form-actions > a,
     .form-actions > button {
         width: 100%;
-    }
-
-    /* Sauf pour le questionnaire - garder les boutons petits */
-    #questionnaireForm .form-actions > a,
-    #questionnaireForm .form-actions > button {
-        width: auto !important;
     }
 }
 

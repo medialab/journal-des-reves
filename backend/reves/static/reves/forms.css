@@ -106,6 +106,12 @@
     flex: 1;
 }
 
+/* QUESTIONNAIRE: boutons avec largeur auto et padding réduit */
+#questionnaireForm .form-actions .btn {
+    flex: 0 0 auto !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
 /* ============================================
    SIGNUP LINK (login.html)
    ============================================ */
@@ -619,6 +625,13 @@
     font-size: 1rem;
 }
 
+/* QUESTIONNAIRE: petit padding pour les boutons */
+#questionnaireForm .btn,
+#questionnaireForm .form-actions button,
+#questionnaireForm .form-actions a {
+    padding: 0.5rem 0.75rem !important;
+}
+
 /* Questionnaire legacy card choices (kept for sections still using card layout) */
 #questionnaireForm .questionnaire-card-layout .radio-grid-2,
 #questionnaireForm .questionnaire-card-layout .checkbox-grid,
@@ -1076,6 +1089,17 @@
     .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    /* QUESTIONNAIRE: garder les boutons compacts sur mobile aussi */
+    #questionnaireForm .form-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #questionnaireForm .btn {
+        width: auto !important;
     }
 
     .recorder-buttons {

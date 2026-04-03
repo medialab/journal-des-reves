@@ -603,11 +603,9 @@ class QuestionnaireAdmin(ModelAdmin):
         'created_at',
         'completed_at',
         'completion_duration_display',
-        'frequency',
-        'sleep_quality',
     ]
     search_fields = ['user__username', 'profil__user__username']
-    list_filter = ['is_completed', 'created_at', 'completed_at', 'frequency', 'sleep_quality']
+    list_filter = ['is_completed', 'created_at', 'completed_at']
     readonly_fields = ['created_at', 'updated_at', 'completed_at', 'completion_duration_seconds']
     actions = ['export_selected_as_csv']
 
@@ -622,8 +620,6 @@ class QuestionnaireAdmin(ModelAdmin):
     ]
 
     distribution_specs = [
-        ('sleep_quality', 'Qualité du sommeil'),
-        ('frequency', 'Fréquence de rappel des rêves'),
         ('discri_presence', 'Traitements inégalitaires / discriminations'),
         ('genre', 'Genre'),
     ]

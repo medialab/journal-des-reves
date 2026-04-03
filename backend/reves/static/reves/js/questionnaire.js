@@ -108,6 +108,9 @@ function startQuestionnaire() {
 }
 
 function saveCurrentSectionAndContinue(direction) {
+	console.log('=== CLICK SUR BOUTON SUIVANT ===');
+	console.log('currentSection:', currentSection);
+	
 	// Empêcher les appels multiples simultanés
 	if (isSavingSection) {
 		console.warn('Sauvegarde déjà en cours');
@@ -117,6 +120,7 @@ function saveCurrentSectionAndContinue(direction) {
 	console.log('Validation de la section:', currentSection);
 	if (!validateSection(currentSection)) {
 		console.warn('Validation échouée pour la section:', currentSection);
+		console.warn('Vérifiez les éléments avec la classe "has-error"');
 		return;
 	}
 	console.log('Validation réussie, procédure de sauvegarde...');
@@ -284,6 +288,8 @@ function updateUI() {
 
 
 function validateSection(sectionNumber) {
+	console.log('=== VALIDATION DE LA SECTION', sectionNumber, '===');
+	
 	// Nettoyer les messages d'erreur précédents
 	document.querySelectorAll('.field-error-message').forEach(msg => msg.remove());
 	document.querySelectorAll('.form-group, .detresse-row').forEach(group => {
@@ -291,6 +297,7 @@ function validateSection(sectionNumber) {
 	});
 
 	const sections = document.querySelectorAll(`#questionnaireForm [data-section="${sectionNumber}"]`);
+	console.log('Nombre de sections trouvées:', sections.length);
 	if (sections.length === 0) {
 		console.log('Aucune section trouvée pour:', sectionNumber);
 		return true;
@@ -309,17 +316,28 @@ function validateSection(sectionNumber) {
 	sections.forEach(section => {
 		// ===== Vérifier les .form-group =====
 		const formGroups = section.querySelectorAll('.form-group:not(.composition-logement-group)');
+		console.log('Form groups dans cette section:', formGroups.length);
 		
-		formGroups.forEach(group => {
+		formGroups.forEach((group, idx) => {
 			// Les champs conditionnels (is-hidden-inline) NE SONT JAMAIS validés
 			if (group.classList.contains('is-hidden-inline')) {
+				console.log('  ❌ Groupe', idx, 'est is-hidden-inline (ignoré)');
+				return;
+			}
+
+			// Vérifier si UN PARENT a is-hidden-inline (group conditionnel caché)
+			if (group.closest('.is-hidden-inline')) {
+				console.log('  ❌ Groupe', idx, 'a un parent is-hidden-inline (ignoré)');
 				return;
 			}
 
 			// Sauter les groupes masqués (display: none)
 			if (group.style.display === 'none') {
+				console.log('  ❌ Groupe', idx, 'a display: none (ignoré)');
 				return;
 			}
+
+			console.log('  ✓ Vérification du groupe', idx);
 
 			// Chercher les inputs
 			const radios = group.querySelectorAll('input[type="radio"]');
@@ -331,6 +349,7 @@ function validateSection(sectionNumber) {
 			// Vérifier les radios - OBLIGATOIRE
 			if (radios.length > 0) {
 				const isChecked = Array.from(radios).some(r => r.checked);
+				console.log('    Radios:', radios.length, '| Coché:', isChecked ? 'OUI' : 'NON ❌');
 				if (!isChecked) {
 					addError(group);
 				}
@@ -340,6 +359,7 @@ function validateSection(sectionNumber) {
 			// Vérifier les checkboxes - OBLIGATOIRE
 			if (checkboxes.length > 0) {
 				const isChecked = Array.from(checkboxes).some(cb => cb.checked);
+				console.log('    Checkboxes:', checkboxes.length, '| Coché:', isChecked ? 'OUI' : 'NON ❌');
 				if (!isChecked) {
 					addError(group);
 				}
@@ -349,7 +369,9 @@ function validateSection(sectionNumber) {
 			// Vérifier les selects - OBLIGATOIRE
 			if (selects.length > 0) {
 				const select = selects[0];
-				if (!select.value || select.value === '') {
+				const hasValue = select.value && select.value !== '';
+				console.log('    Select:', select.name, '| Valeur:', select.value, '| Rempli:', hasValue ? 'OUI' : 'NON ❌');
+				if (!hasValue) {
 					addError(group);
 				}
 				return;
@@ -358,7 +380,9 @@ function validateSection(sectionNumber) {
 			// Vérifier les inputs texte/time/number - OBLIGATOIRE
 			if (textInputs.length > 0) {
 				const input = textInputs[0];
-				if (!input.value || input.value.trim() === '') {
+				const hasValue = input.value && input.value.trim() !== '';
+				console.log('    Input text:', input.name, input.type, '| Valeur:', input.value, '| Rempli:', hasValue ? 'OUI' : 'NON ❌');
+				if (!hasValue) {
 					addError(group);
 				}
 				return;
@@ -367,7 +391,9 @@ function validateSection(sectionNumber) {
 			// Vérifier les textareas - OBLIGATOIRE
 			if (textareas.length > 0) {
 				const textarea = textareas[0];
-				if (!textarea.value || textarea.value.trim() === '') {
+				const hasValue = textarea.value && textarea.value.trim() !== '';
+				console.log('    Textarea:', textarea.name, '| Rempli:', hasValue ? 'OUI' : 'NON ❌');
+				if (!hasValue) {
 					addError(group);
 				}
 			}
@@ -378,6 +404,7 @@ function validateSection(sectionNumber) {
 		if (compositionGroup && compositionGroup.style.display !== 'none') {
 			const checkboxes = compositionGroup.querySelectorAll('input[type="checkbox"]');
 			const isChecked = Array.from(checkboxes).some(cb => cb.checked);
+			console.log('  ✓ Composition logement:', checkboxes.length, 'checkboxes | Coché:', isChecked ? 'OUI' : 'NON ❌');
 			if (!isChecked) {
 				addError(compositionGroup);
 			}
@@ -385,7 +412,8 @@ function validateSection(sectionNumber) {
 
 		// ===== Vérifier les .detresse-row (pour les questions de détresse) =====
 		const detresseRows = section.querySelectorAll('.detresse-row');
-		detresseRows.forEach(row => {
+		console.log('  ✓ Detresse rows:', detresseRows.length);
+		detresseRows.forEach((row, idx) => {
 			// Vérifier si la row est visible (parent detresse-card visible)
 			const detresseCard = row.closest('.detresse-card');
 			if (detresseCard && (detresseCard.style.display === 'none')) {
@@ -393,8 +421,9 @@ function validateSection(sectionNumber) {
 			}
 
 			const radios = row.querySelectorAll('input[type="radio"]');
+			const isChecked = Array.from(radios).some(r => r.checked);
+			console.log('    Detresse row', idx, '| Radios:', radios.length, '| Coché:', isChecked ? 'OUI' : 'NON ❌');
 			if (radios.length > 0) {
-				const isChecked = Array.from(radios).some(r => r.checked);
 				if (!isChecked) {
 					addError(row);
 				}
@@ -404,6 +433,7 @@ function validateSection(sectionNumber) {
 
 	// Afficher les messages d'erreur
 	if (errors.size > 0) {
+		console.log('❌ ERREURS DE VALIDATION:', errors.size, 'champ(s) vide(s)');
 		errors.forEach(element => {
 			element.classList.add('has-error');
 			const errorMsg = document.createElement('div');
@@ -453,6 +483,16 @@ function submitQuestionnaire(_e) {
 
 	console.log('Questionnaire completed in', totalDuration, 'seconds');
 	console.log('Section timings:', sectionTimings);
+}
+
+function submitAfterValidation() {
+	console.log('Validation et soumission de la section:', currentSection);
+	if (!validateSection(currentSection)) {
+		console.warn('Validation échouée pour la section:', currentSection);
+		return;
+	}
+	console.log('Validation réussie, soumission du formulaire...');
+	document.getElementById('questionnaireForm').submit();
 }
 
 function updateConditionalFields() {

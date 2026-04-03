@@ -278,10 +278,10 @@ class Reve(models.Model):
 
     # Étendue du rêve (une seule réponse)
     class EtenduReve(models.IntegerChoices):
-        INSTANT = 1, 'D\'un instant précis'
-        MOINS_MOITIE = 2, 'De moins de la moitié du rêve'
-        PLUS_MOITIE = 3, 'De plus de la moitié du rêve'
-        INTEGRALITE = 4, 'De l\'intégralité ou quasi-totalité du rêve'
+        INSTANT = 1, "D'un instant précis"
+        MOINS_MOITIE = 2, "De moins de la moitié du rêve"
+        PLUS_MOITIE = 3, "De plus de la moitié du rêve"
+        INTEGRALITE = 4, "De l'intégralité ou quasi-totalité du rêve"
 
     etendue_reve = models.IntegerField(
         choices=EtenduReve.choices,
@@ -292,11 +292,11 @@ class Reve(models.Model):
 
     # Sens présents dans le rêve (peut avoir plusieurs)
     class SensChoices(models.IntegerChoices):
-        IMAGES = 1, 'Images'
-        SONS = 2, 'Des sons, des voix'
-        SENSATIONS = 3, 'Des sensations de mon corps'
-        EMOTIONS = 4, 'Des émotions ressenties'
-        PENSEES = 5, 'Des pensées ou idées'
+        IMAGES = 1, "Images"
+        SONS = 2, "Des sons, des voix"
+        SENSATIONS = 3, "Des sensations de mon corps"
+        EMOTIONS = 4, "Des émotions ressenties"
+        PENSEES = 5, "Des pensées ou idées"
 
     sens = models.IntegerField(
         choices=SensChoices.choices,
@@ -414,9 +414,9 @@ class Questionnaire(models.Model):
     
     # Genre
     class GenreChoices(models.IntegerChoices):
-        FEMME = 1, 'Femme'
-        HOMME = 2, 'Homme'
-        AUTRE = 3, 'Autre'
+        FEMME = 1, "Femme"
+        HOMME = 2, "Homme"
+        AUTRE = 3, "Autre"
     
     genre = models.IntegerField(
         choices=GenreChoices.choices,
@@ -427,8 +427,8 @@ class Questionnaire(models.Model):
     
     # Habitat
     class HabitatChoices(models.IntegerChoices):
-        RURAL = 1, 'Rural'
-        URBAIN = 2, 'Urbain'
+        RURAL = 1, "Rural"
+        URBAIN = 2, "Urbain"
     
     habitat = models.IntegerField(
         choices=HabitatChoices.choices,
@@ -439,18 +439,18 @@ class Questionnaire(models.Model):
     
     # Diplôme
     class DiplomeChoices(models.IntegerChoices):
-        AUCUN = 1, 'Aucun diplôme'
-        CEP = 2, 'Certificat d\'études primaires'
-        BEPC = 3, 'BEPC, brevet élémentaire, brevet des collèges, DNB'
-        CAP_BEP = 4, 'CAP, BEP ou diplôme de niveau équivalent'
-        BREVET_SUP = 5, 'Brevet supérieur, professionnel, de technicien ou d\'enseignement'
-        BAC_TECH_PRO = 6, 'Baccalauréat technologique ou professionnel'
-        BAC_GENERAL = 7, 'Baccalauréat d\'enseignement général'
-        CAPACITE_DROIT = 8, 'Capacité en droit, DAEU, ESEU'
-        BAC_2 = 9, 'Bac +2 (BTS, DUT, DEUG, DEUST, etc.)'
-        BAC_3_4 = 10, 'Bac +3 ou Bac +4 (Licence, Master, etc.)'
-        BAC_5 = 11, 'Bac +5 (Master, DESS, DEA, grande école, etc.)'
-        DOCTORAT = 12, 'Doctorat de recherche'
+        AUCUN = 1, "Aucun diplôme"
+        CEP = 2, "Certificat d'études primaires"
+        BEPC = 3, "BEPC, brevet élémentaire, brevet des collèges, DNB"
+        CAP_BEP = 4, "CAP, BEP ou diplôme de niveau équivalent"
+        BREVET_SUP = 5, "Brevet supérieur, professionnel, de technicien ou d'enseignement"
+        BAC_TECH_PRO = 6, "Baccalauréat technologique ou professionnel"
+        BAC_GENERAL = 7, "Baccalauréat d'enseignement général"
+        CAPACITE_DROIT = 8, "Capacité en droit, DAEU, ESEU"
+        BAC_2 = 9, "Bac +2 (BTS, DUT, DEUG, DEUST, etc.)"
+        BAC_3_4 = 10, "Bac +3 ou Bac +4 (Licence, Master, etc.)"
+        BAC_5 = 11, "Bac +5 (Master, DESS, DEA, grande école, etc.)"
+        DOCTORAT = 12, "Doctorat de recherche"
     
     niv_diplome = models.IntegerField(
         choices=DiplomeChoices.choices,
@@ -461,20 +461,20 @@ class Questionnaire(models.Model):
     
     # Revenus du ménage
     class RevenusChoices(models.IntegerChoices):
-        MOINS_400 = 1, 'Moins de 400 €'
-        MOINS_600 = 2, 'De 400 € à moins de 600 €'
-        MOINS_800 = 3, 'De 600 € à moins de 800 €'
-        MOINS_1000 = 4, 'De 800 € à moins de 1 000 €'
-        MOINS_1200 = 5, 'De 1 000 € à moins de 1 200 €'
-        MOINS_1500 = 6, 'De 1 200 € à moins de 1 500 €'
-        MOINS_1800 = 7, 'De 1 500 € à moins de 1 800 €'
-        MOINS_2000 = 8, 'De 1 800 € à moins de 2 000 €'
-        MOINS_2500 = 9, 'De 2 000 € à moins de 2 500 €'
-        MOINS_3000 = 10, 'De 2 500 € à moins de 3 000 €'
-        MOINS_4000 = 11, 'De 3 000 € à moins de 4 000 €'
-        MOINS_6000 = 12, 'De 4 000 € à moins de 6 000 €'
-        MOINS_10000 = 13, 'De 6 000 € à moins de 10 000 €'
-        PLUS_10000 = 14, '10 000 € ou plus'
+        MOINS_400 = 1, "Moins de 400 €"
+        MOINS_600 = 2, "De 400 € à moins de 600 €"
+        MOINS_800 = 3, "De 600 € à moins de 800 €"
+        MOINS_1000 = 4, "De 800 € à moins de 1 000 €"
+        MOINS_1200 = 5, "De 1 000 € à moins de 1 200 €"
+        MOINS_1500 = 6, "De 1 200 € à moins de 1 500 €"
+        MOINS_1800 = 7, "De 1 500 € à moins de 1 800 €"
+        MOINS_2000 = 8, "De 1 800 € à moins de 2 000 €"
+        MOINS_2500 = 9, "De 2 000 € à moins de 2 500 €"
+        MOINS_3000 = 10, "De 2 500 € à moins de 3 000 €"
+        MOINS_4000 = 11, "De 3 000 € à moins de 4 000 €"
+        MOINS_6000 = 12, "De 4 000 € à moins de 6 000 €"
+        MOINS_10000 = 13, "De 6 000 € à moins de 10 000 €"
+        PLUS_10000 = 14, "10 000 € ou plus"
     
     revenus_tranche = models.IntegerField(
         choices=RevenusChoices.choices,
@@ -485,13 +485,13 @@ class Questionnaire(models.Model):
     
     # Situation principale vis-à-vis du travail
     class TravailChoices(models.IntegerChoices):
-        EN_EMPLOI = 1, 'En emploi'
-        EN_ETUDES = 2, 'En études, formation ou stage'
-        AU_CHOMAGE = 3, 'Au chômage'
-        RETRAITE = 4, 'Retraité(e), préretraité(e)'
-        FOYER = 5, 'Homme ou femme au foyer'
-        INVALIDITE = 6, 'Inactif(ve) pour invalidité'
-        AUTRE_INACTIVITE = 7, 'Autre situation d\'inactivité'
+        EN_EMPLOI = 1, "En emploi"
+        EN_ETUDES = 2, "En études, formation ou stage"
+        AU_CHOMAGE = 3, "Au chômage"
+        RETRAITE = 4, "Retraité(e), préretraité(e)"
+        FOYER = 5, "Homme ou femme au foyer"
+        INVALIDITE = 6, "Inactif(ve) pour invalidité"
+        AUTRE_INACTIVITE = 7, "Autre situation d'inactivité"
     
     travail_statut = models.IntegerField(
         choices=TravailChoices.choices,
@@ -510,7 +510,7 @@ class Questionnaire(models.Model):
     
     # Profession (sous-catégorie uniquement)
     class ProfessionChoices(models.IntegerChoices):
-        CADRES_11 = 101, "1.1 | Chefs d'entreprises, hors hôtellerie, restauration, commerce"
+        CADRES_11 = 101, "1.1 | Chefs d\'entreprises, hors hôtellerie, restauration, commerce"
         CADRES_12 = 102, "1.2 | Chefs d'entreprises, hôtellerie, restauration, commerce"
         CADRES_13 = 103, "1.3 | Cadres dirigeants salariés, hors hôtellerie, restauration, commerce"
         CADRES_14 = 104, "1.4 | Cadres dirigeants et gérants, hôtellerie, restauration, commerce"
@@ -519,7 +519,7 @@ class Questionnaire(models.Model):
         INTEL_22 = 202, "2.2 | Médecins et professionnels de santé"
         INTEL_23 = 203, "2.3 | Cadres administratifs, financiers et commerciaux"
         INTEL_24 = 204, "2.4 | Professionnels de la justice, des sciences sociales et de la culture"
-        INTEL_25 = 205, "2.5 | Enseignants et professionnels de l'enseignement"
+        INTEL_25 = 205, "2.5 | Enseignants et professionnels de l\'enseignement"
 
         INTER_31 = 301, "3.1 | Professions intermédiaires des sciences, techniques et TIC"
         INTER_32 = 302, "3.2 | Professions intermédiaires salariées de la santé"
@@ -565,10 +565,10 @@ class Questionnaire(models.Model):
 
     # Statut de couple
     class StatutCoupleChoices(models.IntegerChoices):
-        OUI = 1, 'Oui'
-        NON = 2, 'Non'
-        INDETERMINE = 3, 'Indéterminé'
-        NSP = 4, 'Ne souhaite pas répondre'
+        OUI = 1, "Oui"
+        NON = 2, "Non"
+        INDETERMINE = 3, "Indéterminé"
+        NSP = 4, "Ne souhaite pas répondre"
 
     statut_couple = models.IntegerField(
         choices=StatutCoupleChoices.choices,
@@ -602,19 +602,19 @@ class Questionnaire(models.Model):
 
     # Mobilite sociale - diplome des parents / conjoint
     class DiplomeOrigineChoices(models.IntegerChoices):
-        AUCUN = 1, '1 | Aucun diplôme'
-        CEP = 2, '2 | Certificat d’études primaires'
-        BEPC = 3, '3 | BEPC, brevet élémentaire, brevet des collèges, DNB'
-        CAP_BEP = 4, '4 | CAP, BEP ou diplôme de niveau équivalent'
-        BREVET_SUP = 5, '5 | Brevet supérieur, professionnel, de technicien ou d’enseignement ou diplôme équivalent'
-        BAC_TECH_PRO = 6, '6 | Baccalauréat technologique ou professionnel ou diplôme équivalent'
-        BAC_GENERAL = 7, '7 | Baccalauréat d’enseignement général'
-        CAPACITE_DROIT = 8, '8 | Capacité en droit, DAEU, ESEU'
-        BAC_2 = 9, '9 | Bac +2 (BTS, DUT, DEUG, DEUST, diplôme santé/social niveau bac +2 ou équivalent)'
-        BAC_3_4 = 10, '10 | Bac +3 ou Bac +4 (Licence, Licence pro, BUT, Maîtrise, diplôme santé/social niveau bac +3/4 ou équivalent)'
-        BAC_5 = 11, '11 | Bac +5 (Master, DESS, DEA, diplôme de grande école ou doctorat de santé)'
-        DOCTORAT = 12, '12 | Doctorat de recherche hors santé'
-        NSP = 13, '13 | Je ne sais pas ou ne peux pas répondre'
+        AUCUN = 1, "1 | Aucun diplôme"
+        CEP = 2, "2 | Certificat d’études primaires"
+        BEPC = 3, "3 | BEPC, brevet élémentaire, brevet des collèges, DNB"
+        CAP_BEP = 4, "4 | CAP, BEP ou diplôme de niveau équivalent"
+        BREVET_SUP = 5, "5 | Brevet supérieur, professionnel, de technicien ou d’enseignement ou diplôme équivalent"
+        BAC_TECH_PRO = 6, "6 | Baccalauréat technologique ou professionnel ou diplôme équivalent"
+        BAC_GENERAL = 7, "7 | Baccalauréat d’enseignement général"
+        CAPACITE_DROIT = 8, "8 | Capacité en droit, DAEU, ESEU"
+        BAC_2 = 9, "9 | Bac +2 (BTS, DUT, DEUG, DEUST, diplôme santé/social niveau bac +2 ou équivalent)"
+        BAC_3_4 = 10, "10 | Bac +3 ou Bac +4 (Licence, Licence pro, BUT, Maîtrise, diplôme santé/social niveau bac +3/4 ou équivalent)"
+        BAC_5 = 11, "11 | Bac +5 (Master, DESS, DEA, diplôme de grande école ou doctorat de santé)"
+        DOCTORAT = 12, "12 | Doctorat de recherche hors santé"
+        NSP = 13, "13 | Je ne sais pas ou ne peux pas répondre"
 
     pere_niv_diplome = models.IntegerField(
         choices=DiplomeOrigineChoices.choices,
@@ -671,7 +671,7 @@ class Questionnaire(models.Model):
         HORS_MARCHE_HANDICAP = 902, "9.2 | Personnes handicapées inaptes de moins de 65 ans"
         HORS_MARCHE_CHOMAGE = 903, "9.3 | Chômeurs non classés dans une autre catégorie"
         HORS_MARCHE_AUTRE = 904, "9.4 | Autres personnes hors du marché du travail"
-        NSP = 1300, '13 | Je ne sais pas ou ne peux pas répondre'
+        NSP = 1300, "13 | Je ne sais pas ou ne peux pas répondre"
 
     pere_csp = models.IntegerField(
         choices=OrigineCSPChoices.choices,
@@ -696,10 +696,10 @@ class Questionnaire(models.Model):
 
     # Statut migratoire
     class LieuNaissanceChoices(models.IntegerChoices):
-        FRANCE_HEX = 1, '1. En France hexagonale'
-        DROM_COM = 2, '2. Dans un DROM ou une COM'
-        ETRANGER = 3, '3. A l’étranger'
-        NSP = 9, '9. Vous ne souhaitez pas répondre'
+        FRANCE_HEX = 1, "1. En France hexagonale"
+        DROM_COM = 2, "2. Dans un DROM ou une COM"
+        ETRANGER = 3, "3. A l’étranger"
+        NSP = 9, "9. Vous ne souhaitez pas répondre"
 
     lieu_naissance = models.IntegerField(
         choices=LieuNaissanceChoices.choices,
@@ -714,6 +714,8 @@ class Questionnaire(models.Model):
         blank=True,
         verbose_name='Où est né votre père ?'
     )
+
+    # PARTIE 2 - SENTIMENTS ET IMPRESSIONS -------------------
 
     # Position sociale subjective
     class PerceptionFinanciereChoices(models.IntegerChoices):
@@ -731,10 +733,10 @@ class Questionnaire(models.Model):
     )
 
     class PerceptionRisquePauvreteChoices(models.IntegerChoices):
-        OUI_PLUTOT = 1, 'Oui, plutôt'
-        NON_PLUTOT_PAS = 2, 'Non, plutôt pas'
-        DEJA_PAUVRE = 3, 'Je me considère déjà comme pauvre'
-        NSP = 4, 'Ne sait pas'
+        OUI_PLUTOT = 1, "Oui, plutôt"
+        NON_PLUTOT_PAS = 2, "Non, plutôt pas"
+        DEJA_PAUVRE = 3, "Je me considère déjà comme pauvre"
+        NSP = 4, "Ne sait pas"
 
     perception_risque_pauvrete = models.IntegerField(
         choices=PerceptionRisquePauvreteChoices.choices,
@@ -744,11 +746,11 @@ class Questionnaire(models.Model):
     )
 
     class PositionSubjectiveClasseChoices(models.IntegerChoices):
-        CLASSES_POPULAIRES = 1, 'Classes populaires'
-        CLASSES_MOYENNES_MODESTES = 2, 'Classes moyennes modestes'
-        CLASSES_MOYENNES = 3, 'Classes moyennes'
-        CLASSES_MOYENNES_SUP = 4, 'Classes moyennes supérieures'
-        CLASSES_SUPERIEURES = 5, 'Classes supérieures'
+        CLASSES_POPULAIRES = 1, "Classes populaires"
+        CLASSES_MOYENNES_MODESTES = 2, "Classes moyennes modestes"
+        CLASSES_MOYENNES = 3, "Classes moyennes"
+        CLASSES_MOYENNES_SUP = 4, "Classes moyennes supérieures"
+        CLASSES_SUPERIEURES = 5, "Classes supérieures"
 
     position_subjective_classe = models.IntegerField(
         choices=PositionSubjectiveClasseChoices.choices,
@@ -758,9 +760,9 @@ class Questionnaire(models.Model):
     )
 
     class PerceptionMobiliteChoices(models.IntegerChoices):
-        MOINS_BONNE = 1, 'Moins bonne'
-        COMPARABLE = 2, 'Comparable'
-        MEILLEURE = 3, 'Meilleure'
+        MOINS_BONNE = 1, "Moins bonne"
+        COMPARABLE = 2, "Comparable"
+        MEILLEURE = 3, "Meilleure"
 
     perception_mobilite = models.IntegerField(
         choices=PerceptionMobiliteChoices.choices,
@@ -771,9 +773,9 @@ class Questionnaire(models.Model):
 
     # Discriminations
     class DiscriPresenceChoices(models.IntegerChoices):
-        OUI_SOUVENT = 1, 'Oui, souvent'
-        OUI_PARFOIS = 2, 'Oui, parfois'
-        NON_JAMAIS = 3, 'Non, jamais'
+        OUI_SOUVENT = 1, "Oui, souvent"
+        OUI_PARFOIS = 2, "Oui, parfois"
+        NON_JAMAIS = 3, "Non, jamais"
 
     discri_presence = models.IntegerField(
         choices=DiscriPresenceChoices.choices,
@@ -792,7 +794,6 @@ class Questionnaire(models.Model):
     discri_orientation_sexuelle = models.BooleanField(default=False, verbose_name='Votre orientation sexuelle')
     discri_autre = models.BooleanField(default=False, verbose_name='Pour une autre raison')
     discri_autre_precision = models.TextField(blank=True, null=True, verbose_name='Précisez autre raison de discrimination')
-
     discri_contexte_emploi = models.BooleanField(default=False, verbose_name='Lors d’une recherche d’emploi')
     discri_contexte_logement = models.BooleanField(default=False, verbose_name='Lors de la recherche d’un logement')
     discri_contexte_travail = models.BooleanField(default=False, verbose_name='Sur votre lieu de travail')
@@ -803,11 +804,11 @@ class Questionnaire(models.Model):
 
     # Santé générale perçue
     class SanteGeneraleChoices(models.IntegerChoices):
-        TRES_BON = 1, 'Très bon'
-        BON = 2, 'Bon'
-        ASSEZ_BON = 3, 'Assez bon'
-        MAUVAIS = 4, 'Mauvais'
-        TRES_MAUVAIS = 5, 'Très mauvais'
+        TRES_BON = 1, "Très bon"
+        BON = 2, "Bon"
+        ASSEZ_BON = 3, "Assez bon"
+        MAUVAIS = 4, "Mauvais"
+        TRES_MAUVAIS = 5, "Très mauvais"
 
     sante_generale = models.IntegerField(
         choices=SanteGeneraleChoices.choices,
@@ -817,11 +818,11 @@ class Questionnaire(models.Model):
     )
 
     class DetresseFrequenceChoices(models.IntegerChoices):
-        EN_PERMANENCE = 1, 'En permanence'
-        SOUVENT = 2, 'Souvent'
-        QUELQUES_FOIS = 3, 'Quelques fois'
-        RAREMENT = 4, 'Rarement'
-        JAMAIS = 5, 'Jamais'
+        EN_PERMANENCE = 1, "En permanence"
+        SOUVENT = 2, "Souvent"
+        QUELQUES_FOIS = 3, "Quelques fois"
+        RAREMENT = 4, "Rarement"
+        JAMAIS = 5, "Jamais"
 
     det_1 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Nerveux/nerveuse')
     det_2 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Triste et abattu·e')
@@ -829,58 +830,70 @@ class Questionnaire(models.Model):
     det_4 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Si découragé·e que rien ne pouvait vous remonter le moral')
     det_5 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Heureux/heureuse')
     
-    # ===== PARTIE 2: QUESTIONS SUR LES RÊVES ET LE SOMMEIL =====
-    
-    # Fréquence de rappel des rêves
-    class FrequencyChoices(models.TextChoices):
-        DAILY = 'daily', 'Tous les jours'
-        OFTEN = 'often', 'Souvent'
-        SOMETIMES = 'sometimes', 'Parfois'
-        RARELY = 'rarely', 'Rarement'
-    
-    frequency = models.CharField(
-        max_length=20,
-        choices=FrequencyChoices.choices,
-        verbose_name="Fréquence de rappel des rêves",
+    # Score de détresse psychologique (calculé à la sauvegarde)
+    detresse_psychologique = models.IntegerField(
         null=True,
-        blank=True
-    )
-    
-    # Types de rêves
-    dream_lucide = models.BooleanField(default=False, verbose_name="Rêves lucides")
-    dream_recurrent = models.BooleanField(default=False, verbose_name="Rêves récurrents")
-    dream_nightmare = models.BooleanField(default=False, verbose_name="Cauchemars")
-    dream_pleasant = models.BooleanField(default=False, verbose_name="Rêves agréables")
-    
-    # Qualité du sommeil
-    class SleepQualityChoices(models.TextChoices):
-        EXCELLENT = 'excellent', 'Excellent'
-        GOOD = 'good', 'Bon'
-        AVERAGE = 'average', 'Moyen'
-        POOR = 'poor', 'Mauvais'
-    
-    sleep_quality = models.CharField(
-        max_length=20,
-        choices=SleepQualityChoices.choices,
-        verbose_name="Qualité du sommeil",
-        null=True,
-        blank=True
-    )
-    
-    # Heures de sommeil
-    sleep_hours = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(24)],
-        verbose_name="Heures de sommeil",
-        null=True,
-        blank=True
-    )
-    
-    # Commentaires
-    comments = models.TextField(
         blank=True,
-        null=True,
-        verbose_name="Commentaires"
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Score de détresse psychologique",
+        help_text="Calculé automatiquement à partir de det_1 à det_5. Score < 55 = détresse significative (Leplège et al., 1998)"
     )
+    
+    def _calculate_detresse_score(self):
+        """
+        Calcule un score de détresse psychologique basé sur les cinq dimensions (det_1 à det_5).
+        
+        Chaque réponse (1-5) est convertie en score (0-20) :
+        
+        Dimensions NÉGATIVES (plus de symptôme = pire) :
+        - EN_PERMANENCE (1) → 0
+        - SOUVENT (2) → 5
+        - QUELQUES_FOIS (3) → 10
+        - RAREMENT (4) → 15
+        - JAMAIS (5) → 20
+        Appliquées à : det_1, det_2, det_4
+        
+        Dimensions POSITIVES (absence = pire) :
+        - EN_PERMANENCE (1) → 20
+        - SOUVENT (2) → 15
+        - QUELQUES_FOIS (3) → 10
+        - RAREMENT (4) → 5
+        - JAMAIS (5) → 0
+        Appliquées à : det_3, det_5
+        
+        La somme des cinq scores donne un total de 0 à 100.
+        
+        Score < 55: Détresse psychologique significative (Leplège et al., 1998)
+        Score >= 55: Peu ou pas de détresse psychologique
+        
+        Retour: int (0-100) ou None si données incomplètes
+        """
+        # Mapping pour dimensions négatives (nerveux, triste, découragé)
+        negative_score_map = {1: 0, 2: 5, 3: 10, 4: 15, 5: 20}
+        # Mapping pour dimensions positives (calme, heureux)
+        positive_score_map = {1: 20, 2: 15, 3: 10, 4: 5, 5: 0}
+        
+        # Vérifier que toutes les réponses sont présentes
+        if not all([self.det_1, self.det_2, self.det_3, self.det_4, self.det_5]):
+            return None
+        
+        try:
+            # det_1 (Nerveux/nerveuse): dimension négative
+            score1 = negative_score_map[self.det_1]
+            # det_2 (Triste et abattu·e): dimension négative
+            score2 = negative_score_map[self.det_2]
+            # det_3 (Calme et détendu·e): dimension positive
+            score3 = positive_score_map[self.det_3]
+            # det_4 (Découragé·e): dimension négative
+            score4 = negative_score_map[self.det_4]
+            # det_5 (Heureux/heureuse): dimension positive
+            score5 = positive_score_map[self.det_5]
+            
+            # Somme des 5 scores (chacun 0-20) = total 0-100
+            total = score1 + score2 + score3 + score4 + score5
+            return total
+        except (TypeError, KeyError):
+            return None
 
     # ===== PARTIE 3: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL =====
     # Groupes logiques:
@@ -892,9 +905,9 @@ class Questionnaire(models.Model):
 
     # pratiques_reves
     class FreqRevesNotChoices(models.IntegerChoices):
-        OUI_SOUVENT = 1, 'Oui souvent'
-        QUELQUES_FOIS = 2, 'Quelques fois'
-        JAMAIS = 3, 'Jamais'
+        OUI_SOUVENT = 1, "Oui souvent"
+        QUELQUES_FOIS = 2, "Quelques fois"
+        JAMAIS = 3, "Jamais"
 
     freq_reves_not = models.IntegerField(
         choices=FreqRevesNotChoices.choices,
@@ -917,11 +930,11 @@ class Questionnaire(models.Model):
     img_ns = models.BooleanField(default=False, verbose_name='Ne sait pas')
 
     class EtendueSouvenirReveChoices(models.IntegerChoices):
-        SENSATION = 1, 'Une sensation'
-        INSTANT_PRECIS = 2, 'Un instant precis'
-        MOINS_MOITIE = 3, 'Moins de la moitie de mon reve'
-        PLUS_MOITIE = 4, 'Plus de la moitie de mon reve'
-        INTEGRALITE = 5, 'L\'integralite'
+        SENSATION = 1, "Une sensation"
+        INSTANT_PRECIS = 2, "Un instant precis"
+        MOINS_MOITIE = 3, "Moins de la moitie de mon reve"
+        PLUS_MOITIE = 4, "Plus de la moitie de mon reve"
+        INTEGRALITE = 5, "L'integralite"
 
     etendue_souvenir_reve = models.IntegerField(
         choices=EtendueSouvenirReveChoices.choices,
@@ -931,11 +944,11 @@ class Questionnaire(models.Model):
     )
 
     class TempsDuReveChoices(models.IntegerChoices):
-        PASSE_LOINTAIN = 1, 'Du passe lointain'
-        PASSE_PROCHE = 2, 'Du passe proche'
-        PRESENT_VEILLE = 3, 'Du present (de la veille)'
-        FUTUR = 4, 'Du futur (de ce qui pourrait arriver)'
-        AUCUN_LIEN = 5, 'Pas de lien avec votre vie'
+        PASSE_LOINTAIN = 1, "Du passe lointain"
+        PASSE_PROCHE = 2, "Du passe proche"
+        PRESENT_VEILLE = 3, "Du present (de la veille)"
+        FUTUR = 4, "Du futur (de ce qui pourrait arriver)"
+        AUCUN_LIEN = 5, "Pas de lien avec votre vie"
 
     temps_du_reve = models.IntegerField(
         choices=TempsDuReveChoices.choices,
@@ -1052,6 +1065,11 @@ class Questionnaire(models.Model):
     
     def __str__(self):
         return f"Questionnaire de {self.profil.user.username} - {self.created_at.strftime('%d/%m/%Y')}"
+
+    def save(self, *args, **kwargs):
+        """Calcule automatiquement le score de détresse psychologique avant la sauvegarde"""
+        self.detresse_psychologique = self._calculate_detresse_score()
+        super().save(*args, **kwargs)
 
     @property
     def duree_som(self):

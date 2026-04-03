@@ -153,15 +153,6 @@ class QuestionnaireForm(forms.ModelForm):
             'det_3',
             'det_4',
             'det_5',
-            # PARTIE 2: Questions sur les rêves
-            'frequency', 
-            'dream_lucide', 
-            'dream_recurrent', 
-            'dream_nightmare', 
-            'dream_pleasant',
-            'sleep_quality',
-            'sleep_hours',
-            'comments'
         ]
         
         widgets = {
@@ -282,28 +273,6 @@ class QuestionnaireForm(forms.ModelForm):
             'det_3': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_4': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_5': forms.RadioSelect(attrs={'class': 'radio-input'}),
-            'frequency': forms.RadioSelect(attrs={'class': 'radio-input'}),
-            'dream_lucide': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'dream_recurrent': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'dream_nightmare': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'dream_pleasant': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'sleep_quality': forms.Select(attrs={
-                'class': 'form-input',
-                'id': 'id_sleep_quality'
-            }),
-            'sleep_hours': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'id': 'sleep-hours',
-                'min': '1',
-                'max': '24',
-                'placeholder': 'Nombre d\'heures'
-            }),
-            'comments': forms.Textarea(attrs={
-                'class': 'form-textarea',
-                'id': 'comments',
-                'rows': '5',
-                'placeholder': 'Partagez vos observations sur vos rêves...'
-            }),
         }
         
         labels = {
@@ -399,14 +368,6 @@ class QuestionnaireForm(forms.ModelForm):
             'det_3': 'Calme et détendu·e',
             'det_4': 'Si découragé·e que rien ne pouvait vous remonter le moral',
             'det_5': 'Heureux·se',
-            'frequency': 'À quelle fréquence vous souvenez-vous de vos rêves ?',
-            'dream_lucide': 'Rêves lucides',
-            'dream_recurrent': 'Rêves récurrents',
-            'dream_nightmare': 'Cauchemars',
-            'dream_pleasant': 'Rêves agréables',
-            'sleep_quality': 'Qualité du sommeil',
-            'sleep_hours': 'Heures de sommeil',
-            'comments': 'Commentaires',
         }
 
     def __init__(self, *args, **kwargs):
