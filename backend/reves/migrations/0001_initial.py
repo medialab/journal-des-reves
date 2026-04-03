@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('choice_text', models.CharField(max_length=200)),
                 ('votes', models.IntegerField(default=0)),
-                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='polls.question')),
+                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reves.question')),
             ],
         ),
         migrations.CreateModel(
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('audio', models.FileField(upload_to='reves_audio/')),
                 ('intensite', models.IntegerField(default=1, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(10)])),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reves', to='polls.profil')),
+                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reves', to='reves.profil')),
             ],
         ),
     ]

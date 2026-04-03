@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0010_rename_emotion_reveemotion_and_more'),
+        ('reves', '0010_rename_emotion_reveemotion_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

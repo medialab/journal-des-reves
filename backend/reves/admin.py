@@ -27,7 +27,6 @@ from .models import (
     ReveEmotion,
     ReveEmotionCustom,
     ReveImageModalite,
-    ReveTag,
 )
 
 
@@ -242,7 +241,7 @@ class GroupAdmin(DjangoGroupAdmin):
 
 # Reve Admin
 class ReveAdmin(ModelAdmin):
-    change_list_template = 'admin/polls/reve/data_change_list.html'
+    change_list_template = 'admin/reves/reve/data_change_list.html'
     list_display = [
         'dreamer',
         'date',
@@ -251,11 +250,9 @@ class ReveAdmin(ModelAdmin):
         'etendue_reve',
         'sens',
         'images_modalites_display',
-        'emotions_display',
-        'emotions_custom_display',
+        'emotion_display',
         'elements_reve_display',
         'temporalite_display',
-        'tags_display',
         'transcription_ready',
         'audio_present',
         'transcription_excerpt',
@@ -286,8 +283,8 @@ class ReveAdmin(ModelAdmin):
         ("Rêve - Métadonnées", {
             "fields": ["type_reve", "etendue_reve", "sens", "images_modalites"],
         }),
-        ("Rêve - Émotions et Tags", {
-            "fields": ["emotions_reve", "emotions_custom", "tags"],
+        ("Rêve - Émotions", {
+            "fields": ["emotions_reve", "emotions_custom"],
         }),
         ("Rêve - Contexte et commentaire", {
             "fields": ["elements_reve", "temps_passe_lointain", "temps_passe_recent", "temps_veille", "temps_futur_proche", "temps_futur_lointain", "temps_difficile", "commentaire_libre"],
@@ -308,7 +305,6 @@ class ReveAdmin(ModelAdmin):
             'images_modalites',
             'emotions_reve',
             'emotions_custom',
-            'tags',
         )
 
     def get_urls(self):
@@ -317,12 +313,12 @@ class ReveAdmin(ModelAdmin):
             path(
                 'dashboard/',
                 self.admin_site.admin_view(self.dashboard_view),
-                name='polls_reve_dashboard',
+                name='reves_reve_dashboard',
             ),
             path(
                 'export-csv/',
                 self.admin_site.admin_view(self.export_all_as_csv_view),
-                name='polls_reve_export_csv',
+                name='reves_reve_export_csv',
             ),
         ]
         return custom_urls + urls
@@ -345,13 +341,8 @@ class ReveAdmin(ModelAdmin):
         return ', '.join(values) if values else '—'
 
     @admin.display(description='Émotions')
-    def emotions_display(self, obj):
-        values = [item.libelle for item in obj.emotions_reve.all()]
-        return ', '.join(values) if values else '—'
-
-    @admin.display(description='Émotions custom')
-    def emotions_custom_display(self, obj):
-        values = [item.libelle for item in obj.emotions_custom.all()]
+    def emotion_display(self, obj):
+        values = [item.libelle for item in obj.emotion]
         return ', '.join(values) if values else '—'
 
     @admin.display(description='Éléments')
@@ -361,11 +352,6 @@ class ReveAdmin(ModelAdmin):
     @admin.display(description='Temporalité')
     def temporalite_display(self, obj):
         values = [label for field_name, label in self.temps_field_specs if getattr(obj, field_name)]
-        return ', '.join(values) if values else '—'
-
-    @admin.display(description='Tags')
-    def tags_display(self, obj):
-        values = [item.libelle for item in obj.tags.all()]
         return ', '.join(values) if values else '—'
 
     @admin.display(description='Transcription')
@@ -381,8 +367,8 @@ class ReveAdmin(ModelAdmin):
         changelist = self.get_changelist_instance(request)
         queryset = changelist.queryset
         query_string = request.GET.urlencode()
-        data_url = reverse('admin:polls_reve_changelist')
-        csv_url = reverse('admin:polls_reve_export_csv')
+        data_url = reverse('admin:reves_reve_changelist')
+        csv_url = reverse('admin:reves_reve_export_csv')
         if query_string:
             data_url = f'{data_url}?{query_string}'
             csv_url = f'{csv_url}?{query_string}'
@@ -395,15 +381,15 @@ class ReveAdmin(ModelAdmin):
             'data_url': data_url,
             'csv_export_url': csv_url,
         }
-        return TemplateResponse(request, 'admin/polls/reve/dashboard.html', context)
+        return TemplateResponse(request, 'admin/reves/reve/dashboard.html', context)
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         response = super().changelist_view(request, extra_context=extra_context)
 
         if hasattr(response, 'context_data') and response.context_data.get('cl'):
-            response.context_data['csv_export_url'] = f"{reverse('admin:polls_reve_export_csv')}?{request.GET.urlencode()}"
-            response.context_data['dashboard_url'] = f"{reverse('admin:polls_reve_dashboard')}?{request.GET.urlencode()}"
+            response.context_data['csv_export_url'] = f"{reverse('admin:reves_reve_export_csv')}?{request.GET.urlencode()}"
+            response.context_data['dashboard_url'] = f"{reverse('admin:reves_reve_dashboard')}?{request.GET.urlencode()}"
 
         return response
 
@@ -430,7 +416,6 @@ class ReveAdmin(ModelAdmin):
             'temps_stats': self.build_temps_stats(queryset),
             'type_distribution': self.build_choice_distribution(queryset, 'type_reve', 'Tonalité déclarée'),
             'modality_distribution': self.build_modalities_distribution(queryset),
-            'top_tags': self.build_top_tags(queryset),
         }
 
     def build_recent_series(self, queryset):
@@ -496,8 +481,7 @@ class ReveAdmin(ModelAdmin):
     def build_top_emotions(self, queryset):
         counter = Counter()
         for reve in queryset:
-            counter.update([item.libelle for item in reve.emotions_reve.all()])
-            counter.update([item.libelle for item in reve.emotions_custom.all()])
+            counter.update([item.libelle for item in reve.emotion])
         return self.counter_to_distribution(counter, limit=8)
 
     def build_top_themes(self, queryset):
@@ -544,21 +528,13 @@ class ReveAdmin(ModelAdmin):
             counter.update([item.libelle for item in reve.images_modalites.all()])
         return {'label': 'Modalités visuelles', 'items': self.counter_to_distribution(counter, limit=8)}
 
-    def build_top_tags(self, queryset):
-        counter = Counter()
-        for reve in queryset:
-            counter.update([item.libelle for item in reve.tags.all()])
-        return self.counter_to_distribution(counter, limit=8)
-
-    def counter_to_distribution(self, counter, limit=8):
-        items = []
+    def counter_to_distribution(self, counter, limit=10):
+        """Convert a Counter to a list of distribution items"""
         total = sum(counter.values())
+        items = []
         for label, count in counter.most_common(limit):
-            items.append({
-                'label': label,
-                'count': count,
-                'percentage': round((count / total) * 100, 1) if total else 0,
-            })
+            percentage = round((count / total) * 100, 1) if total else 0
+            items.append({'label': label, 'count': count, 'percentage': percentage})
         return items
 
     def export_queryset_as_csv(self, queryset):
@@ -574,9 +550,7 @@ class ReveAdmin(ModelAdmin):
                 header.append(f'{field.name}_label')
         header.extend([
             'images_modalites_labels',
-            'emotions_reve_labels',
-            'emotions_custom_labels',
-            'tags_labels',
+            'emotion_labels',
             'elements_reve_labels',
             'temporalite_labels',
         ])
@@ -602,9 +576,7 @@ class ReveAdmin(ModelAdmin):
                     row.append(getattr(reve, f'get_{field.name}_display')() if value not in [None, ''] else '')
             row.extend([
                 ' | '.join(item.libelle for item in reve.images_modalites.all()),
-                ' | '.join(item.libelle for item in reve.emotions_reve.all()),
-                ' | '.join(item.libelle for item in reve.emotions_custom.all()),
-                ' | '.join(item.libelle for item in reve.tags.all()),
+                ' | '.join(item.libelle for item in reve.emotion),
                 ' | '.join(reve.elements_reve or []),
                 ' | '.join(label for field_name, label in self.temps_field_specs if getattr(reve, field_name)),
             ])
@@ -623,7 +595,7 @@ class ReveAdmin(ModelAdmin):
 
 # Questionnaire Admin
 class QuestionnaireAdmin(ModelAdmin):
-    change_list_template = 'admin/polls/questionnaire/data_change_list.html'
+    change_list_template = 'admin/reves/questionnaire/data_change_list.html'
     list_display = [
         'user',
         'profil',
@@ -665,12 +637,12 @@ class QuestionnaireAdmin(ModelAdmin):
             path(
                 'dashboard/',
                 self.admin_site.admin_view(self.dashboard_view),
-                name='polls_questionnaire_dashboard',
+                name='reves_questionnaire_dashboard',
             ),
             path(
                 'export-csv/',
                 self.admin_site.admin_view(self.export_all_as_csv_view),
-                name='polls_questionnaire_export_csv',
+                name='reves_questionnaire_export_csv',
             ),
         ]
         return custom_urls + urls
@@ -708,8 +680,8 @@ class QuestionnaireAdmin(ModelAdmin):
         changelist = self.get_changelist_instance(request)
         queryset = changelist.queryset
         query_string = request.GET.urlencode()
-        data_url = reverse('admin:polls_questionnaire_changelist')
-        csv_url = reverse('admin:polls_questionnaire_export_csv')
+        data_url = reverse('admin:reves_questionnaire_changelist')
+        csv_url = reverse('admin:reves_questionnaire_export_csv')
         if query_string:
             data_url = f'{data_url}?{query_string}'
             csv_url = f'{csv_url}?{query_string}'
@@ -722,15 +694,15 @@ class QuestionnaireAdmin(ModelAdmin):
             'data_url': data_url,
             'csv_export_url': csv_url,
         }
-        return TemplateResponse(request, 'admin/polls/questionnaire/dashboard.html', context)
+        return TemplateResponse(request, 'admin/reves/questionnaire/dashboard.html', context)
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         response = super().changelist_view(request, extra_context=extra_context)
 
         if hasattr(response, 'context_data') and response.context_data.get('cl'):
-            response.context_data['csv_export_url'] = f"{reverse('admin:polls_questionnaire_export_csv')}?{request.GET.urlencode()}"
-            response.context_data['dashboard_url'] = f"{reverse('admin:polls_questionnaire_dashboard')}?{request.GET.urlencode()}"
+            response.context_data['csv_export_url'] = f"{reverse('admin:reves_questionnaire_export_csv')}?{request.GET.urlencode()}"
+            response.context_data['dashboard_url'] = f"{reverse('admin:reves_questionnaire_dashboard')}?{request.GET.urlencode()}"
 
         return response
 
@@ -917,13 +889,6 @@ class ReveImageModaliteAdmin(ModelAdmin):
     ordering = ['ordre', 'libelle']
 
 
-class ReveTagAdmin(ModelAdmin):
-    list_display = ['libelle', 'profil', 'couleur', 'created_at']
-    search_fields = ['libelle', 'profil__user__username', 'profil__email']
-    list_filter = ['created_at']
-    autocomplete_fields = ['profil']
-
-
 class ReveElementCustomAdmin(ModelAdmin):
     list_display = ['libelle', 'profil', 'created_at']
     search_fields = ['libelle', 'profil__user__username', 'profil__email']
@@ -943,5 +908,4 @@ admin.site.register(Notification, NotificationAdmin)
 admin.site.register(ReveEmotion, ReveEmotionAdmin)
 admin.site.register(ReveEmotionCustom, ReveEmotionCustomAdmin)
 admin.site.register(ReveImageModalite, ReveImageModaliteAdmin)
-admin.site.register(ReveTag, ReveTagAdmin)
 admin.site.register(ReveElementCustom, ReveElementCustomAdmin)

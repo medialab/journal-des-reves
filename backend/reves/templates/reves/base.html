@@ -1,7 +1,7 @@
 {% load static %}
 {% load pwa %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" {% if user.is_authenticated %}class="is-authenticated"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -37,10 +37,10 @@
         })();
     </script>
     <title>{% block title %}Journal des Rêves{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'polls/style.css' %}?v=33">
-    <link rel="stylesheet" href="{% static 'polls/forms.css' %}?v=32">
-    <link rel="stylesheet" href="{% static 'polls/pages.css' %}?v=27">
-    <link rel="stylesheet" href="{% static 'polls/notifications.css' %}?v=20260316-notifs">
+    <link rel="stylesheet" href="{% static 'reves/style.css' %}?v=33">
+    <link rel="stylesheet" href="{% static 'reves/forms.css' %}?v=32">
+    <link rel="stylesheet" href="{% static 'reves/pages.css' %}?v=27">
+    <link rel="stylesheet" href="{% static 'reves/notifications.css' %}?v=20260316-notifs">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 
@@ -50,7 +50,7 @@
     <div class="navbar-container">
 
         <!-- LOGO -->
-        <a href="{% url 'polls:index' %}" class="navbar-logo">
+        <a href="{% url 'reves:index' %}" class="navbar-logo">
             <span class="logo-icon">🌙</span>
             Journal des Rêves
         </a>
@@ -65,7 +65,7 @@
         <!-- MENU -->
         <ul class="nav-menu" id="navMenu">
             <li>
-                <a href="{% url 'polls:enregistrer' %}" class="nav-link">
+                <a href="{% url 'reves:enregistrer' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 19v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -77,7 +77,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'polls:journal' %}" class="nav-link">
+                <a href="{% url 'reves:journal' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 7v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -88,7 +88,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'polls:profil' %}" class="nav-link">
+                <a href="{% url 'reves:profil' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -101,7 +101,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'polls:questionnaire' %}" class="nav-link">
+                <a href="{% url 'reves:questionnaire' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect width="8" height="4" x="8" y="2" rx="1" ry="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
@@ -116,7 +116,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'polls:description' %}" class="nav-link">
+                <a href="{% url 'reves:description' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -225,13 +225,13 @@
                 <button type="submit" class="btn btn-primary:hover btn-full">Se connecter</button>
             </form>
             <div class="login-modal-footer">
-                <a href="{% url 'polls:signup' %}" class="btn btn-secondary btn-full">S'inscrire</a>
+                <a href="{% url 'reves:signup' %}" class="btn btn-secondary btn-full">S'inscrire</a>
             </div>
         </div>
     </div>
 </div>
 
-<script src="{% static 'polls/notifications.js' %}?v=20260316-notifs"></script>
+<script src="{% static 'reves/notifications.js' %}?v=20260316-notifs"></script>
 
 <script>
     // Gestion du modal de connexion
@@ -349,7 +349,7 @@
             window.notificationManager.isAdmin = {{ user.is_staff|lower }};
             
             // Ne pas afficher la modal si on est déjà sur la page questionnaire
-            if (window.location.pathname === '/polls/questionnaire/') {
+            if (window.location.pathname === '/questionnaire/') {
                 return;
             }
             

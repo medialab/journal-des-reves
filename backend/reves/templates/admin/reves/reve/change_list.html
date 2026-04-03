@@ -1,0 +1,482 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+  .dream-dashboard {
+    margin: 1.25rem 0 1.5rem;
+  }
+
+  .dream-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .dream-card,
+  .dream-panel {
+    background: #ffffff;
+    border: 1px solid #d5dbe3;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .dream-card {
+    padding: 1rem 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dream-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -22px -22px auto;
+    width: 88px;
+    height: 88px;
+    border-radius: 999px;
+    opacity: 0.14;
+  }
+
+  .dream-dashboard-grid .dream-card:nth-child(1)::after { background: #334155; }
+  .dream-dashboard-grid .dream-card:nth-child(2)::after { background: #475569; }
+  .dream-dashboard-grid .dream-card:nth-child(3)::after { background: #64748b; }
+  .dream-dashboard-grid .dream-card:nth-child(4)::after { background: #334155; }
+  .dream-dashboard-grid .dream-card:nth-child(5)::after { background: #475569; }
+
+  .dream-dashboard-grid .dream-card:nth-child(1),
+  .dream-dashboard-grid .dream-card:nth-child(2),
+  .dream-dashboard-grid .dream-card:nth-child(3),
+  .dream-dashboard-grid .dream-card:nth-child(4),
+  .dream-dashboard-grid .dream-card:nth-child(5) {
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  }
+
+  .dream-panel.activity-panel,
+  .dream-panel.valence-panel,
+  .dream-panel.emotions-panel,
+  .dream-panel.themes-panel,
+  .dream-panel.temporality-panel,
+  .dream-panel.modality-panel,
+  .dream-panel.tags-panel,
+  .dream-panel.type-panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+
+  .dream-card-label {
+    color: #475569;
+    font-size: 0.86rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .dream-card-value {
+    color: #0f172a;
+    font-size: 1.85rem;
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 0.35rem;
+  }
+
+  .dream-card-help {
+    color: #64748b;
+    font-size: 0.84rem;
+  }
+
+  .dream-panels {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .dream-panel {
+    padding: 1rem 1.1rem;
+  }
+
+  .dream-panel h2 {
+    margin: 0 0 0.85rem;
+    font-size: 1rem;
+  }
+
+  .dream-panel p {
+    margin: 0 0 0.85rem;
+    color: #64748b;
+    font-size: 0.87rem;
+  }
+
+  .recent-series {
+    display: grid;
+    grid-template-columns: repeat(14, minmax(0, 1fr));
+    gap: 0.55rem;
+    align-items: end;
+    min-height: 190px;
+  }
+
+  .recent-series-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .recent-series-bar-wrap {
+    width: 100%;
+    min-height: 140px;
+    display: flex;
+    align-items: end;
+  }
+
+  .recent-series-bar {
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(180deg, #64748b 0%, #334155 100%);
+  }
+
+  .recent-series-count {
+    font-size: 0.82rem;
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  .recent-series-label {
+    font-size: 0.74rem;
+    color: #94a3b8;
+  }
+
+  .tone-spectrum-track-wrapper {
+    position: relative;
+    padding-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tone-spectrum-track {
+    height: 18px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #334155 0%, #64748b 50%, #94a3b8 100%);
+    position: relative;
+  }
+
+  .tone-spectrum-cursor {
+    position: absolute;
+    top: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #fff;
+    border: 3px solid #334155;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+  }
+
+  .tone-legend {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+  }
+
+  .distribution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .emotion-cloud,
+  .tag-cloud,
+  .modality-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .emotion-pill,
+  .tag-pill,
+  .modality-pill {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 110px;
+    padding: 0.9rem 1rem;
+    border-radius: 20px;
+    border: 1px solid rgba(100, 116, 139, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  }
+
+  .emotion-pill,
+  .tag-pill,
+  .modality-pill {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  }
+
+  .pill-label {
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .pill-meta {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .theme-list,
+  .type-list,
+  .temporality-list {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .theme-row,
+  .type-row,
+  .temporality-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 0.8rem 0.9rem;
+    border-radius: 16px;
+    border: 1px solid rgba(100, 116, 139, 0.18);
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .theme-rank,
+  .type-rank,
+  .temporality-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.84rem;
+    color: #fff;
+  }
+
+  .theme-rank,
+  .type-rank,
+  .temporality-badge { background: linear-gradient(135deg, #334155, #64748b); }
+
+  .theme-name,
+  .type-name,
+  .temporality-name {
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .theme-meta,
+  .type-meta,
+  .temporality-meta {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .theme-value,
+  .type-value,
+  .temporality-value {
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .dream-empty {
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  .activity-note {
+    margin-top: 0.9rem;
+    color: #64748b;
+    font-size: 0.82rem;
+  }
+
+  .tone-chip {
+    padding: 0.7rem 0.9rem;
+    border-radius: 16px;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+    background: rgba(255, 255, 255, 0.75);
+    min-width: 120px;
+  }
+
+  .tone-chip strong {
+    display: block;
+    color: #0f172a;
+    margin-bottom: 0.15rem;
+  }
+
+  .tone-chip span {
+    color: #64748b;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 1100px) {
+    .dream-panels {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .recent-series {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+  }
+</style>
+{% endblock %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{{ csv_export_url }}" class="historylink">Exporter tous les rêves (CSV)</a>
+  </li>
+  {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  {% if dashboard %}
+    <div class="dream-dashboard">
+      <div class="dream-dashboard-grid">
+        {% for card in dashboard.cards %}
+          <section class="dream-card">
+            <div class="dream-card-label">{{ card.label }}</div>
+            <div class="dream-card-value">{{ card.value }}</div>
+            <div class="dream-card-help">{{ card.help_text }}</div>
+          </section>
+        {% endfor %}
+      </div>
+
+      <div class="dream-panels">
+        <section class="dream-panel activity-panel">
+          <h2>Activité des rêves sur 14 jours</h2>
+          <p>Volume quotidien des enregistrements visibles avec les filtres actuels.</p>
+          <div class="recent-series">
+            {% for item in dashboard.recent_series %}
+              <div class="recent-series-item">
+                <div class="recent-series-count">{{ item.count }}</div>
+                <div class="recent-series-bar-wrap">
+                  <div class="recent-series-bar"{% if item.height %} style="height: {{ item.height }}%;"{% endif %}></div>
+                </div>
+                <div class="recent-series-label">{{ item.label }}</div>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="activity-note">Chaque colonne correspond à un jour, sans code couleur réutilisé ailleurs dans le dashboard.</div>
+        </section>
+
+        <section class="dream-panel valence-panel">
+          <h2>Tonalité agrégée</h2>
+          <p>Lecture macro de la valence déclarée par l’ensemble des participants.</p>
+          {% if dashboard.valence.total and dashboard.valence.cursor_pct is not None %}
+            <div class="tone-spectrum-track-wrapper">
+              <div class="tone-spectrum-track"></div>
+              <div class="tone-spectrum-cursor" style="left: {{ dashboard.valence.cursor_pct }}%;"></div>
+            </div>
+            <div class="tone-legend">
+              {% for item in dashboard.valence.segments %}
+                <div class="tone-chip">
+                  <strong>{{ item.label }}</strong>
+                  <span>{{ item.count }} rêves · {{ item.percentage }}%</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="dream-empty">Aucune tonalité renseignée sur la sélection.</div>
+          {% endif %}
+        </section>
+      </div>
+
+      <div class="distribution-grid">
+        <section class="dream-panel emotions-panel">
+          <h2>Émotions dominantes</h2>
+          <div class="emotion-cloud">
+          {% for item in dashboard.top_emotions %}
+            <div class="emotion-pill">
+              <span class="pill-label">{{ item.label }}</span>
+              <span class="pill-meta">{{ item.count }} rêves · {{ item.percentage }}%</span>
+            </div>
+          {% empty %}
+            <div class="dream-empty">Aucune émotion renseignée.</div>
+          {% endfor %}
+          </div>
+        </section>
+
+        <section class="dream-panel themes-panel">
+          <h2>Thématiques récurrentes</h2>
+          <div class="theme-list">
+          {% for item in dashboard.top_themes %}
+            <div class="theme-row">
+              <span class="theme-rank">{{ forloop.counter }}</span>
+              <div>
+                <div class="theme-name">{{ item.label }}</div>
+                <div class="theme-meta">Élément contextuel récurrent</div>
+              </div>
+              <div class="theme-value">{{ item.count }} · {{ item.percentage }}%</div>
+            </div>
+          {% empty %}
+            <div class="dream-empty">Aucun élément contextuel renseigné.</div>
+          {% endfor %}
+          </div>
+        </section>
+
+        <section class="dream-panel temporality-panel">
+          <h2>Temporalité des rêves</h2>
+          <div class="temporality-list">
+          {% for item in dashboard.temps_stats %}
+            <div class="temporality-row">
+              <span class="temporality-badge">{{ forloop.counter }}</span>
+              <div>
+                <div class="temporality-name">{{ item.label }}</div>
+                <div class="temporality-meta">Occurrences sur la sélection courante</div>
+              </div>
+              <div class="temporality-value">{{ item.count }} · {{ item.percentage }}%</div>
+            </div>
+          {% endfor %}
+          </div>
+        </section>
+
+        <section class="dream-panel type-panel">
+          <h2>{{ dashboard.type_distribution.label }}</h2>
+          <div class="type-list">
+          {% for item in dashboard.type_distribution.items %}
+            <div class="type-row">
+              <span class="type-rank">{{ forloop.counter }}</span>
+              <div>
+                <div class="type-name">{{ item.label }}</div>
+                <div class="type-meta">Catégorie de rêve la plus souvent déclarée</div>
+              </div>
+              <div class="type-value">{{ item.count }} · {{ item.percentage }}%</div>
+            </div>
+          {% empty %}
+            <div class="dream-empty">Aucune tonalité renseignée.</div>
+          {% endfor %}
+          </div>
+        </section>
+
+        <section class="dream-panel modality-panel">
+          <h2>{{ dashboard.modality_distribution.label }}</h2>
+          <div class="modality-cloud">
+          {% for item in dashboard.modality_distribution.items %}
+            <div class="modality-pill">
+              <span class="pill-label">{{ item.label }}</span>
+              <span class="pill-meta">{{ item.count }} rêves · {{ item.percentage }}%</span>
+            </div>
+          {% empty %}
+            <div class="dream-empty">Aucune modalité visuelle renseignée.</div>
+          {% endfor %}
+          </div>
+        </section>
+
+        <section class="dream-panel tags-panel">
+          <h2>Tags créés par les utilisateurs</h2>
+          <div class="tag-cloud">
+          {% for item in dashboard.top_tags %}
+            <div class="tag-pill">
+              <span class="pill-label">{{ item.label }}</span>
+              <span class="pill-meta">{{ item.count }} usages · {{ item.percentage }}%</span>
+            </div>
+          {% empty %}
+            <div class="dream-empty">Aucun tag personnalisé utilisé.</div>
+          {% endfor %}
+          </div>
+        </section>
+      </div>
+    </div>
+  {% endif %}
+
+  {{ block.super }}
+{% endblock %}

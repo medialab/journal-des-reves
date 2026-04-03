@@ -146,7 +146,7 @@ class NotificationManager {
         panelHTML += `
             </div>
             <div class="notifications-panel-footer">
-                ${this.isAdmin ? '<a href="/admin/polls/notification/" class="notifications-panel-footer-link">Gérer les notifications</a>' : ''}
+                ${this.isAdmin ? '<a href="/admin/reves/notification/" class="notifications-panel-footer-link">Gérer les notifications</a>' : ''}
             </div>
         `;
         
@@ -215,7 +215,7 @@ class NotificationManager {
     
     async deleteNotification(notificationId) {
         try {
-            const response = await fetch(`/polls/api/notifications/${notificationId}/delete/`, {
+            const response = await fetch(`/api/notifications/${notificationId}/delete/`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: { 'X-CSRFToken': this.getCsrfToken() }
@@ -238,7 +238,7 @@ class NotificationManager {
         if (!document.querySelector('link[href*="notifications.css"]')) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = '/static/polls/notifications.css?v=20260316-notifs';
+            link.href = '/static/reves/notifications.css?v=20260316-notifs';
             document.head.appendChild(link);
         }
     }
@@ -361,7 +361,7 @@ class NotificationManager {
      */
     async loadNotifications() {
         try {
-            const response = await fetch('/polls/api/notifications/', {
+            const response = await fetch('/api/notifications/', {
                 credentials: 'include'
             });
             
@@ -400,7 +400,7 @@ class NotificationManager {
      */
     async markAsRead(notificationId) {
         try {
-            const response = await fetch(`/polls/api/notifications/${notificationId}/read/`, {
+            const response = await fetch(`/api/notifications/${notificationId}/read/`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'X-CSRFToken': this.getCsrfToken() }
@@ -428,7 +428,7 @@ class NotificationManager {
      */
     async updateUnreadCount() {
         try {
-            const response = await fetch('/polls/api/notifications/unread-count/', {
+            const response = await fetch('/api/notifications/unread-count/', {
                 credentials: 'include'
             });
             
@@ -538,7 +538,7 @@ class NotificationManager {
                 subtitle: 'Vous êtes inscrit depuis une semaine maintenant.',
                 progressInfo: `Profil ${daysEllapsed === 7 ? 'complet' : 'en cours'} - Remplissage ${Math.min(100, Math.round((daysEllapsed / 7) * 100))}%`,
                 primaryLabel: 'Remplir le questionnaire',
-                primaryAction: `window.location.href = '/polls/questionnaire/'; document.getElementById('modal-overlay').classList.remove('active');`,
+                primaryAction: `window.location.href = '/questionnaire/'; document.getElementById('modal-overlay').classList.remove('active');`,
                 buttons: [
                     {
                         label: 'Plus tard',
@@ -548,7 +548,7 @@ class NotificationManager {
                     {
                         label: 'Remplir maintenant',
                         type: 'primary',
-                        onclick: "window.location.href = '/polls/questionnaire/';"
+                        onclick: "window.location.href = '/questionnaire/';"
                     }
                 ]
             }
@@ -560,14 +560,19 @@ class NotificationManager {
 // Initialiser le gestionnaire de notifications
 const notificationManager = new NotificationManager();
 
-// Charger les notifications au chargement de la page
+// Charger les notifications au chargement de la page SEULEMENT si authentifié
 document.addEventListener('DOMContentLoaded', () => {
-    notificationManager.loadNotifications();
+    // Vérifier si l'utilisateur est authentifié
+    const isAuthenticated = document.documentElement.classList.contains('is-authenticated');
     
-    // Recharger les notifications toutes les 30 secondes
-    setInterval(() => {
+    if (isAuthenticated) {
         notificationManager.loadNotifications();
-    }, 30000);
+        
+        // Recharger les notifications toutes les 30 secondes SEULEMENT si authentifié
+        setInterval(() => {
+            notificationManager.loadNotifications();
+        }, 30000);
+    }
 });
 
 // Export pour utilisation globale

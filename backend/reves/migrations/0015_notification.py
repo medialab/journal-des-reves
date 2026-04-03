@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0014_alter_profil_email'),
+        ('reves', '0014_alter_profil_email'),
     ]
 
     operations = [
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('is_read', models.BooleanField(default=False, verbose_name='Notification lue')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Date de création')),
                 ('read_at', models.DateTimeField(blank=True, null=True, verbose_name='Date de lecture')),
-                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to='polls.profil')),
+                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to='reves.profil')),
             ],
             options={
                 'verbose_name': 'Notification',

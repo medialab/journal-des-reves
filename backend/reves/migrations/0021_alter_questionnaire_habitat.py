@@ -6,20 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0020_alter_questionnaire_genre'),
+        ('reves', '0020_alter_questionnaire_genre'),
     ]
 
     operations = [
         migrations.RunSQL(
             sql=(
-                "UPDATE polls_questionnaire "
+                "UPDATE reves_questionnaire "
                 "SET habitat = CASE "
                 "WHEN habitat = 'rural' THEN '1' "
                 "WHEN habitat = 'urbain' THEN '2' "
                 "ELSE habitat END"
             ),
             reverse_sql=(
-                "UPDATE polls_questionnaire "
+                "UPDATE reves_questionnaire "
                 "SET habitat = CASE "
                 "WHEN habitat = '1' THEN 'rural' "
                 "WHEN habitat = '2' THEN 'urbain' "

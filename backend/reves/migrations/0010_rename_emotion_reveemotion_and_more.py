@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0009_reve_existence_souvenir_alter_reve_audio'),
+        ('reves', '0009_reve_existence_souvenir_alter_reve_audio'),
     ]
 
     operations = [

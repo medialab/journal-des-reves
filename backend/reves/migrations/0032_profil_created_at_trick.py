@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0031_alter_reve_audio_secure_upload_name'),
+        ('reves', '0031_alter_reve_audio_secure_upload_name'),
     ]
 
     operations = [

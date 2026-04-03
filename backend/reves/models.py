@@ -196,33 +196,7 @@ class ReveElementCustom(models.Model):
         return f"{self.libelle} ({self.profil.user.username})"
 
 
-class ReveTag(models.Model):
-    """Tags personnalisés créés par les utilisateurs"""
-    profil = models.ForeignKey(
-        Profil,
-        on_delete=models.CASCADE,
-        related_name="tags"
-    )
-    libelle = models.CharField(
-        max_length=100,
-        verbose_name="Tag"
-    )
-    couleur = models.CharField(
-        max_length=7,
-        default='#3245bd',
-        verbose_name="Couleur du tag",
-        help_text="Couleur en format hex (#RRGGBB)"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Tag"
-        verbose_name_plural = "Tags"
-        unique_together = ('profil', 'libelle')
-
-    def __str__(self):
-        return f"{self.libelle} ({self.profil.user.username})"
+# ReveTag model supprimé - utiliser les services appropriés pour le tagging
 
 
 # BASE DE DONNEES REVES ========================
@@ -356,6 +330,12 @@ class Reve(models.Model):
         verbose_name="Émotions personnalisées"
     )
 
+    @property
+    def emotion(self):
+        """Combine émotions prédéfinies et personnalisées"""
+        emotions_list = list(self.emotions_reve.all()) + list(self.emotions_custom.all())
+        return emotions_list
+
     # Elements liés au rêve (personnes, lieux, situations), incluant des choix personnalisés
     elements_reve = models.JSONField(
         default=list,
@@ -394,14 +374,6 @@ class Reve(models.Model):
         blank=True,
         null=True,
         verbose_name="Commentaire libre"
-    )
-
-    # Tags personnalisés (peut en ajouter plusieurs)
-    tags = models.ManyToManyField(
-        ReveTag,
-        blank=True,
-        related_name="reves",
-        verbose_name="Tags personnalisés"
     )
 
     class Meta:

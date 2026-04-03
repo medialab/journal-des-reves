@@ -20,7 +20,7 @@
 				{% endfor %}
 			{% endif %}
 
-			<form method="post" id="reve-form" enctype="multipart/form-data" class="form-card initial-recorder-view" data-recording-mode="{{ recording_mode|default:'audio_recording' }}" data-submit-url="{% url 'polls:enregistrer' %}" data-redirect-url="{% url 'polls:journal' %}">
+			<form method="post" id="reve-form" enctype="multipart/form-data" class="form-card initial-recorder-view" data-recording-mode="{{ recording_mode|default:'audio_recording' }}" data-submit-url="{% url 'reves:enregistrer' %}" data-redirect-url="{% url 'reves:journal' %}">
 				{% csrf_token %}
 				
 				<!-- Champ caché pour existence_souvenir -->
@@ -241,7 +241,7 @@
 
 				<!-- Boutons d'action -->
 				<div class="form-actions form-actions-layout is-hidden-inline" id="formActions">
-				<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large btn-form-action-base btn-form-action-outline">
+				<a href="{% url 'reves:journal' %}" class="btn btn-outline btn-large btn-form-action-base btn-form-action-outline">
 						Retour au journal
 					</a>
 					<button type="submit" id="submitBtn" class="btn btn-primary btn-large btn-form-action-base" disabled>
@@ -256,7 +256,7 @@
 				<h2 class="success-title">Rêve enregistré avec succès !</h2>
 				<p class="success-text">Votre enregistrement audio a été sauvegardé. La transcription arrivera dans quelques minutes et apparaîtra automatiquement dans votre journal.</p>
 				<div class="success-actions">
-					<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">Aller au journal</a>
+					<a href="{% url 'reves:journal' %}" class="btn btn-primary btn-large">Aller au journal</a>
 				</div>
 			</div>
 
@@ -266,13 +266,14 @@
 				<h2 class="success-title">Entrée enregistrée</h2>
 				<p class="success-text">Nous avons bien noté que vous n'aviez pas de souvenir de rêve cette nuit. Merci pour votre participation continue.</p>
 				<div class="success-actions">
-					<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">Aller au journal</a>
+					<a href="{% url 'reves:journal' %}" class="btn btn-primary btn-large">Aller au journal</a>
 				</div>
 			</div>
 		</div>
 	</section>
 </div>
-<script src="{% static 'polls/js/recorder-safari-fixed.js' %}?v=2"></script>
-<script src="{% static 'polls/js/enregistrer.js' %}?v=2"></script>
+<script src="{% static 'reves/js/recorder-safari-fixed.js' %}?v=2"></script>
+<script src="{% static 'reves/js/enregistrer.js' %}?v=2"></script>
+<script src="{% static 'reves/js/autocomplete.js' %}?v=1"></script>
 
 {% endblock %}

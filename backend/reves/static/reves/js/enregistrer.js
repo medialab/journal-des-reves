@@ -465,8 +465,14 @@ function initFormHandlers() {
 		if (!emotionsGroup) {
 			return [];
 		}
+		// Récupère le TEXTE VISUEL des émotions, pas la valeur de l'input
 		return Array.from(emotionsGroup.querySelectorAll('input[name="emotions_reve"], input[name="emotions_custom"]'))
-			.map(input => normalizeEmotion(input.value));
+			.map(input => {
+				// Récupère le texte visuel du label frère
+				const label = input.closest('label');
+				const text = label ? label.textContent.trim() : input.value;
+				return normalizeEmotion(text);
+			});
 	};
 
 	const normalizeElement = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -474,8 +480,14 @@ function initFormHandlers() {
 		if (!elementsGroup) {
 			return [];
 		}
+		// Récupère le TEXTE VISUEL des éléments, pas la valeur de l'input
 		return Array.from(elementsGroup.querySelectorAll('input[name="elements_reve"], input[name="elements_custom"]'))
-			.map(input => normalizeElement(input.value));
+			.map(input => {
+				// Récupère le texte visuel du label frère
+				const label = input.closest('label');
+				const text = label ? label.textContent.trim() : input.value;
+				return normalizeElement(text);
+			});
 	};
 
 	const addCustomEmotion = () => {
@@ -583,6 +595,11 @@ function initFormHandlers() {
 					return;
 				}
 			} else if (!currentAudioBlob) {
+				// Vérification si enregistrement est en cours mais pas arrêté
+				if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+					alert('Vous devez arrêter l\'enregistrement avant de soumettre.');
+					return;
+				}
 				alert('Veuillez enregistrer un audio');
 				return;
 			}

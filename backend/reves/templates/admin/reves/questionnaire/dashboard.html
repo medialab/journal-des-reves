@@ -1,0 +1,266 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+  .questionnaire-dashboard {
+    margin: 1.25rem 0 1.5rem;
+  }
+
+  .questionnaire-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .questionnaire-card,
+  .questionnaire-panel {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  }
+
+  .questionnaire-card {
+    padding: 1rem 1.1rem;
+  }
+
+  .questionnaire-card-label {
+    color: #5a5a5a;
+    font-size: 0.88rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .questionnaire-card-value {
+    color: #1f1f1f;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+  }
+
+  .questionnaire-card-help {
+    color: #6d6d6d;
+    font-size: 0.85rem;
+  }
+
+  .questionnaire-panels {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .questionnaire-panel {
+    padding: 1rem 1.1rem;
+  }
+
+  .questionnaire-panel h2 {
+    font-size: 1rem;
+    margin: 0 0 0.9rem;
+  }
+
+  .page-switcher {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .page-switcher a {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #d0d7de;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    text-decoration: none;
+    color: #1f2937;
+    background: #fff;
+    font-size: 0.86rem;
+  }
+
+  .page-switcher a.active {
+    background: #1f2937;
+    color: #fff;
+    border-color: #1f2937;
+  }
+
+  .recent-series {
+    display: grid;
+    grid-template-columns: repeat(14, minmax(0, 1fr));
+    gap: 0.55rem;
+    align-items: end;
+    min-height: 190px;
+  }
+
+  .recent-series-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .recent-series-bar-wrap {
+    width: 100%;
+    min-height: 140px;
+    display: flex;
+    align-items: end;
+  }
+
+  .recent-series-bar {
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(180deg, #0f766e 0%, #155e75 100%);
+    min-height: 0;
+  }
+
+  .recent-series-count {
+    font-size: 0.82rem;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .recent-series-label {
+    font-size: 0.75rem;
+    color: #646464;
+  }
+
+  .distribution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .distribution-item + .distribution-item {
+    margin-top: 0.75rem;
+  }
+
+  .distribution-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.83rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .distribution-track {
+    width: 100%;
+    height: 10px;
+    background: #edf1f3;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .distribution-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%);
+    border-radius: 999px;
+  }
+
+  .coverage-list {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  @media (max-width: 1100px) {
+    .questionnaire-panels {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .recent-series {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+  }
+</style>
+{% endblock %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{{ data_url }}">Voir les lignes (Data)</a>
+  </li>
+  <li>
+    <a href="{{ csv_export_url }}" class="historylink">Exporter tous les questionnaires (CSV)</a>
+  </li>
+  {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  {% if dashboard %}
+    <div class="questionnaire-dashboard">
+      <div class="page-switcher">
+        <a href="{{ request.path }}" class="active">Dashboard</a>
+        <a href="{{ data_url }}">Data (lignes)</a>
+      </div>
+
+      <div class="questionnaire-dashboard-grid">
+        {% for card in dashboard.cards %}
+          <section class="questionnaire-card">
+            <div class="questionnaire-card-label">{{ card.label }}</div>
+            <div class="questionnaire-card-value">{{ card.value }}</div>
+            <div class="questionnaire-card-help">{{ card.help_text }}</div>
+          </section>
+        {% endfor %}
+      </div>
+
+      <div class="questionnaire-panels">
+        <section class="questionnaire-panel">
+          <h2>Complétions par jour sur 14 jours</h2>
+          <div class="recent-series">
+            {% for item in dashboard.recent_series %}
+              <div class="recent-series-item">
+                <div class="recent-series-count">{{ item.count }}</div>
+                <div class="recent-series-bar-wrap">
+                  <div class="recent-series-bar"{% if item.height %} style="height: {{ item.height }}%;"{% endif %}></div>
+                </div>
+                <div class="recent-series-label">{{ item.label }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="questionnaire-panel">
+          <h2>Couverture des variables clés</h2>
+          <div class="coverage-list">
+            {% for item in dashboard.key_field_completion %}
+              <div class="distribution-item">
+                <div class="distribution-meta">
+                  <span>{{ item.label }}</span>
+                  <span>{{ item.count }} réponses | {{ item.percentage }}%</span>
+                </div>
+                <div class="distribution-track">
+                  <div class="distribution-fill" style="width: {{ item.percentage }}%;"></div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      {% if dashboard.distributions %}
+        <div class="distribution-grid">
+          {% for chart in dashboard.distributions %}
+            <section class="questionnaire-panel">
+              <h2>{{ chart.label }}</h2>
+              {% for item in chart.items %}
+                <div class="distribution-item">
+                  <div class="distribution-meta">
+                    <span>{{ item.label }}</span>
+                    <span>{{ item.count }} | {{ item.percentage }}%</span>
+                  </div>
+                  <div class="distribution-track">
+                    <div class="distribution-fill" style="width: {{ item.percentage }}%;"></div>
+                  </div>
+                </div>
+              {% empty %}
+                <p>Aucune donnée exploitable pour cette vue.</p>
+              {% endfor %}
+            </section>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

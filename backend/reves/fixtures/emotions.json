@@ -1,6 +1,6 @@
 [
   {
-    "model": "polls.emotion",
+    "model": "reves.reveemotion",
     "pk": 1,
     "fields": {
       "libelle": "Peur",
@@ -9,7 +9,7 @@
     }
   },
   {
-    "model": "polls.emotion",
+    "model": "reves.reveemotion",
     "pk": 2,
     "fields": {
       "libelle": "Colère",
@@ -18,7 +18,7 @@
     }
   },
   {
-    "model": "polls.emotion",
+    "model": "reves.reveemotion",
     "pk": 3,
     "fields": {
       "libelle": "Appréhension",
@@ -27,7 +27,7 @@
     }
   },
   {
-    "model": "polls.emotion",
+    "model": "reves.reveemotion",
     "pk": 4,
     "fields": {
       "libelle": "Tristesse",
@@ -36,7 +36,7 @@
     }
   },
   {
-    "model": "polls.emotion",
+    "model": "reves.reveemotion",
     "pk": 5,
     "fields": {
       "libelle": "Joie",
@@ -45,7 +45,7 @@
     }
   },
   {
-    "model": "polls.emotion",
+    "model": "reves.reveemotion",
     "pk": 6,
     "fields": {
       "libelle": "Bonheur",

@@ -6,6 +6,7 @@ const REQUIRED_QUESTION_MESSAGE = 'Vous avez oublié de remplir cette question.'
 let startTime = null;
 let sectionStartTime = null;
 const sectionTimings = {};
+let isSavingSection = false;  // Flag pour éviter les appels multiples
 
 document.addEventListener('DOMContentLoaded', function() {
 	setFormActionsVisibility(false);
@@ -107,9 +108,18 @@ function startQuestionnaire() {
 }
 
 function saveCurrentSectionAndContinue(direction) {
-	if (!validateSection(currentSection)) {
+	// Empêcher les appels multiples simultanés
+	if (isSavingSection) {
+		console.warn('Sauvegarde déjà en cours');
 		return;
 	}
+
+	console.log('Validation de la section:', currentSection);
+	if (!validateSection(currentSection)) {
+		console.warn('Validation échouée pour la section:', currentSection);
+		return;
+	}
+	console.log('Validation réussie, procédure de sauvegarde...');
 
 	const formData = new FormData(document.getElementById('questionnaireForm'));
 
@@ -123,6 +133,18 @@ function saveCurrentSectionAndContinue(direction) {
 	const originalText = nextBtn.textContent;
 	nextBtn.disabled = true;
 	nextBtn.textContent = 'Enregistrement...';
+
+	isSavingSection = true;  // Marquer comme en cours de sauvegarde
+
+	// Sécurité : réinitialiser le flag après 10 secondes pour éviter les blocages
+	const timeoutId = setTimeout(() => {
+		if (isSavingSection) {
+			console.warn('Timeout: réinitialisé le flag de sauvegarde après 10 secondes');
+			isSavingSection = false;
+			nextBtn.disabled = false;
+			nextBtn.textContent = originalText;
+		}
+	}, 10000);
 
 	fetch(getQuestionnaireSaveUrl(), {
 		method: 'POST',
@@ -138,6 +160,7 @@ function saveCurrentSectionAndContinue(direction) {
 			return response.json();
 		})
 		.then(data => {
+			clearTimeout(timeoutId);  // Annuler le timeout si on reçoit une réponse
 			if (data.success) {
 				sectionTimings[currentSection] = {
 					startTime: sectionStartTime,
@@ -151,14 +174,17 @@ function saveCurrentSectionAndContinue(direction) {
 				changeSection(direction);
 
 				sectionStartTime = Date.now();
+				isSavingSection = false;  // Réinitialiser le flag
 			} else {
 				throw new Error(data.message || 'Erreur lors de l\'enregistrement');
 			}
 		})
 		.catch(error => {
+			clearTimeout(timeoutId);  // Annuler le timeout en cas d'erreur
 			console.error('Error:', error);
 			nextBtn.disabled = false;
 			nextBtn.textContent = originalText;
+			isSavingSection = false;  // Réinitialiser le flag en cas d'erreur
 			alert('Erreur lors de l\'enregistrement. Veuillez reessayer.');
 		});
 }
@@ -198,6 +224,12 @@ function showSection(sectionNumber) {
 			firstFocusable.focus({ preventScroll: true });
 		}
 	}
+
+	// Afficher le groupe des parents en section 3
+	const parentsInfoGroup = document.getElementById('parents_info_group');
+	if (parentsInfoGroup) {
+		parentsInfoGroup.style.display = sectionNumber === 3 ? 'block' : 'none';
+	}
 }
 
 function updateUI() {
@@ -215,21 +247,28 @@ function updateUI() {
 
 	// submit uniquement visible à la dernière section
 	if (submitBtn) {
-		// Certaines règles CSS utilisent `!important` sur `.form-actions > button`
-		// qui peuvent annuler la classe `.is-hidden-inline`. On force donc
-		// aussi la valeur inline de `display` avec la priorité `important`.
 		if (currentSection === totalSections) {
 			submitBtn.classList.remove('is-hidden-inline');
-			submitBtn.style.setProperty('display', 'inline-flex', 'important');
 		} else {
 			submitBtn.classList.add('is-hidden-inline');
-			submitBtn.style.setProperty('display', 'none', 'important');
 		}
 	}
 
-	// boutons prev/next (aussi forcés en important pour éviter les règles globales)
-	if (prevBtn) prevBtn.style.setProperty('display', currentSection === 1 ? 'none' : 'inline-flex', 'important');
-	if (nextBtn) nextBtn.style.setProperty('display', currentSection === totalSections ? 'none' : 'inline-flex', 'important');
+	// boutons prev/next : gestion via classe CSS au lieu de forcer le style inline
+	if (prevBtn) {
+		if (currentSection === 1) {
+			prevBtn.classList.add('is-hidden-inline');
+		} else {
+			prevBtn.classList.remove('is-hidden-inline');
+		}
+	}
+	if (nextBtn) {
+		if (currentSection === totalSections) {
+			nextBtn.classList.add('is-hidden-inline');
+		} else {
+			nextBtn.classList.remove('is-hidden-inline');
+		}
+	}
 
 	// si on est sur la première section, appliquer une classe pour aligner
 	// le bouton "Suivant" à droite et ajouter un contour blanc
@@ -252,7 +291,10 @@ function validateSection(sectionNumber) {
 	});
 
 	const sections = document.querySelectorAll(`#questionnaireForm [data-section="${sectionNumber}"]`);
-	if (sections.length === 0) return true;
+	if (sections.length === 0) {
+		console.log('Aucune section trouvée pour:', sectionNumber);
+		return true;
+	}
 
 	const errors = new Set();
 	let firstErrorElement = null;
@@ -269,8 +311,13 @@ function validateSection(sectionNumber) {
 		const formGroups = section.querySelectorAll('.form-group:not(.composition-logement-group)');
 		
 		formGroups.forEach(group => {
-			// Vérifier si le groupe est masqué (champ conditionnel non affiché)
-			if (group.style.display === 'none' || group.classList.contains('is-hidden-inline')) {
+			// Les champs conditionnels (is-hidden-inline) NE SONT JAMAIS validés
+			if (group.classList.contains('is-hidden-inline')) {
+				return;
+			}
+
+			// Sauter les groupes masqués (display: none)
+			if (group.style.display === 'none') {
 				return;
 			}
 
@@ -281,42 +328,49 @@ function validateSection(sectionNumber) {
 			const selects = group.querySelectorAll('select');
 			const textareas = group.querySelectorAll('textarea');
 
-			// Vérifier les radios
+			// Vérifier les radios - OBLIGATOIRE
 			if (radios.length > 0) {
 				const isChecked = Array.from(radios).some(r => r.checked);
 				if (!isChecked) {
 					addError(group);
 				}
+				return;
 			}
 
-			// Vérifier les checkboxes (condition: au moins 1 coché)
-			else if (checkboxes.length > 0) {
+			// Vérifier les checkboxes - OBLIGATOIRE
+			if (checkboxes.length > 0) {
 				const isChecked = Array.from(checkboxes).some(cb => cb.checked);
 				if (!isChecked) {
 					addError(group);
 				}
+				return;
 			}
 
-			// Vérifier les inputs texte/time/number
-			textInputs.forEach(input => {
-				if (!input.value || input.value.trim() === '') {
-					addError(group);
-				}
-			});
-
-			// Vérifier les selects
-			selects.forEach(select => {
+			// Vérifier les selects - OBLIGATOIRE
+			if (selects.length > 0) {
+				const select = selects[0];
 				if (!select.value || select.value === '') {
 					addError(group);
 				}
-			});
+				return;
+			}
 
-			// Vérifier les textareas
-			textareas.forEach(textarea => {
+			// Vérifier les inputs texte/time/number - OBLIGATOIRE
+			if (textInputs.length > 0) {
+				const input = textInputs[0];
+				if (!input.value || input.value.trim() === '') {
+					addError(group);
+				}
+				return;
+			}
+
+			// Vérifier les textareas - OBLIGATOIRE
+			if (textareas.length > 0) {
+				const textarea = textareas[0];
 				if (!textarea.value || textarea.value.trim() === '') {
 					addError(group);
 				}
-			});
+			}
 		});
 
 		// ===== Vérifier le groupe composition_logement spécial (checkboxes) =====
@@ -366,6 +420,7 @@ function validateSection(sectionNumber) {
 		return false;
 	}
 
+	console.log('Section', sectionNumber, 'validée avec succès');
 	return true;
 }
 

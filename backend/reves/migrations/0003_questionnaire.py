@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0002_alter_reve_options_reve_transcription_and_more'),
+        ('reves', '0002_alter_reve_options_reve_transcription_and_more'),
     ]
 
     operations = [
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('comments', models.TextField(blank=True, null=True, verbose_name='Commentaires')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questionnaires', to='polls.profil')),
+                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questionnaires', to='reves.profil')),
             ],
             options={
                 'verbose_name': 'Questionnaire',

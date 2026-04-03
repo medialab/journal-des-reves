@@ -22,7 +22,6 @@ class ReveForm(forms.ModelForm):
             'temps_futur_lointain',
             'temps_difficile',
             'commentaire_libre',
-            'tags'
         ]
         widgets = {
             'audio': forms.FileInput(
@@ -35,7 +34,6 @@ class ReveForm(forms.ModelForm):
             'sens': forms.RadioSelect(),
             'emotions_reve': forms.CheckboxSelectMultiple(),
             'commentaire_libre': forms.Textarea(attrs={'rows': 4}),
-            'tags': forms.CheckboxSelectMultiple(),
         }
         labels = {
             'audio': 'Enregistrement audio',
@@ -44,7 +42,6 @@ class ReveForm(forms.ModelForm):
             'sens': 'Sens présents dans le rêve',
             'emotions_reve': 'Émotions ressenties',
             'commentaire_libre': 'Commentaire libre',
-            'tags': 'Tags personnalisés',
         }
 
 

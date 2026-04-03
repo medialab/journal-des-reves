@@ -5,7 +5,7 @@ import django.core.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0023_temps_reve_to_booleans'),
+        ('reves', '0023_temps_reve_to_booleans'),
     ]
 
     operations = [

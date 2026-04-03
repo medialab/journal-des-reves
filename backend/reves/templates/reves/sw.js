@@ -6,13 +6,13 @@ var CACHE_NAME = CACHE_VERSION + '-' + new Date().getTime();
 // Assets à mettre en cache dès l'installation
 var ASSETS_TO_CACHE = [
     '/offline/',
-    '/static/polls/style.css',
-    '/static/polls/forms.css',
-    '/static/polls/pages.css',
-    '/static/polls/notifications.css',
-    '/static/polls/notifications.js',
-    '/static/polls/icons/icon-192x192.png',
-    '/static/polls/icons/icon-512x512.png',
+    '/static/reves/style.css',
+    '/static/reves/forms.css',
+    '/static/reves/pages.css',
+    '/static/reves/notifications.css',
+    '/static/reves/notifications.js',
+    '/static/reves/icons/icon-192x192.png',
+    '/static/reves/icons/icon-512x512.png',
 ];
 
 function canCacheStaticResponse(request, response) {
@@ -75,7 +75,7 @@ self.addEventListener('fetch', function(event) {
     // Ignorer les requêtes non-GET, non-HTTP/S, et les API
     if (event.request.method !== 'GET') return;
     if (!url.protocol.startsWith('http')) return;
-    if (url.pathname.startsWith('/polls/api/')) return;
+    if (url.pathname.startsWith('/api/')) return;
     if (url.pathname.startsWith('/webpush/')) return;
     if (url.pathname.startsWith('/admin/')) return;
     // Ne JAMAIS mettre en cache les pages d'auth : le token CSRF est unique
@@ -130,11 +130,11 @@ self.addEventListener('push', function(event) {
     var title = data.head || 'Journal des Rêves 🌙';
     var options = {
         body: data.body || "N'oublie pas de noter ton rêve !",
-        icon: data.icon || '/static/polls/icons/icon-192x192.png',
-        badge: '/static/polls/icons/icon-72x72.png',
+        icon: data.icon || '/static/reves/icons/icon-192x192.png',
+        badge: '/static/reves/icons/icon-72x72.png',
         vibrate: [200, 100, 200],
         data: {
-            url: data.url || '/polls/enregistrer/'
+            url: data.url || '/enregistrer/'
         },
         actions: [
             { action: 'enregistrer', title: '✍ Enregistrer mon rêve' },
@@ -152,7 +152,7 @@ self.addEventListener('push', function(event) {
 // ─────────────────────────────────────────────
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-    var targetUrl = '/polls/enregistrer/';
+    var targetUrl = '/enregistrer/';
 
     if (event.action === 'fermer') return;
     if (event.notification.data && event.notification.data.url) {

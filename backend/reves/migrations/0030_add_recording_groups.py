@@ -18,7 +18,7 @@ def remove_recording_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0029_questionnaire_submission_number'),
+        ('reves', '0029_questionnaire_submission_number'),
     ]
 
     operations = [

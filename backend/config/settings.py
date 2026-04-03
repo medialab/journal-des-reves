@@ -78,6 +78,12 @@ if DEBUG:
     ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', default_allowed_hosts)
 else:
     ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', [])
+    # En production, ALLOWED_HOSTS est OBLIGATOIRE
+    if not ALLOWED_HOSTS:
+        raise ValueError(
+            'DJANGO_ALLOWED_HOSTS must be set when DEBUG=false. '
+            'Exemple: DJANGO_ALLOWED_HOSTS=reves-etude.fr,www.reves-etude.fr'
+        )
 
 # Autoriser les domaines de tunnel HTTPS (ngrok) pour les POST CSRF
 default_csrf_trusted_origins = [
@@ -147,13 +153,58 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Configuration flexible : PostgreSQL en production, SQLite en développement
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+def _get_database_config() -> dict:
+    """Retourne la config DB selon l'env. PostgreSQL en prod, SQLite en dev."""
+    db_engine = os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3')
+    
+    if db_engine == 'django.db.backends.postgresql':
+        return {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv('DATABASE_NAME', 'reves_prod'),
+                'USER': os.getenv('DATABASE_USER', 'reves_user'),
+                'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+                'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+                'PORT': os.getenv('DATABASE_PORT', '5432'),
+                'ATOMIC_REQUESTS': True,  # Transactions atomiques par requête
+                'CONN_MAX_AGE': 600,  # Connection pooling (10 min)
+            }
+        }
+    elif db_engine == 'django.db.backends.mysql':
+        return {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': os.getenv('DATABASE_NAME', 'reves_prod'),
+                'USER': os.getenv('DATABASE_USER', 'reves_user'),
+                'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+                'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+                'PORT': os.getenv('DATABASE_PORT', '3306'),
+                'ATOMIC_REQUESTS': True,
+                'CONN_MAX_AGE': 600,
+                'OPTIONS': {
+                    'charset': 'utf8mb4',
+                }
+            }
+        }
+    else:  # Default SQLite pour développement
+        return {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+
+DATABASES = _get_database_config()
+
+# Validation : en production, PostgreSQL ou MySQL est exigé pour la stabilité
+if not DEBUG and DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    raise ValueError(
+        'SQLite is not recommended for production. '
+        'Set DATABASE_ENGINE to "django.db.backends.postgresql" or "django.db.backends.mysql" '
+        'and configure the other DATABASE_* environment variables.'
+    )
 
 
 # =============================================================================
@@ -212,7 +263,7 @@ UNFOLD = {
                     {
                         "title": "Profils",
                         "icon": "people",
-                        "link": reverse_lazy("admin:polls_profil_changelist"),
+                        "link": reverse_lazy("admin:reves_profil_changelist"),
                     },
                 ],
             },
@@ -224,12 +275,12 @@ UNFOLD = {
                     {
                         "title": "Dashboard",
                         "icon": "analytics",
-                        "link": reverse_lazy("admin:polls_questionnaire_dashboard"),
+                        "link": reverse_lazy("admin:reves_questionnaire_dashboard"),
                     },
                     {
                         "title": "Data (lignes)",
                         "icon": "description",
-                        "link": reverse_lazy("admin:polls_questionnaire_changelist"),
+                        "link": reverse_lazy("admin:reves_questionnaire_changelist"),
                     },
                 ],
             },
@@ -241,42 +292,37 @@ UNFOLD = {
                     {
                         "title": "Rêves dashboard",
                         "icon": "analytics",
-                        "link": reverse_lazy("admin:polls_reve_dashboard"),
+                        "link": reverse_lazy("admin:reves_reve_dashboard"),
                     },
                     {
                         "title": "Rêves data (lignes)",
                         "icon": "favorite",
-                        "link": reverse_lazy("admin:polls_reve_changelist"),
+                        "link": reverse_lazy("admin:reves_reve_changelist"),
                     },
                     {
                         "title": "Émotions de référence",
                         "icon": "mood",
-                        "link": reverse_lazy("admin:polls_reveemotion_changelist"),
+                        "link": reverse_lazy("admin:reves_reveemotion_changelist"),
                     },
                     {
                         "title": "Modalités visuelles",
                         "icon": "visibility",
-                        "link": reverse_lazy("admin:polls_reveimagemodalite_changelist"),
-                    },
-                    {
-                        "title": "Tags utilisateurs",
-                        "icon": "sell",
-                        "link": reverse_lazy("admin:polls_revetag_changelist"),
+                        "link": reverse_lazy("admin:reves_reveimagemodalite_changelist"),
                     },
                     {
                         "title": "Émotions personnalisées",
                         "icon": "sentiment_satisfied",
-                        "link": reverse_lazy("admin:polls_reveemotioncustom_changelist"),
+                        "link": reverse_lazy("admin:reves_reveemotioncustom_changelist"),
                     },
                     {
                         "title": "Éléments personnalisés",
                         "icon": "category",
-                        "link": reverse_lazy("admin:polls_reveelementcustom_changelist"),
+                        "link": reverse_lazy("admin:reves_reveelementcustom_changelist"),
                     },
                     {
                         "title": "Notifications",
                         "icon": "notifications",
-                        "link": reverse_lazy("admin:polls_notification_changelist"),
+                        "link": reverse_lazy("admin:reves_notification_changelist"),
                     },
                 ],
             },
@@ -320,8 +366,8 @@ USE_TZ = True
 
 # LOGIN
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/polls/journal/"
-LOGOUT_REDIRECT_URL = "/polls/"
+LOGIN_REDIRECT_URL = "/journal/"
+LOGOUT_REDIRECT_URL = "/"
 
 
 # Media files (User uploads)
@@ -334,6 +380,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Whitenoise pour servir les statics en production (optionnel mais recommandé)
+# Installer avec : pip install whitenoise
+# Puis ajouter 'whitenoise.middleware.WhiteNoiseMiddleware' au début de MIDDLEWARE
 
 # Django Debug Toolbar
 INTERNAL_IPS = [
@@ -425,38 +476,38 @@ PWA_APP_DESCRIPTION = "Enregistre et explore tes rêves chaque nuit"
 PWA_APP_THEME_COLOR = '#1a1a2e'
 PWA_APP_BACKGROUND_COLOR = '#1a1a2e'
 PWA_APP_DISPLAY = 'standalone'
-PWA_APP_SCOPE = '/polls/'
+PWA_APP_SCOPE = '/reves/'
 PWA_APP_ORIENTATION = 'any'
-PWA_APP_START_URL = '/polls/enregistrer/'
+PWA_APP_START_URL = '/reves/enregistrer/'
 PWA_APP_STATUS_BAR_COLOR = 'black-translucent'
 PWA_APP_LANG = 'fr-FR'
 PWA_APP_DIR = 'ltr'
 PWA_APP_DEBUG_MODE = False
 
 PWA_APP_ICONS = [
-    {'src': '/static/polls/icons/icon-72x72.png',   'sizes': '72x72'},
-    {'src': '/static/polls/icons/icon-96x96.png',   'sizes': '96x96'},
-    {'src': '/static/polls/icons/icon-128x128.png', 'sizes': '128x128'},
-    {'src': '/static/polls/icons/icon-144x144.png', 'sizes': '144x144'},
-    {'src': '/static/polls/icons/icon-152x152.png', 'sizes': '152x152'},
-    {'src': '/static/polls/icons/icon-192x192.png', 'sizes': '192x192'},
-    {'src': '/static/polls/icons/icon-384x384.png', 'sizes': '384x384'},
-    {'src': '/static/polls/icons/icon-512x512.png', 'sizes': '512x512'},
+    {'src': '/static/reves/icons/icon-72x72.png',   'sizes': '72x72'},
+    {'src': '/static/reves/icons/icon-96x96.png',   'sizes': '96x96'},
+    {'src': '/static/reves/icons/icon-128x128.png', 'sizes': '128x128'},
+    {'src': '/static/reves/icons/icon-144x144.png', 'sizes': '144x144'},
+    {'src': '/static/reves/icons/icon-152x152.png', 'sizes': '152x152'},
+    {'src': '/static/reves/icons/icon-192x192.png', 'sizes': '192x192'},
+    {'src': '/static/reves/icons/icon-384x384.png', 'sizes': '384x384'},
+    {'src': '/static/reves/icons/icon-512x512.png', 'sizes': '512x512'},
 ]
 
 PWA_APP_ICONS_APPLE = [
-    {'src': '/static/polls/icons/apple-touch-icon.png', 'sizes': '180x180'},
+    {'src': '/static/reves/icons/apple-touch-icon.png', 'sizes': '180x180'},
 ]
 
 PWA_APP_SHORTCUTS = [
     {
         'name': 'Enregistrer un rêve',
-        'url': '/polls/enregistrer/',
+        'url': '/reves/enregistrer/',
         'description': 'Enregistre ton rêve directement',
     },
     {
         'name': 'Mon journal',
-        'url': '/polls/journal/',
+        'url': '/reves/journal/',
         'description': 'Voir tous mes rêves',
     },
 ]

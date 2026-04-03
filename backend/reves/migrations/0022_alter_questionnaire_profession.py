@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0021_alter_questionnaire_habitat'),
+        ('reves', '0021_alter_questionnaire_habitat'),
     ]
 
     operations = [
         migrations.RunSQL(
             sql=(
-                "UPDATE polls_questionnaire "
+                "UPDATE reves_questionnaire "
                 "SET profession = NULL "
                 "WHERE profession IS NOT NULL "
                 "AND profession NOT IN ('101','102','103','104','201','202','203','204','205','301','302','303','304','305','401','402','403','501','502','503','504','601','602','603','604','605','701','702','703','704')"

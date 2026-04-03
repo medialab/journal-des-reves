@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
 	dependencies = [
-		('polls', '0017_reveelementcustom_reve_elements_reve_and_more'),
+		('reves', '0017_reveelementcustom_reve_elements_reve_and_more'),
 	]
 
 	operations = [

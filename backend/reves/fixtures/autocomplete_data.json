@@ -1,0 +1,34 @@
+{
+  "emotions": [
+    "Surprise", "Dégoût", "Anxiété", "Soulagement", "Fierté",
+    "Amour", "Haine", "Nostalgie", "Espoir", "Désespoir",
+    "Apaisement", "Agitation", "Confiance", "Doute", "Culpabilité",
+    "Regret", "Contentement", "Frustration", "Admiration", "Déception",
+    "Enthousiasme", "Ennui", "Gratitude", "Jalousie", "Émerveillement",
+    "Stress", "Détente", "Excitation", "Abattement", "Sérénité",
+    "Embarras", "Orgueil", "Envie", "Inquiétude", "Calme",
+    "Passion", "Mélancolie", "Allégresse", "Torpeur", "Ardeur",
+    "Indifférence", "Optimisme", "Pessimisme", "Bienveillance", "Honte",
+    "Tendresse", "Perplexité", "Stupeur", "Euphorie", "Accablement",
+    "Résignation", "Exaltation", "Vertige", "Légèreté", "Lourdeur",
+    "Solitude", "Plénitude", "Vide", "Sécurité", "Vulnérabilité",
+    "Gêne", "Irritation", "Fascination", "Confusion", "Clarté"
+  ],
+  "elements": [
+    "Bureau", "Maison", "École", "Université", "Rue",
+    "Forêt", "Montagne", "Mer", "Plage", "Voiture",
+    "Train", "Avion", "Enfants", "Parents", "Frères et sœurs",
+    "Partenaire", "Collègues", "Patron", "Professeur", "Voisins",
+    "Étrangers", "Animaux", "Chat", "Chien", "Oiseau",
+    "Eau", "Feu", "Soleil", "Lune", "Étoiles",
+    "Nuages", "Pluie", "Neige", "Vent", "Tempête",
+    "Arc-en-ciel", "Aurore", "Coucher de soleil", "Jardin", "Parc",
+    "Restaurant", "Cinéma", "Musée", "Bibliothèque", "Hôpital",
+    "Église", "Marché", "Stade", "Piscine", "Château",
+    "Pont", "Ascenseur", "Escalier", "Couloir", "Grenier",
+    "Cave", "Île", "Désert", "Rivière", "Lac",
+    "Médecin", "Inconnu", "Enfant", "Vieillard", "Personnage célèbre",
+    "Argent", "Clé", "Porte", "Miroir", "Téléphone",
+    "Livre", "Arme", "Véhicule", "Nourriture", "Vêtements"
+  ]
+}

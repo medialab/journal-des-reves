@@ -26,8 +26,7 @@ def forbid_private_audio_access(_request, _path):
     return HttpResponseForbidden("Forbidden")
 
 urlpatterns = [
-    path("", RedirectView.as_view(url="/polls/", permanent=False)),
-    path("polls/", include("reves.urls")),
+    path("", include("reves.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path('', include('pwa.urls')),        # manifest.json + serviceworker.js + /offline

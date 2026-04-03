@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 def migrate_temps_reve(apps, schema_editor):
     """Transfère les données existantes de temps_reve (CharField) vers les 6 BooleanFields."""
-    Reve = apps.get_model('polls', 'Reve')
+    Reve = apps.get_model('reves', 'Reve')
     mapping = {
         'passe_lointain': 'temps_passe_lointain',
         'passe_recent': 'temps_passe_recent',
@@ -24,7 +24,7 @@ def migrate_temps_reve(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0022_alter_questionnaire_profession'),
+        ('reves', '0022_alter_questionnaire_profession'),
     ]
 
     operations = [

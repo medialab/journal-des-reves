@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0007_profil_consent_data_processing_profil_consent_date_and_more'),
+        ('reves', '0007_profil_consent_data_processing_profil_consent_date_and_more'),
     ]
 
     operations = [
@@ -26,6 +26,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reve',
             name='images_modalites',
-            field=models.ManyToManyField(blank=True, help_text='Les modalités des images dont vous vous souvenez (couleur, netteté, etc.)', related_name='reves', to='polls.imagemodalite', verbose_name='Modalités des images'),
+            field=models.ManyToManyField(blank=True, help_text='Les modalités des images dont vous vous souvenez (couleur, netteté, etc.)', related_name='reves', to='reves.imagemodalite', verbose_name='Modalités des images'),
         ),
     ]

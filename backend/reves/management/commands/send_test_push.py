@@ -49,8 +49,8 @@ class Command(BaseCommand):
                 payload = {
                     "head": "Test Push – Journal des Rêves 🌙",
                     "body": "Notification de test immédiate reçue ✅",
-                    "icon": "/static/polls/icons/icon-192x192.png",
-                    "url": "/polls/journal/",
+                    "icon": "/static/reves/icons/icon-192x192.png",
+                    "url": "/journal/",
                 }
                 send_user_notification(user=profil.user, payload=payload, ttl=60)
                 sent += 1

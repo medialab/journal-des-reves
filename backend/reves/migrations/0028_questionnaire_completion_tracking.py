@@ -2,7 +2,7 @@ from django.db import migrations, models
 
 
 def backfill_completion_metadata(apps, schema_editor):
-    Questionnaire = apps.get_model('polls', 'Questionnaire')
+    Questionnaire = apps.get_model('reves', 'Questionnaire')
 
     for questionnaire in Questionnaire.objects.all().iterator():
         duration_seconds = None
@@ -23,7 +23,7 @@ def backfill_completion_metadata(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0027_questionnaire_det_1_questionnaire_det_2_and_more'),
+        ('reves', '0027_questionnaire_det_1_questionnaire_det_2_and_more'),
     ]
 
     operations = [

@@ -23,6 +23,11 @@ db.sqlite3-journal
 backend/media/
 /staticfiles/
 /static/
+/backups/
+/backend/backups/
+/logs/
+access.log*
+application.log*
 
 # Environment variables
 .env
@@ -41,8 +46,14 @@ Thumbs.db
 
 # Transcription logs
 transcription.log
+transcription.log*
+transcription.log.2026-03-31
 
 # Local sensitive/docs and audio artifacts
 SECURITY_README.md
+BACKUP_SETUP_COMPLETE.md
+DEPLOYMENT_CHECKLIST.md
+DEPLOYMENT_INSTRUCTIONS.md
+README_BACKUP_SYSTEM.md
 *.wav
 *.WAV

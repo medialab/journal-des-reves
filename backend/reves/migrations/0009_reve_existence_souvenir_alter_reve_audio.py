@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0008_imagemodalite_reve_images_modalites'),
+        ('reves', '0008_imagemodalite_reve_images_modalites'),
     ]
 
     operations = [

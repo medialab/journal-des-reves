@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0025_questionnaire_conj_csp_and_more'),
+        ('reves', '0025_questionnaire_conj_csp_and_more'),
     ]
 
     operations = [

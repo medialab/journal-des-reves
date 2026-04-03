@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0005_emotion_remove_reve_intensite_reve_etendue_reve_and_more'),
+        ('reves', '0005_emotion_remove_reve_intensite_reve_etendue_reve_and_more'),
     ]
 
     operations = [
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('libelle', models.CharField(max_length=100, verbose_name='Émotion')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='emotions_custom', to='polls.profil')),
+                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='emotions_custom', to='reves.profil')),
             ],
             options={
                 'verbose_name': 'Émotion personnalisée',
@@ -29,6 +29,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reve',
             name='emotions_custom',
-            field=models.ManyToManyField(blank=True, related_name='reves', to='polls.emotioncustom', verbose_name='Émotions personnalisées'),
+            field=models.ManyToManyField(blank=True, related_name='reves', to='reves.emotioncustom', verbose_name='Émotions personnalisées'),
         ),
     ]

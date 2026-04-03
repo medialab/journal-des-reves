@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0018_alter_reve_temps_reve'),
+        ('reves', '0018_alter_reve_temps_reve'),
     ]
 
     operations = [

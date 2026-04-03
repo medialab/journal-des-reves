@@ -3,8 +3,8 @@ import django.core.validators
 
 
 def backfill_submission_numbers(apps, schema_editor):
-    Questionnaire = apps.get_model('polls', 'Questionnaire')
-    Profil = apps.get_model('polls', 'Profil')
+    Questionnaire = apps.get_model('reves', 'Questionnaire')
+    Profil = apps.get_model('reves', 'Profil')
 
     for profil in Profil.objects.all().iterator():
         completed = Questionnaire.objects.filter(
@@ -18,14 +18,14 @@ def backfill_submission_numbers(apps, schema_editor):
 
 
 def clear_submission_numbers(apps, schema_editor):
-    Questionnaire = apps.get_model('polls', 'Questionnaire')
+    Questionnaire = apps.get_model('reves', 'Questionnaire')
     Questionnaire.objects.update(submission_number=None)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0028_questionnaire_completion_tracking'),
+        ('reves', '0028_questionnaire_completion_tracking'),
     ]
 
     operations = [

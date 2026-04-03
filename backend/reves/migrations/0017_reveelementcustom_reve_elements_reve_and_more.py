@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0016_questionnaire_a_deja_travaille_and_more'),
+        ('reves', '0016_questionnaire_a_deja_travaille_and_more'),
     ]
 
     operations = [
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('libelle', models.CharField(max_length=120, verbose_name='Element')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='elements_custom', to='polls.profil')),
+                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='elements_custom', to='reves.profil')),
             ],
             options={
                 'verbose_name': 'Element personnalisé',

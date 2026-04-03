@@ -1,7 +1,7 @@
 """
 Script utilitaire pour gérer l'accès au questionnaire des utilisateurs
 Usage:
-    python manage.py shell < polls/management/commands/manage_questionnaire_access.py
+    python manage.py shell < reves/management/commands/manage_questionnaire_access.py
 """
 
 from reves.models import Profil

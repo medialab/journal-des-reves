@@ -1,8 +1,9 @@
 from django.urls import path, include
 from django.contrib import admin
 from . import views
+from . import api_views
 
-app_name = "polls"
+app_name = "reves"
 
 urlpatterns = [
     # Page d'accueil publique
@@ -47,4 +48,8 @@ urlpatterns = [
     path("api/notifications/<int:notification_id>/read/", views.NotificationMarkAsReadView.as_view(), name="notification_mark_read"),
     path("api/notifications/<int:notification_id>/delete/", views.NotificationDeleteView.as_view(), name="notification_delete"),
     path("api/notifications/unread-count/", views.NotificationUnreadCountView.as_view(), name="notification_unread_count"),
+    
+    # Autocomplete API
+    path("api/autocomplete/emotions/", api_views.AutocompleteEmotionsView.as_view(), name="autocomplete_emotions"),
+    path("api/autocomplete/elements/", api_views.AutocompleteElementsView.as_view(), name="autocomplete_elements"),
 ]

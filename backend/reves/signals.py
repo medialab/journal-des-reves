@@ -1,7 +1,22 @@
 from django.dispatch import receiver
 from django.contrib.auth.signals import user_logged_in
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from .services.email_service import send_welcome_email
+
+
+@receiver(post_save, sender=User)
+def create_profil_on_user_creation(sender, instance, created, **kwargs):
+    """
+    Créer automatiquement un profil Profil quand un utilisateur est créé
+    """
+    if created:
+        from .models import Profil
+        Profil.objects.get_or_create(
+            user=instance,
+            defaults={'email': instance.email}
+        )
 
 
 @receiver(user_logged_in)

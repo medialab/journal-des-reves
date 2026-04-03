@@ -3,7 +3,7 @@ from django.apps import AppConfig
 
 class RevesConfig(AppConfig):
     name = 'reves'
-    label = 'polls'
+    label = 'reves'
 
     def ready(self):
         import reves.signals

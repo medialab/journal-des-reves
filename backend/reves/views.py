@@ -157,14 +157,14 @@ class ProfilView(LoginRequiredMixin, View):
             profil = request.user.profil
         except Profil.DoesNotExist:
             messages.error(request, "Profil non trouve. Veuillez contacter l'administrateur.")
-            return HttpResponseRedirect(reverse("polls:index"))
+            return HttpResponseRedirect(reverse("reves:index"))
 
         if profil.must_complete_questionnaire_for_extended_access():
             messages.warning(
                 request,
                 "Veuillez completer le questionnaire pour acceder aux statistiques du profil."
             )
-            return HttpResponseRedirect(reverse("polls:questionnaire"))
+            return HttpResponseRedirect(reverse("reves:questionnaire"))
 
         journal_data = get_journal_data(profil)
 
@@ -241,14 +241,14 @@ class EnregistrerView(LoginRequiredMixin, View):
             profil = request.user.profil
         except Profil.DoesNotExist:
             messages.error(request, "Profil utilisateur introuvable")
-            return HttpResponseRedirect(reverse("polls:index"))
+            return HttpResponseRedirect(reverse("reves:index"))
 
         if profil.must_complete_questionnaire_for_extended_access():
             messages.warning(
                 request,
                 "Veuillez completer le questionnaire avant d'enregistrer un nouveau reve."
             )
-            return HttpResponseRedirect(reverse("polls:questionnaire"))
+            return HttpResponseRedirect(reverse("reves:questionnaire"))
         
         # Récupérer les émotions pour le formulaire
         emotions = ReveEmotion.objects.all().order_by('ordre')
@@ -482,7 +482,7 @@ class ModifierReveView(LoginRequiredMixin, View):
             profil = request.user.profil
         except Profil.DoesNotExist:
             messages.error(request, "Profil utilisateur introuvable")
-            return HttpResponseRedirect(reverse("polls:index"))
+            return HttpResponseRedirect(reverse("reves:index"))
         
         # Récupérer le rêve et vérifier qu'il appartient à l'utilisateur
         reve = get_object_or_404(Reve, id=reve_id, profil=profil)
@@ -649,7 +649,7 @@ class JournalView(LoginRequiredMixin, View):
             profil = request.user.profil
         except Profil.DoesNotExist:
             messages.warning(request, "Veuillez completer votre profil d'abord.")
-            return HttpResponseRedirect(reverse("polls:profil"))
+            return HttpResponseRedirect(reverse("reves:profil"))
 
         journal_data = get_journal_data(profil)
 
@@ -734,7 +734,7 @@ class ReveAudioDownloadView(View):
             return response
         except Exception as error:
             messages.error(request, f"Erreur lors du téléchargement: {error}")
-            return HttpResponseRedirect(reverse("polls:journal"))
+            return HttpResponseRedirect(reverse("reves:journal"))
 
 
 class ExportRevesCsvView(LoginRequiredMixin, View):
@@ -752,19 +752,18 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
                 request,
                 f"Trop d'exports CSV. Réessayez dans {retry_after} secondes.",
             )
-            return HttpResponseRedirect(reverse("polls:profil"))
+            return HttpResponseRedirect(reverse("reves:profil"))
 
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:
             messages.error(request, "Profil utilisateur introuvable")
-            return HttpResponseRedirect(reverse("polls:profil"))
+            return HttpResponseRedirect(reverse("reves:profil"))
 
         reves = Reve.objects.filter(profil=profil).prefetch_related(
             'emotions_reve',
             'emotions_custom',
             'images_modalites',
-            'tags',
         ).order_by('-date', '-created_at')
 
         response = HttpResponse(content_type='text/csv; charset=utf-8')
@@ -790,7 +789,6 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
             'emotions_reve',
             'emotions_custom',
             'images_modalites',
-            'tags',
             'commentaire_libre',
             'transcription',
             'transcription_ready',
@@ -801,7 +799,6 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
             emotions = ', '.join(reve.emotions_reve.values_list('libelle', flat=True))
             emotions_custom = ', '.join(reve.emotions_custom.values_list('libelle', flat=True))
             modalites = ', '.join(reve.images_modalites.values_list('libelle', flat=True))
-            tags = ', '.join(reve.tags.values_list('libelle', flat=True))
             elements = ', '.join(reve.elements_reve or [])
 
             row = [
@@ -822,7 +819,6 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
                 emotions,
                 emotions_custom,
                 modalites,
-                tags,
                 reve.commentaire_libre or '',
                 reve.transcription or '',
                 'oui' if reve.transcription_ready else 'non',
@@ -892,7 +888,11 @@ class QuestionnaireView(View):
             return HttpResponseRedirect(reverse("login"))
         
         # Vérifier si l'utilisateur peut accéder au questionnaire
-        profil = request.user.profil
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            messages.error(request, "Profil utilisateur introuvable. Veuillez contacter l'administrateur.")
+            return HttpResponseRedirect(reverse("reves:index"))
 
         completed_count = Questionnaire.objects.filter(
             profil=profil,
@@ -903,7 +903,7 @@ class QuestionnaireView(View):
                 request,
                 "Vous avez déjà atteint la limite de 5 soumissions complètes du questionnaire.",
             )
-            return HttpResponseRedirect(reverse("polls:profil"))
+            return HttpResponseRedirect(reverse("reves:profil"))
         
         if not profil.can_access_questionnaire():
             # Afficher la page d'attente
@@ -937,7 +937,14 @@ class QuestionnaireView(View):
             return HttpResponseRedirect(reverse("login"))
         
         # Vérifier si l'utilisateur peut accéder au questionnaire
-        profil = request.user.profil
+        try:
+            profil = request.user.profil
+        except Profil.DoesNotExist:
+            error_msg = "Profil utilisateur introuvable."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': error_msg}, status=400)
+            messages.error(request, error_msg)
+            return HttpResponseRedirect(reverse("reves:index"))
 
         completed_count = Questionnaire.objects.filter(
             profil=profil,
@@ -953,13 +960,13 @@ class QuestionnaireView(View):
                     status=403,
                 )
             messages.error(request, "Limite atteinte: maximum 5 soumissions complètes du questionnaire.")
-            return HttpResponseRedirect(reverse("polls:profil"))
+            return HttpResponseRedirect(reverse("reves:profil"))
 
         if not profil.can_access_questionnaire():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'message': 'Accès non autorisé.'}, status=403)
             messages.error(request, "Vous devez attendre 1 semaine après la création de votre compte pour remplir le questionnaire.")
-            return HttpResponseRedirect(reverse("polls:questionnaire"))
+            return HttpResponseRedirect(reverse("reves:questionnaire"))
         
         # Check if this is an AJAX request (intermediate save during section navigation)
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1144,7 +1151,7 @@ class QuestionnaireView(View):
                             status=403,
                         )
                     messages.error(request, "Limite atteinte: maximum 5 soumissions complètes du questionnaire.")
-                    return HttpResponseRedirect(reverse("polls:profil"))
+                    return HttpResponseRedirect(reverse("reves:profil"))
 
                 now_ts = int(time.time())
                 last_submit_at = int(request.session.get('questionnaire_last_submit_at', 0) or 0)
@@ -1156,7 +1163,7 @@ class QuestionnaireView(View):
                 )
                 if duplicate_window_active:
                     messages.info(request, "Soumission déjà enregistrée.")
-                    return HttpResponseRedirect(reverse("polls:profil"))
+                    return HttpResponseRedirect(reverse("reves:profil"))
 
                 questionnaire = form.save(commit=False)
                 questionnaire.profil = profil_locked
@@ -1200,7 +1207,7 @@ class QuestionnaireView(View):
             request.session.modified = True
             
             messages.success(request, "Merci d'avoir complété le questionnaire ! Vos réponses ont été enregistrées.")
-            return HttpResponseRedirect(reverse("polls:profil"))
+            return HttpResponseRedirect(reverse("reves:profil"))
         else:
             if is_ajax:
                 # Return errors as JSON
@@ -1242,7 +1249,7 @@ class SignUpView(View):
     def get(self, request):
         """Afficher le formulaire d'inscription"""
         if request.user.is_authenticated:
-            return redirect('polls:index')
+            return redirect('reves:index')
         
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
@@ -1250,7 +1257,7 @@ class SignUpView(View):
     def post(self, request):
         """Traiter l'inscription"""
         if request.user.is_authenticated:
-            return redirect('polls:index')
+            return redirect('reves:index')
         
         form = self.form_class(request.POST)
         
@@ -1271,7 +1278,7 @@ class SignUpView(View):
                         request,
                         f'Bienvenue {user.username} ! Votre compte a été créé avec succès.'
                     )
-                    return redirect('polls:welcome')
+                    return redirect('reves:welcome')
                 else:
                     messages.error(
                         request,

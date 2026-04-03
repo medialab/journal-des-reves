@@ -46,7 +46,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import Questionnaire, Profil, Reve, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite, ReveTag
+from .models import Questionnaire, Profil, Reve, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite
 from .forms import QuestionnaireForm, SignUpForm
 
 
@@ -437,7 +437,7 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
         self.client = Client()
         self.user, self.profil = make_user_with_profil()
         self.client.login(username='testuser', password='testpass123')
-        self.url = reverse('polls:questionnaire')
+        self.url = reverse('reves:questionnaire')
 
     def _ajax_post(self, section, data):
         post_data = {'section': str(section), 'section_duration': '30'}
@@ -631,7 +631,7 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
         self.client = Client()
         self.user, self.profil = make_user_with_profil()
         self.client.login(username='testuser', password='testpass123')
-        self.url = reverse('polls:questionnaire')
+        self.url = reverse('reves:questionnaire')
 
     def _ajax_post(self, section, data):
         post_data = {'section': str(section), 'section_duration': '30'}
@@ -836,7 +836,7 @@ class QuestionnaireEndToEndTest(TestCase):
         self.client = Client()
         self.user, self.profil = make_user_with_profil()
         self.client.login(username='testuser', password='testpass123')
-        self.url = reverse('polls:questionnaire')
+        self.url = reverse('reves:questionnaire')
 
     def _ajax_post(self, section, data):
         post_data = {'section': str(section), 'section_duration': '45'}
@@ -1036,9 +1036,9 @@ class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
         self.client = Client()
         self.user, self.profil = make_user_with_profil(username='gate-user', days_old=10)
         self.client.login(username='gate-user', password='testpass123')
-        self.profil_url = reverse('polls:profil')
-        self.enregistrer_url = reverse('polls:enregistrer')
-        self.questionnaire_url = reverse('polls:questionnaire')
+        self.profil_url = reverse('reves:profil')
+        self.enregistrer_url = reverse('reves:enregistrer')
+        self.questionnaire_url = reverse('reves:questionnaire')
 
     def _complete_questionnaire_once(self):
         Questionnaire.objects.create(
@@ -1130,12 +1130,12 @@ class QuestionnaireAdminSmokeTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_questionnaire_changelist_loads(self):
-        response = self.client.get(reverse('admin:polls_questionnaire_changelist'))
+        response = self.client.get(reverse('admin:reves_questionnaire_changelist'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Questionnaires')
 
     def test_questionnaire_dashboard_loads(self):
-        response = self.client.get(reverse('admin:polls_questionnaire_dashboard'))
+        response = self.client.get(reverse('admin:reves_questionnaire_dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Dashboard')
         self.assertContains(response, 'Data')
@@ -1157,7 +1157,6 @@ class ReveAdminSmokeTest(TestCase):
         emotion = ReveEmotion.objects.create(libelle='Joie', emoji='🙂', ordre=1)
         emotion_custom = ReveEmotionCustom.objects.create(profil=self.profil, libelle='Soulagement')
         ReveElementCustom.objects.create(profil=self.profil, libelle='Bureau')
-        tag = ReveTag.objects.create(profil=self.profil, libelle='Travail', couleur='#123456')
 
         reve = Reve.objects.create(
             profil=self.profil,
@@ -1176,17 +1175,16 @@ class ReveAdminSmokeTest(TestCase):
         reve.images_modalites.add(image_modalite)
         reve.emotions_reve.add(emotion)
         reve.emotions_custom.add(emotion_custom)
-        reve.tags.add(tag)
 
         self.client.login(username='dream-admin', password='testpass123')
 
     def test_reve_changelist_loads(self):
-        response = self.client.get(reverse('admin:polls_reve_changelist'))
+        response = self.client.get(reverse('admin:reves_reve_changelist'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Dashboard rêves')
 
     def test_reve_dashboard_loads(self):
-        response = self.client.get(reverse('admin:polls_reve_dashboard'))
+        response = self.client.get(reverse('admin:reves_reve_dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Rêves visibles')
         self.assertContains(response, 'Tonalité agrégée')
@@ -1197,15 +1195,14 @@ class ReveAdminSmokeTest(TestCase):
 
     def test_vocab_admin_pages_load(self):
         for view_name in [
-            'admin:polls_reveemotion_changelist',
-            'admin:polls_reveimagemodalite_changelist',
-            'admin:polls_revetag_changelist',
+            'admin:reves_reveemotion_changelist',
+            'admin:reves_reveimagemodalite_changelist',
         ]:
             response = self.client.get(reverse(view_name))
             self.assertEqual(response.status_code, 200)
 
     def test_reve_export_contains_all_variable_columns(self):
-        response = self.client.get(reverse('admin:polls_reve_export_csv'))
+        response = self.client.get(reverse('admin:reves_reve_export_csv'))
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
         self.assertIn('images_modalites_labels', content)
@@ -1243,12 +1240,12 @@ class SecurityPermissionsUniformityTest(TestCase):
 
     def test_personal_endpoints_require_auth(self):
         endpoints = [
-            reverse('polls:profil'),
-            reverse('polls:export_reves_csv'),
-            reverse('polls:reve_audio', args=[self.reve_user1.id]),
-            reverse('polls:reve_transcription_update', args=[self.reve_user1.id]),
-            reverse('polls:notifications_list'),
-            reverse('polls:notification_unread_count'),
+            reverse('reves:profil'),
+            reverse('reves:export_reves_csv'),
+            reverse('reves:reve_audio', args=[self.reve_user1.id]),
+            reverse('reves:reve_transcription_update', args=[self.reve_user1.id]),
+            reverse('reves:notifications_list'),
+            reverse('reves:notification_unread_count'),
         ]
 
         for url in endpoints:
@@ -1258,17 +1255,17 @@ class SecurityPermissionsUniformityTest(TestCase):
     def test_resource_endpoints_enforce_ownership(self):
         self.client.login(username='perm-user-2', password='testpass123')
 
-        audio_resp = self.client.get(reverse('polls:reve_audio', args=[self.reve_user1.id]))
+        audio_resp = self.client.get(reverse('reves:reve_audio', args=[self.reve_user1.id]))
         self.assertEqual(audio_resp.status_code, 302)
 
         transcription_resp = self.client.post(
-            reverse('polls:reve_transcription_update', args=[self.reve_user1.id]),
+            reverse('reves:reve_transcription_update', args=[self.reve_user1.id]),
             {'transcription': 'intrusion'},
         )
         self.assertEqual(transcription_resp.status_code, 404)
 
         mark_resp = self.client.post(
-            reverse('polls:notification_mark_read', args=[self.notification_user1.id])
+            reverse('reves:notification_mark_read', args=[self.notification_user1.id])
         )
         self.assertEqual(mark_resp.status_code, 404)
 
@@ -1282,7 +1279,7 @@ class UploadAbuseProtectionTest(TestCase):
         # User newer than 7 days to bypass questionnaire mandatory gate for this specific test.
         self.user, self.profil = make_user_with_profil(username='upload-user', days_old=3)
         self.client.login(username='upload-user', password='testpass123')
-        self.url = reverse('polls:enregistrer')
+        self.url = reverse('reves:enregistrer')
 
     def tearDown(self):
         cache.clear()
@@ -1333,7 +1330,7 @@ class NotificationRateLimitTest(TestCase):
         cache.clear()
 
     def test_mark_read_rafale_hits_rate_limit(self):
-        url = reverse('polls:notification_mark_read', args=[self.notification.id])
+        url = reverse('reves:notification_mark_read', args=[self.notification.id])
 
         last_status = None
         for _ in range(25):
@@ -1353,7 +1350,7 @@ class QuestionnaireSubmissionPolicyTest(TestCase):
         self.client = Client()
         self.user, self.profil = make_user_with_profil(username='q-policy-user')
         self.client.login(username='q-policy-user', password='testpass123')
-        self.url = reverse('polls:questionnaire')
+        self.url = reverse('reves:questionnaire')
 
     def tearDown(self):
         cache.clear()
@@ -1422,7 +1419,7 @@ class SecureDreamAudioAccessTest(TestCase):
             audio=SimpleUploadedFile('dream.wav', b'test-audio-content', content_type='audio/wav'),
             existence_souvenir=True,
         )
-        self.url = reverse('polls:reve_audio_short', args=[self.reve.id])
+        self.url = reverse('reves:reve_audio_short', args=[self.reve.id])
 
     def tearDown(self):
         cache.clear()
@@ -1445,7 +1442,7 @@ class SecureDreamAudioAccessTest(TestCase):
             audio=SimpleUploadedFile('dream.webm', b'test-webm-content', content_type='audio/webm'),
             existence_souvenir=True,
         )
-        webm_url = reverse('polls:reve_audio_short', args=[webm_reve.id])
+        webm_url = reverse('reves:reve_audio_short', args=[webm_reve.id])
 
         self.client.login(username='audio-owner', password='testpass123')
         response = self.client.get(webm_url)

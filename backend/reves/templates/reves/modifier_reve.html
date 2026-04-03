@@ -20,7 +20,7 @@
 				{% endfor %}
 			{% endif %}
 
-			<form method="post" id="reve-form" class="form-card" data-submit-url="{% url 'polls:modifier_reve' reve.id %}" data-redirect-url="{% url 'polls:journal' %}">
+			<form method="post" id="reve-form" class="form-card" data-submit-url="{% url 'reves:modifier_reve' reve.id %}" data-redirect-url="{% url 'reves:journal' %}">
 				{% csrf_token %}
 
 				<!-- Section: Transcription -->
@@ -203,7 +203,7 @@
 
 				<!-- Boutons d'action -->
 				<div class="form-actions form-actions-layout" id="formActions">
-					<a href="{% url 'polls:journal' %}" class="btn btn-outline btn-large btn-form-action-base btn-form-action-outline">
+					<a href="{% url 'reves:journal' %}" class="btn btn-outline btn-large btn-form-action-base btn-form-action-outline">
 						Annuler
 					</a>
 					<button type="submit" id="submitBtn" class="btn btn-primary btn-large btn-form-action-base">
@@ -218,13 +218,14 @@
 				<h2 class="success-title">Modifications enregistrées !</h2>
 				<p class="success-text">Votre rêve a été mis à jour avec succès.</p>
 				<div class="success-actions">
-					<a href="{% url 'polls:journal' %}" class="btn btn-primary btn-large">Retour au journal</a>
+					<a href="{% url 'reves:journal' %}" class="btn btn-primary btn-large">Retour au journal</a>
 				</div>
 			</div>
 		</div>
 	</section>
 </div>
 
-<script src="{% static 'polls/js/modifier_reve.js' %}"></script>
+<script src="{% static 'reves/js/modifier_reve.js' %}"></script>
+<script src="{% static 'reves/js/autocomplete.js' %}?v=1"></script>
 
 {% endblock %}

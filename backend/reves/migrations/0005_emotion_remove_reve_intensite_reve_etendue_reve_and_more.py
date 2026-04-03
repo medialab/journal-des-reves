@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0004_questionnaire_annee_naissance_questionnaire_genre_and_more'),
+        ('reves', '0004_questionnaire_annee_naissance_questionnaire_genre_and_more'),
     ]
 
     operations = [
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reve',
             name='emotions_reve',
-            field=models.ManyToManyField(blank=True, related_name='reves', to='polls.emotion', verbose_name='Émotions ressenties'),
+            field=models.ManyToManyField(blank=True, related_name='reves', to='reves.emotion', verbose_name='Émotions ressenties'),
         ),
         migrations.CreateModel(
             name='Tag',
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                 ('libelle', models.CharField(max_length=100, verbose_name='Tag')),
                 ('couleur', models.CharField(default='#3245bd', help_text='Couleur en format hex (#RRGGBB)', max_length=7, verbose_name='Couleur du tag')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tags', to='polls.profil')),
+                ('profil', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tags', to='reves.profil')),
             ],
             options={
                 'verbose_name': 'Tag',
@@ -78,6 +78,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reve',
             name='tags',
-            field=models.ManyToManyField(blank=True, related_name='reves', to='polls.tag', verbose_name='Tags personnalisés'),
+            field=models.ManyToManyField(blank=True, related_name='reves', to='reves.tag', verbose_name='Tags personnalisés'),
         ),
     ]

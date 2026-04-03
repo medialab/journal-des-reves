@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0012_profil_welcome_email_sent'),
+        ('reves', '0012_profil_welcome_email_sent'),
     ]
 
     operations = [

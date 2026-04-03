@@ -59,8 +59,8 @@ class Command(BaseCommand):
                         push_payload = {
                             "head": "Journal des Rêves 🌙",
                             "body": "Avez-vous rêvé cette nuit ? N'oubliez pas d'enregistrer votre rêve !",
-                            "icon": "/static/polls/icons/icon-192x192.png",
-                            "url": "/polls/enregistrer/",
+                            "icon": "/static/reves/icons/icon-192x192.png",
+                            "url": "/enregistrer/",
                         }
                         send_user_notification(
                             user=profil.user,

@@ -30,7 +30,7 @@
                     <button type="button" class="btn btn-primary btn-large" onclick="openLoginModal(event)">
                         Se connecter
                     </button>
-                    <button type="button" class="btn btn-outline" onclick="window.location.href='{% url 'polls:index' %}'">
+                    <button type="button" class="btn btn-outline" onclick="window.location.href='{% url 'reves:index' %}'">
                         Retour à l'accueil
                     </button>
                 </div>
@@ -68,7 +68,7 @@
                 <span class="step-number" id="stepNumber">1</span> / <span class="step-total">3</span>
             </div>
 
-            <form method="post" id="questionnaireForm" class="modern-form" data-save-url="{% url 'polls:questionnaire' %}">
+            <form method="post" id="questionnaireForm" class="modern-form" data-save-url="{% url 'reves:questionnaire' %}">
                 {% csrf_token %}
 
                 <!-- ========== SECTION 1: CONDITIONS SOCIALES DU REVE ET DU SOMMEIL ========== -->
@@ -83,7 +83,7 @@
                         <label class="form-label">Avant cette enquête, vous est-il arrivé de noter vos rêves ?</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
-                                <input type="radio" name="freq_reves_not" value="1" {% if form.freq_reves_not.value == "1" %}checked{% endif %}>
+                                <input type="radio" name="freq_reves_not" value="1" required {% if form.freq_reves_not.value == "1" %}checked{% endif %}>
                                 <span class="radio-text">Oui souvent</span>
                             </label>
                             <label class="radio-label choice-label">
@@ -126,7 +126,7 @@
                     <div class="form-group">
                         <label class="form-label">Vous vous souvenez plutôt :</label>
                         <div class="radio-group">
-                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="1" {% if form.etendue_souvenir_reve.value == "1" %}checked{% endif %}><span class="radio-text">Une sensation</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="1" required {% if form.etendue_souvenir_reve.value == "1" %}checked{% endif %}><span class="radio-text">Une sensation</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="2" {% if form.etendue_souvenir_reve.value == "2" %}checked{% endif %}><span class="radio-text">Un instant précis</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="3" {% if form.etendue_souvenir_reve.value == "3" %}checked{% endif %}><span class="radio-text">Moins de la moitié de mon rêve</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="etendue_souvenir_reve" value="4" {% if form.etendue_souvenir_reve.value == "4" %}checked{% endif %}><span class="radio-text">Plus de la moitié de mon rêve</span></label>
@@ -137,7 +137,7 @@
                     <div class="form-group">
                         <label class="form-label">Vous avez l'impression de rêver davantage :</label>
                         <div class="radio-group">
-                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="1" {% if form.temps_du_reve.value == "1" %}checked{% endif %}><span class="radio-text">Du passé lointain</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="1" required {% if form.temps_du_reve.value == "1" %}checked{% endif %}><span class="radio-text">Du passé lointain</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="2" {% if form.temps_du_reve.value == "2" %}checked{% endif %}><span class="radio-text">Du passé proche</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="3" {% if form.temps_du_reve.value == "3" %}checked{% endif %}><span class="radio-text">Du présent (de la veille)</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="temps_du_reve" value="4" {% if form.temps_du_reve.value == "4" %}checked{% endif %}><span class="radio-text">Du futur (de ce qui pourrait arriver)</span></label>
@@ -172,7 +172,7 @@
                     <div class="form-group">
                         <label class="form-label">Vous arrive-t-il de vous réveiller la nuit avec des difficultés pour vous rendormir ?</label>
                         <div class="radio-group inline-boolean-group">
-                            <label class="radio-label choice-label"><input type="radio" name="reveil_nuit" value="True" {% if form.reveil_nuit.value == True or form.reveil_nuit.value == 'True' %}checked{% endif %}><span class="radio-text">Oui</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="reveil_nuit" value="True" required {% if form.reveil_nuit.value == True or form.reveil_nuit.value == 'True' %}checked{% endif %}><span class="radio-text">Oui</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="reveil_nuit" value="False" {% if form.reveil_nuit.value == False or form.reveil_nuit.value == 'False' %}checked{% endif %}><span class="radio-text">Non</span></label>
                         </div>
                     </div>
@@ -191,7 +191,7 @@
                     <div class="form-group">
                         <label class="form-label">Utilisez-vous des aides pour dormir (médicaments, tisane, application de méditation, etc.) ?</label>
                         <div class="radio-group inline-boolean-group">
-                            <label class="radio-label choice-label"><input type="radio" name="aide_sommeil" value="True" {% if form.aide_sommeil.value == True or form.aide_sommeil.value == 'True' %}checked{% endif %}><span class="radio-text">Oui</span></label>
+                            <label class="radio-label choice-label"><input type="radio" name="aide_sommeil" value="True" required {% if form.aide_sommeil.value == True or form.aide_sommeil.value == 'True' %}checked{% endif %}><span class="radio-text">Oui</span></label>
                             <label class="radio-label choice-label"><input type="radio" name="aide_sommeil" value="False" {% if form.aide_sommeil.value == False or form.aide_sommeil.value == 'False' %}checked{% endif %}><span class="radio-text">Non</span></label>
                         </div>
                     </div>
@@ -375,7 +375,7 @@
                             {% for value, label in form.sante_generale.field.choices %}
                             {% if value != '' %}
                             <label class="radio-label choice-label">
-                                <input type="radio" name="sante_generale" value="{{ value }}" {% if form.sante_generale.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <input type="radio" name="sante_generale" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.sante_generale.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
                                 <span class="radio-text">{{ label }}</span>
                             </label>
                             {% endif %}
@@ -479,7 +479,7 @@
                             <label class="form-label">Genre</label>
                             <div class="radio-group">
                                 <label class="radio-label choice-label">
-                                    <input type="radio" name="genre" value="1" {% if form.genre.value == "1" %}checked{% endif %}>
+                                    <input type="radio" name="genre" value="1" required {% if form.genre.value == "1" %}checked{% endif %}>
                                     <span class="radio-text">Femme</span>
                                 </label>
                                 <label class="radio-label choice-label">
@@ -499,7 +499,7 @@
                             <label class="form-label">Vous vivez plutôt dans un environnement :</label>
                             <div class="radio-group">
                                 <label class="radio-label choice-label">
-                                    <input type="radio" name="habitat" value="1" {% if form.habitat.value == "1" %}checked{% endif %}>
+                                    <input type="radio" name="habitat" value="1" required {% if form.habitat.value == "1" %}checked{% endif %}>
                                     <span class="radio-text">Rural</span>
                                 </label>
                                 <label class="radio-label choice-label">
@@ -742,12 +742,9 @@
                             {% if form.nb_enfants_moins14.errors %}<div class="error-message">{{ form.nb_enfants_moins14.errors }}</div>{% endif %}
                         </div>
                     </div>
-                </section>
 
-                <!-- ========== SECTION 2: EMOTIONS ET SENSATIONS (contenu joint à la section 3) ========== -->
-                <section class="form-section hidden" data-section="3">
-
-
+                    <!-- ========== SECTION 3 (suite): PARENTS ET CONJOINT·E ========== -->
+                    <div id="parents_info_group" class="is-hidden-inline">
                     <div class="focus-card">
                     <h4 class="detresse-title">Quelques éléments sur vos parents et conjoint·e</h4>
                     <div class="form-group">
@@ -780,6 +777,9 @@
                         <label class="form-label">Votre mère est / était plutôt...</label>
                         {{ form.mere_csp }}
                         {% if form.mere_csp.errors %}<div class="error-message">{{ form.mere_csp.errors }}</div>{% endif %}
+                    </div>
+
+                    </div>
                     </div>
 
                     <div id="conjoint_mobilite_group" class="is-hidden-inline">
@@ -815,10 +815,10 @@
 
                 <!-- Boutons de navigation -->
                 <div class="form-actions hidden" id="formActions">
-                    <button type="button" class="btn btn-outline is-hidden-inline" id="prevBtn">
+                    <button type="button" class="btn btn-outline is-hidden-inline" id="prevBtn" onclick="changeSection(-1)">
                         ← Précédent
                     </button>
-                    <button type="button" class="btn btn-primary" id="nextBtn">
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="saveCurrentSectionAndContinue(1); return false;">
                         Suivant →
                     </button>
                     <button type="submit" class="btn btn-success is-hidden-inline" id="submitBtn">
@@ -830,5 +830,5 @@
     </div>
 </section>
 
-<script src="{% static 'polls/js/questionnaire.js' %}"></script>
+<script src="{% static 'reves/js/questionnaire.js' %}"></script>
 {% endblock %}

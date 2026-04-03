@@ -5,7 +5,7 @@ import reves.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0030_add_recording_groups'),
+        ('reves', '0030_add_recording_groups'),
     ]
 
     operations = [
