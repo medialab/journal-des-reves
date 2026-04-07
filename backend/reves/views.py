@@ -1241,6 +1241,7 @@ class SignUpView(View):
     - Validation des mots de passe selon les standards Django
     - CSRF protection via CsrfViewMiddleware (déjà activé)
     - Validation de l'email unique
+    - Transaction atomique pour éviter les users orphelins
     """
     template_name = 'registration/signup.html'
     form_class = SignUpForm
@@ -1262,7 +1263,10 @@ class SignUpView(View):
         
         if form.is_valid():
             try:
+                from django.db import IntegrityError
+                
                 # Sauvegarder l'utilisateur et le profil avec les consentements
+                # (utilise transaction.atomic donc tout est rollbacké en cas d'erreur)
                 user = form.save()
                 
                 # Authentifier et connecter l'utilisateur automatiquement
@@ -1279,20 +1283,38 @@ class SignUpView(View):
                     )
                     return redirect('reves:welcome')
                 else:
-                    messages.error(
+                    # Ne devrait pas arriver ici normalement, mais en cas d'erreur,
+                    # proposer à l'utilisateur de se connecter
+                    messages.warning(
                         request,
-                        'Une erreur est survenue lors de la connexion. Veuillez vous connecter manuellement.'
+                        'Votre compte a été créé ! Veuillez vous connecter pour continuer.'
                     )
                     return redirect('login')
             
+            except IntegrityError as e:
+                # Erreur d'intégrité : doublon d'email généralement
+                if 'email' in str(e).lower() or 'unique' in str(e).lower():
+                    messages.error(
+                        request,
+                        'Cet email est déjà utilisé. Veuillez en choisir un autre ou vous connecter si vous avez déjà un compte.'
+                    )
+                else:
+                    messages.error(
+                        request,
+                        f'Erreur lors de la création du compte: {str(e)}'
+                    )
+                return render(request, self.template_name, {'form': form})
+            
             except Exception as e:
+                # Autres erreurs
                 messages.error(
                     request,
-                    f'Une erreur est survenue lors de la création du compte: {str(e)}'
+                    f'Une erreur inattendue est survenue: {str(e)}'
                 )
                 return render(request, self.template_name, {'form': form})
         else:
-            # Le formulaire contient des erreurs
+            # Le formulaire contient des erreurs de validation
+            # On affiche le formulaire avec les messages d'erreur
             return render(request, self.template_name, {'form': form})
 
 

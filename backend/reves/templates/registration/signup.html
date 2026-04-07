@@ -7,13 +7,22 @@
     <section class="page-hero page-hero-small">
         <div class="container-small journal-hero">
             <span class="journal-kicker">Création de compte</span>
-            <h1 class="page-title">Bienvenue dans notre enquête</h1>
+            <h1 class="page-title">Bienvenue</h1>
         </div>
     </section>
 
     <section class="page-content">
         <div class="container-small">
             <div class="form-card">
+                <!-- Messages Django (succès, erreurs, avertissements) -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags %}message-{{ message.tags }}{% else %}message{% endif %}" style="padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; border-left: 4px solid {% if message.tags == 'error' %}#f0564e{% elif message.tags == 'success' %}#4caf50{% elif message.tags == 'warning' %}#ff9800{% else %}#2196f3{% endif %}; background-color: {% if message.tags == 'error' %}#ffece6{% elif message.tags == 'success' %}#f1f8f5{% elif message.tags == 'warning' %}#fff8f0{% else %}#f3f8fc{% endif %};">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
                 {% if form.non_field_errors %}
                     <div class="error-message">
                         <strong>Erreur :</strong>

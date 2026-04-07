@@ -32,7 +32,13 @@ from .models import (
 
 # Profil Admin
 class ProfilAdmin(ModelAdmin):
-    list_display = ['user', 'consent_data_processing', 'consent_date']
+    list_display = [
+        'user',
+        'consent_data_processing',
+        'consent_password_account',
+        'consent_quote_expressions',
+        'consent_date',
+    ]
     search_fields = ['user__username', 'user__email']
     list_filter = ['consent_data_processing', 'consent_date']
 

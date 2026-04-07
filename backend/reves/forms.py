@@ -800,29 +800,47 @@ class SignUpForm(UserCreationForm):
         """
         Sauvegarder l'utilisateur et créer un profil avec les consentements.
         Utilise le hashage sécurisé de Django par défaut (PBKDF2).
+        Utilise une transaction atomique pour éviter les users orphelins.
+        
+        NOTE: Désactiver le signal post_save qui crée un Profil automatiquement
+        pour que on puisse créer le Profil manuellement avec les consentements.
         """
+        from django.db import transaction
+        from django.db.models.signals import post_save
+        from django.contrib.auth.models import User as UserModel
+        from reves.signals import create_profil_on_user_creation
+        
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         
         if commit:
-            user.save()
-            
-            # Créer un profil associé avec les consentements
-            profil = Profil.objects.create(
-                user=user,
-                email=user.email,
-                # Enregistrer les consentements
-                consent_data_processing=self.cleaned_data['consent_data_processing'],
-                consent_password_account=self.cleaned_data['consent_password_account'],
-                consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
-                consent_date=timezone.now(),
-                welcome_email_sent=False  # L'email sera envoyé à la première connexion
+            # Déconnecter le signal temporarily
+            post_save.disconnect(
+                create_profil_on_user_creation,
+                sender=UserModel
             )
-
-            # Ruse temporaire: conserver toute la logique de délai (7 jours)
-            # mais rendre les nouveaux inscrits immédiatement éligibles,
-            # sans toucher la vraie date de création du profil.
-            profil.created_at_trick = timezone.now() - timezone.timedelta(days=8)
-            profil.save(update_fields=['created_at_trick'])
+            
+            try:
+                with transaction.atomic():
+                    # Sauvegarder l'utilisateur
+                    user.save()
+                    
+                    # CRÉER LE PROFIL MANUELLEMENT avec les consentements
+                    profil = Profil.objects.create(
+                        user=user,
+                        email=user.email,
+                        consent_data_processing=self.cleaned_data['consent_data_processing'],
+                        consent_password_account=self.cleaned_data['consent_password_account'],
+                        consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
+                        consent_date=timezone.now(),
+                        welcome_email_sent=False,
+                        created_at_trick=timezone.now() - timezone.timedelta(days=8)
+                    )
+            finally:
+                # Reconnecter le signal
+                post_save.connect(
+                    create_profil_on_user_creation,
+                    sender=UserModel
+                )
         
         return user
