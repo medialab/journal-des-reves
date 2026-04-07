@@ -19,12 +19,15 @@ RUN pip install --user --no-cache-dir --prefer-binary -r requirements.txt
 # Stage 2: Runtime - Étape finale pour la production
 FROM python:3.12-slim
 
-# Installer Nginx et autres dépendances runtime
+# Installer Nginx, Supervisor, Gunicorn et autres dépendances runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     supervisor \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
+
+# Installer Gunicorn via pip (en complément à requirements.txt)
+RUN pip install --no-cache-dir gunicorn
 
 WORKDIR /app
 

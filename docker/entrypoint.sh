@@ -1,38 +1,29 @@
 #!/bin/bash
 
 # Entrypoint script pour le conteneur Docker
-# Exécute les tâches de démarrage avant de lancer supervisord
+# Exécute les migrations et collecte les fichiers statiques avant de lancer supervisord
 
 set -e
 
 echo "🚀 Initialisation du conteneur Docker..."
 
-# Attendre que la base de données soit disponible (si PostgreSQL externe)
-# DATABASE_HOST=${DATABASE_HOST:-localhost}
-# DATABASE_PORT=${DATABASE_PORT:-5432}
-# until nc -z $DATABASE_HOST $DATABASE_PORT; do
-#   echo "Attente de la base de données..."
-#   sleep 1
-# done
-# echo "Base de données disponible!"
-
-# Appliquer les migrations
+# Appliquer les migrations Django
 echo "📦 Application des migrations Django..."
 cd /app
-python manage.py migrate --noinput || true
+python manage.py migrate --noinput
 
 # Collecter les fichiers statiques
 echo "📂 Collecte des fichiers statiques..."
-python manage.py collectstatic --noinput --clear || true
+python manage.py collectstatic --noinput --clear
 
-# Vérifier les problématiques de sécurité
-echo "🔒 Vérification de la sécurité..."
-python manage.py check --deploy --fail-level WARNING || true
+# Vérifier les configurations de sécurité
+echo "🔒 Vérification des configurations Django..."
+python manage.py check --deploy
 
 echo ""
 echo "✅ Initialisation terminée!"
-echo "🌐 Démarrage de l'application..."
+echo "🌐 Démarrage de l'application avec Nginx + Gunicorn..."
 echo ""
 
-# Lancer supervisord
+# Lancer supervisord (qui gère Nginx et Gunicorn)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
