@@ -1259,6 +1259,57 @@
     max-width: 100%;
 }
 
+/* Apply same styling to modifier_reve.html form sections */
+#reve-form #typeReveSection .choice-label,
+#reve-form #emotionsSection .choice-label,
+#reve-form #elementsSection .choice-label,
+#reve-form #tempsSection .choice-label {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(50, 69, 189, 0.2) !important;
+    box-shadow: none;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+#reve-form #typeReveSection .choice-label:hover,
+#reve-form #emotionsSection .choice-label:hover,
+#reve-form #elementsSection .choice-label:hover,
+#reve-form #tempsSection .choice-label:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(50, 69, 189, 0.06);
+}
+
+#reve-form #typeReveSection .choice-label.is-selected,
+#reve-form #emotionsSection .choice-label.is-selected,
+#reve-form #elementsSection .choice-label.is-selected,
+#reve-form #tempsSection .choice-label.is-selected {
+    background: rgba(50, 69, 189, 0.09);
+    border-color: rgba(50, 69, 189, 0.42) !important;
+}
+
+#reve-form #typeReveSection .choice-label.is-selected .radio-text,
+#reve-form #typeReveSection .choice-label.is-selected .checkbox-text,
+#reve-form #emotionsSection .choice-label.is-selected .radio-text,
+#reve-form #emotionsSection .choice-label.is-selected .checkbox-text,
+#reve-form #elementsSection .choice-label.is-selected .radio-text,
+#reve-form #elementsSection .choice-label.is-selected .checkbox-text,
+#reve-form #tempsSection .choice-label.is-selected .radio-text,
+#reve-form #tempsSection .choice-label.is-selected .checkbox-text {
+    color: #1e3a8a !important;
+    font-weight: 600;
+}
+
+#reve-form #tempsSection .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: flex-start;
+}
+
+#reve-form #tempsSection .radio-label {
+    width: auto;
+    max-width: 100%;
+}
+
 #reve-form #commentaireLibre {
     min-height: 84px;
     padding: 0.45rem 0.65rem;

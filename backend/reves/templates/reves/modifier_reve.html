@@ -34,7 +34,7 @@
 				</div>
 
 				<!-- Section: Type de Reve -->
-				<div class="form-section">
+				<div class="form-section" id="typeReveSection">
 					<div class="form-group">
 						<label class="form-label form-label-inline-help">
 							<span>C'était plutôt un...</span>
@@ -179,25 +179,6 @@
 							<span>Commentaire libre</span>
 						</label>
 						<textarea id="commentaireLibre" name="commentaire_libre" class="form-textarea" rows="4" placeholder="Ajoutez un commentaire (optionnel)">{{ reve.commentaire_libre|default:'' }}</textarea>
-					</div>
-				</div>
-
-				<!-- Section: Modalités d'images -->
-				<div class="form-section">
-					<div class="form-group">
-						<label class="form-label form-label-inline-help">
-							<span>Dans ton rêve, il y avait :</span>
-							<span class="inline-help">Modalités sensorielles présentes dans le rêve</span>
-						</label>
-						
-						<div class="checkbox-group" id="modalitesGroup">
-							{% for modalite in images_modalites %}
-								<label class="checkbox-label choice-label {% if modalite.id in reve_modalites_ids %}is-selected{% endif %}">
-									<input type="checkbox" name="images_modalites" value="{{ modalite.id }}" {% if modalite.id in reve_modalites_ids %}checked{% endif %}>
-									<span class="checkbox-text">{{ modalite.libelle }}</span>
-								</label>
-							{% endfor %}
-						</div>
 					</div>
 				</div>
 
