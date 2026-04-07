@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  # Service Django + Nginx
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: site_reves_web
+    ports:
+      - "80:80"
+      # Optionnel: Port HTTPS (ajouter certificats SSL later)
+      # - "443:443"
+    environment:
+      # Variables de production - À ADAPTER
+      DJANGO_DEBUG: "False"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+      DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS}"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "${DJANGO_CSRF_TRUSTED_ORIGINS}"
+      # Base de données (si externe)
+      # DATABASE_URL: "${DATABASE_URL}"
+      # Email
+      EMAIL_BACKEND: "${EMAIL_BACKEND}"
+      EMAIL_HOST: "${EMAIL_HOST}"
+      EMAIL_PORT: "${EMAIL_PORT}"
+      EMAIL_USE_TLS: "${EMAIL_USE_TLS}"
+      EMAIL_HOST_USER: "${EMAIL_HOST_USER}"
+      EMAIL_HOST_PASSWORD: "${EMAIL_HOST_PASSWORD}"
+    volumes:
+      # Volumes persistants
+      - media_data:/app/media
+      - static_data:/app/static
+      - logs_data:/app/logs
+      # Base de données (si utilisée)
+      - ./backend/db.sqlite3:/app/db.sqlite3
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Service de backup (optionnel)
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: site_reves_backup
+    command: python manage.py runscript scripts.backup_database --script-args daily
+    environment:
+      DJANGO_DEBUG: "False"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+    volumes:
+      - ./backups:/app/backups
+      - ./backend/db.sqlite3:/app/db.sqlite3
+    env_file:
+      - .env.prod
+    # Planifier le backup (ex: tous les jours à minuit)
+    # Utiliser cron ou un système externe pour déclencher
+    profiles:
+      - backup
+
+volumes:
+  media_data:
+    driver: local
+  static_data:
+    driver: local
+  logs_data:
+    driver: local
+
+networks:
+  default:
+    name: site_reves_network

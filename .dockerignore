@@ -1,0 +1,71 @@
+# .dockerignore
+# Exclure les fichiers inutiles de l'image Docker
+
+# Version control
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+docs/
+*.md
+CONTRIBUTING.md
+SECURITY_README.md
+
+# Logs
+*.log
+logs/
+
+# Tests
+tests/
+test_*.py
+.coverage
+htmlcov/
+
+# Environnement local
+mon_env/
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker/
+docker-compose.yml
+docker-compose.*.yml
+
+# Backup et données locales
+backups/
+db.sqlite3
+*.sqlite3
+media/old_*
+
+# Node modules (si jamais tu utilises npm)
+node_modules/
+npm-debug.log

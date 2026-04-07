@@ -55,6 +55,10 @@ RUN rm -f /etc/nginx/sites-enabled/default && \
 # Copier la configuration supervisord
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copier le script entrypoint
+COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Changement de permissions
 RUN chown -R www-data:www-data /app && \
     chown -R www-data:www-data /var/log/app
@@ -62,5 +66,5 @@ RUN chown -R www-data:www-data /app && \
 # Exposer le port 80 (HTTP)
 EXPOSE 80
 
-# Commande pour démarrer supervisord (gère Django et Nginx)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Commande pour démarrer l'entrypoint (qui lance supervisord)
+CMD ["/app/entrypoint.sh"]
