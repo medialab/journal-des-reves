@@ -56,7 +56,7 @@
 ## 🚀 Déployer en 1 Ligne
 
 ```bash
-cd /opt && git clone https://github.com/medialab/site_reves.git && cd site_reves && bash deploy_docker.sh
+cd /opt && git clone https://github.com/medialab/site_reves.git && cd site_reves && bash docker/scripts/deploy.sh
 ```
 
 **⏳ Durée:** ~25 minutes | **Résultat:** Application sur http://reves-journal.fr
@@ -74,7 +74,7 @@ sudo usermod -aG docker $USER
 ### 2. Cloner & Vérifier
 ```bash
 cd /opt && git clone https://github.com/medialab/site_reves.git && cd site_reves
-bash docker_pre_deployment_check.sh  # Doit retourner ✅
+bash docker/scripts/check.sh  # Doit retourner ✅
 ```
 
 ### 3. Construire & Démarrer
@@ -151,10 +151,12 @@ Internet (Port 80)
 | `Dockerfile` | Image Docker |
 | `docker-compose.yml` | Orchestration |
 | `.env.prod` | Config production (SECRET!) |
+| `.dockerignore` | Exclusions fichiers inutiles |
 | `docker/nginx.conf` | Nginx config |
 | `docker/supervisord.conf` | Gestion processus |
-| `deploy_docker.sh` | Script déploiement auto |
-| `docker_pre_deployment_check.sh` | Vérification |
+| `docker/entrypoint.sh` | Script initialisation |
+| `docker/scripts/deploy.sh` | Script déploiement auto |
+| `docker/scripts/check.sh` | Vérification |
 
 ---
 
@@ -193,17 +195,17 @@ docker-compose restart web
 ## 📞 Besoin d'Aide?
 
 - **Logs:** `docker-compose logs -f web`
-- **Vérification:** `bash docker_pre_deployment_check.sh`
+- **Vérification:** `bash docker/scripts/check.sh`
 - **Shell Django:** `docker-compose exec web python manage.py shell`
-- **Documentation complète:** `DEPLOYMENT_DOCKER.md` (avant suppression)
+- **Déploiement:** `bash docker/scripts/deploy.sh`
 
 ---
 
 ## 🎯 Checklist Finale
 
 - [ ] Serveur avec Docker installé
-- [ ] Repositorygit cloné
-- [ ] `bash docker_pre_deployment_check.sh` ✅
+- [ ] Repository git cloné
+- [ ] `bash docker/scripts/check.sh` ✅
 - [ ] `docker-compose build` complet
 - [ ] `docker-compose up -d` lancé
 - [ ] `docker-compose ps` montre healthy
