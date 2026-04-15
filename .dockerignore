@@ -55,8 +55,6 @@ mon_env/
 Thumbs.db
 
 # Docker
-Dockerfile
-docker/
 docker-compose.yml
 docker-compose.*.yml
 
