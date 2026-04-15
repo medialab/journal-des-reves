@@ -103,6 +103,9 @@ class QuestionnaireForm(forms.ModelForm):
             'habitat',
             'niv_diplome',
             'revenus_tranche',
+            'logement',
+            'pret',
+            'montant_loyer',
             'travail_statut',
             'a_deja_travaille',
             'profession',
@@ -217,6 +220,15 @@ class QuestionnaireForm(forms.ModelForm):
             'revenus_tranche': forms.Select(attrs={
                 'class': 'form-input'
             }),
+            'logement': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'pret': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'montant_loyer': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'type': 'number',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '€'
+            }),
             'travail_statut': forms.Select(attrs={
                 'class': 'form-input',
                 'id': 'id_travail_statut'
@@ -320,6 +332,9 @@ class QuestionnaireForm(forms.ModelForm):
             'genre': 'Genre',
             'niv_diplome': 'Quel est votre diplôme le plus élevé ?',
             'revenus_tranche': 'Revenus mensuels du ménage',
+            'logement': 'Concernant votre résidence principale, êtes-vous…',
+            'pret': 'Avez-vous un remboursement de prêt en cours pour votre résidence principale ?',
+            'montant_loyer': 'Quel est le montant de ce loyer ou de votre prêt par mois ?',
             'travail_statut': 'Situation principale vis-à-vis du travail',
             'profession': 'Profession',
             'statut_couple': 'Êtes-vous en couple ?',

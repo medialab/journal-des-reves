@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	document.getElementById('id_profession').addEventListener('change', updateManagementFieldVisibility);
 
+	// Logement conditionnel
+	document.querySelectorAll('input[name="logement"]').forEach(radio => {
+		radio.addEventListener('change', updateLogementFields);
+	});
+	document.querySelectorAll('input[name="pret"]').forEach(radio => {
+		radio.addEventListener('change', updateLogementFields);
+	});
+
 	const questionnaireModal = document.getElementById('questionnaireLoginModal');
 	if (questionnaireModal) {
 		const originalOpenModal = window.openLoginModal;
@@ -43,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	updateSocialConditionsFields();
 	updateSectionTwoFields();
 	updateSectionThreeFields();
+	updateLogementFields();
 	bindSocialConditionsListeners();
 	addRequiredAsterisks();
 	normalizeServerValidationMessages();
@@ -736,6 +745,59 @@ function toggleExclusiveGroup(masterCheckboxId, optionsSelector) {
 		options.forEach(input => {
 			input.disabled = false;
 		});
+	}
+}
+
+/**
+ * Gère l'affichage conditionnel des champs de logement
+ * - pret: visible si logement = 1 (Propriétaire)
+ * - montant_loyer: visible si (logement=1 et pret=True) OU (logement=2 ou 3)
+ */
+function updateLogementFields() {
+	const logementValue = document.querySelector('input[name="logement"]:checked')?.value;
+	const pretGroup = document.getElementById('pret_group');
+	const montantLoyerGroup = document.getElementById('montant_loyer_group');
+	const pretRadios = document.querySelectorAll('input[name="pret"]');
+	
+	if (!pretGroup || !montantLoyerGroup) {
+		return;
+	}
+	
+	// Afficher/masquer le groupe "pret" si logement = 1 (Propriétaire)
+	if (logementValue === '1') {
+		pretGroup.style.display = 'block';
+	} else {
+		pretGroup.style.display = 'none';
+		// Réinitialiser le champ pret
+		pretRadios.forEach(radio => {
+			radio.checked = false;
+		});
+	}
+	
+	// Déterminer si montant_loyer doit être visible
+	let showMontantLoyer = false;
+	
+	if (logementValue === '1') {
+		// Propriétaire: visible si pret = True
+		const pretChecked = document.querySelector('input[name="pret"]:checked');
+		if (pretChecked && pretChecked.value === 'True') {
+			showMontantLoyer = true;
+		}
+	} else if (logementValue === '2' || logementValue === '3') {
+		// Locataire social ou privé: toujours visible
+		showMontantLoyer = true;
+	}
+	
+	// Afficher/masquer le groupe montant_loyer
+	if (showMontantLoyer) {
+		montantLoyerGroup.style.display = 'block';
+	} else {
+		montantLoyerGroup.style.display = 'none';
+		// Réinitialiser le champ montant_loyer
+		const montantInput = document.getElementById('id_montant_loyer');
+		if (montantInput) {
+			montantInput.value = '';
+		}
 	}
 }
 

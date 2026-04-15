@@ -196,8 +196,6 @@ class ReveElementCustom(models.Model):
         return f"{self.libelle} ({self.profil.user.username})"
 
 
-# ReveTag model supprimé - utiliser les services appropriés pour le tagging
-
 
 # BASE DE DONNEES REVES ========================
 
@@ -598,6 +596,37 @@ class Questionnaire(models.Model):
         blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(19)],
         verbose_name='Combien ont moins de 14 ans ?'
+    )
+
+    # Statut résidence principale
+    class LogementChoices(models.IntegerChoices):
+        PROPRIETAIRE = 1, "Propriétaire"
+        LOCATAIRE_SOCIAL = 2, "Locataire d'un logement social"
+        LOCATAIRE_PRIVE = 3, "Locataire hors logement social, dans le parc privé"
+        LOGE_GRATUITEMENT = 4, "Logé·e gratuitement"
+        AUTRE = 5, "Autre"
+
+    logement = models.IntegerField(
+        choices=LogementChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Concernant votre résidence principale, êtes-vous…"
+    )
+
+    # Remboursement de prêt (conditionnel: afficher si logement = 1)
+    pret = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Avez-vous un remboursement de prêt en cours pour votre résidence principale ?"
+    )
+
+    # Montant du loyer ou prêt mensuel (conditionnel: si logement=1 et pret=True OU logement=2 ou 3)
+    montant_loyer = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Quel est le montant de ce loyer ou de votre prêt par mois ?"
     )
 
     # Mobilite sociale - diplome des parents / conjoint

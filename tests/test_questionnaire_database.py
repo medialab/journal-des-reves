@@ -468,6 +468,215 @@ class QuestionnaireIntegrationTests(TestCase):
         self.assertEqual(q_from_db.habitat, 1)
         self.assertTrue(q_from_db.is_completed)
 
+    # ===== TESTS DES NOUVEAUX CHAMPS: LOGEMENT, PRÊT, MONTANT_LOYER =====
+    
+    def test_logement_field_integer_choices(self):
+        """Teste que le champ logement enregistre correctement une valeur IntegerField"""
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=Questionnaire.LogementChoices.PROPRIETAIRE
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.logement, 1, "Le logement devrait être 1 (Propriétaire)")
+        self.assertEqual(q_from_db.get_logement_display(), "Propriétaire", "Le label devrait être 'Propriétaire'")
+
+    def test_logement_all_choices(self):
+        """Teste tous les choix possibles du champ logement"""
+        choices_to_test = [
+            (1, "Propriétaire"),
+            (2, "Locataire d'un logement social"),
+            (3, "Locataire hors logement social, dans le parc privé"),
+            (4, "Logé·e gratuitement"),
+            (5, "Autre"),
+        ]
+        
+        for value, label in choices_to_test:
+            q = Questionnaire.objects.create(
+                profil=self.profil,
+                user=self.user,
+                logement=value
+            )
+            q_from_db = Questionnaire.objects.get(id=q.id)
+            self.assertEqual(q_from_db.logement, value, f"Logement {value} devrait être {value}")
+            q.delete()
+
+    def test_pret_boolean_field(self):
+        """Teste que le champ pret enregistre correctement une valeur BooleanField"""
+        # Test avec True
+        q1 = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=1,  # Propriétaire
+            pret=True
+        )
+        
+        q1_from_db = Questionnaire.objects.get(id=q1.id)
+        self.assertTrue(q1_from_db.pret, "pret devrait être True")
+        
+        # Test avec False
+        q2 = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=1,  # Propriétaire
+            pret=False
+        )
+        
+        q2_from_db = Questionnaire.objects.get(id=q2.id)
+        self.assertFalse(q2_from_db.pret, "pret devrait être False")
+
+    def test_pret_optional_field(self):
+        """Teste que le champ pret peut être optionnel (NULL)"""
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=2  # Locataire social
+            # pret non rempli
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertIsNone(q_from_db.pret, "pret devrait être NULL pour locataire")
+
+    def test_montant_loyer_decimal_field(self):
+        """Teste que le champ montant_loyer enregistre correctement une valeur DecimalField"""
+        from decimal import Decimal
+        
+        montant = Decimal('850.50')
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=1,  # Propriétaire
+            pret=True,
+            montant_loyer=montant
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.montant_loyer, montant, f"montant_loyer devrait être {montant}")
+
+    def test_montant_loyer_various_values(self):
+        """Teste différentes valeurs du montant_loyer"""
+        from decimal import Decimal
+        
+        test_values = [
+            Decimal('0.00'),
+            Decimal('100.50'),
+            Decimal('1000.00'),
+            Decimal('2500.99'),
+        ]
+        
+        for montant in test_values:
+            q = Questionnaire.objects.create(
+                profil=self.profil,
+                user=self.user,
+                montant_loyer=montant
+            )
+            q_from_db = Questionnaire.objects.get(id=q.id)
+            self.assertEqual(q_from_db.montant_loyer, montant, f"montant_loyer {montant} devrait être enregistré correctement")
+            q.delete()
+
+    def test_montant_loyer_optional_field(self):
+        """Teste que le champ montant_loyer peut être optionnel (NULL)"""
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=4  # Logé gratuitement
+            # montant_loyer non rempli
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertIsNone(q_from_db.montant_loyer, "montant_loyer devrait être NULL si logé gratuitement")
+
+    def test_logement_pret_montant_complete_scenario_proprietaire(self):
+        """Teste un scénario complet: Propriétaire avec prêt et montant"""
+        from decimal import Decimal
+        
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=1,  # Propriétaire
+            pret=True,
+            montant_loyer=Decimal('800.75')
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.logement, 1)
+        self.assertTrue(q_from_db.pret)
+        self.assertEqual(q_from_db.montant_loyer, Decimal('800.75'))
+
+    def test_logement_pret_montant_complete_scenario_locataire_social(self):
+        """Teste un scénario complet: Locataire social avec loyer"""
+        from decimal import Decimal
+        
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=2,  # Locataire social
+            pret=None,   # Pas applicable
+            montant_loyer=Decimal('450.00')
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.logement, 2)
+        self.assertIsNone(q_from_db.pret)
+        self.assertEqual(q_from_db.montant_loyer, Decimal('450.00'))
+
+    def test_logement_pret_montant_complete_scenario_locataire_prive(self):
+        """Teste un scénario complet: Locataire privé avec loyer"""
+        from decimal import Decimal
+        
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=3,  # Locataire privé
+            pret=None,   # Pas applicable
+            montant_loyer=Decimal('750.50')
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.logement, 3)
+        self.assertIsNone(q_from_db.pret)
+        self.assertEqual(q_from_db.montant_loyer, Decimal('750.50'))
+
+    def test_logement_pret_montant_complete_scenario_loge_gratuitement(self):
+        """Teste un scénario complet: Logé gratuitement"""
+        
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=4,  # Logé gratuitement
+            pret=None,
+            montant_loyer=None
+        )
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.logement, 4)
+        self.assertIsNone(q_from_db.pret)
+        self.assertIsNone(q_from_db.montant_loyer)
+
+    def test_update_logement_pret_montant(self):
+        """Teste la modification des champs logement, pret, montant_loyer"""
+        from decimal import Decimal
+        
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            user=self.user,
+            logement=1,
+            pret=True,
+            montant_loyer=Decimal('800.00')
+        )
+        
+        # Modifier les champs
+        q.logement = 2
+        q.pret = None
+        q.montant_loyer = Decimal('450.00')
+        q.save()
+        
+        q_from_db = Questionnaire.objects.get(id=q.id)
+        self.assertEqual(q_from_db.logement, 2)
+        self.assertIsNone(q_from_db.pret)
+        self.assertEqual(q_from_db.montant_loyer, Decimal('450.00'))
+
 
 if __name__ == '__main__':
     import unittest

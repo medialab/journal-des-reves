@@ -1,37 +1,27 @@
 {
   "emotions": [
-  "Abattement", "Accablement", "Admiration", "Agitation", "Allégresse",
-  "Amour", "Amusement", "Anxiété", "Apaisement", "Approbation",
-  "Ardeur", "Bienveillance", "Calme", "Chagrin", "Clarté",
-  "Colère", "Confusion", "Confiance", "Contentement", "Culpabilité",
-  "Curiosité", "Déception", "Désapprobation", "Désespoir", "Désir",
-  "Détente", "Dégoût", "Doute", "Embarras", "Émerveillement",
-  "Ennui", "Enthousiasme", "Envie", "Euphorie", "Exaltation",
-  "Excitation", "Fascination", "Fierté", "Frustration", "Gêne",
-  "Gratitude", "Haine", "Honte", "Indifférence", "Inquiétude",
-  "Irritation", "Jalousie", "Légèreté", "Lourdeur",
-  "Mélancolie", "Nervosité", "Nostalgie", "Optimisme", "Orgueil",
-  "Passion", "Peur", "Perplexité", "Pessimisme", "Plénitude",
-  "Prise de conscience", "Regret", "Remords", "Résignation", "Sécurité",
-  "Sérénité", "Solitude", "Soulagement", "Stress", "Stupeur",
-  "Surprise", "Tendresse", "Torpeur", "Tristesse", "Vertige",
-  "Vide", "Vulnérabilité"
+   "Admiration", "Amusement", "Amour", "Anxiété", "Approbation","Appréhension", "Bonheur",
+    "Bienveillance", "Chagrin", "Colère", "Confusion", "Curiosité",
+    "Déception", "Désapprobation", "Désir", "Détente", "Dégoût",
+    "Embarras", "Excitation", "Fierté", "Gratitude", "Irritation",
+    "Nervosité", "Optimisme", "Passion", "Peur", "Prise de conscience",
+    "Remords", "Solitude", "Soulagement", "Surprise", "Tristesse"
   ],
-  "elements": [
-    "Bureau", "Maison", "École", "Université", "Rue",
-    "Forêt", "Montagne", "Mer", "Plage", "Voiture",
-    "Train", "Avion", "Enfants", "Parents", "Frères et sœurs",
-    "Partenaire", "Collègues", "Patron", "Professeur", "Voisins",
-    "Étrangers", "Animaux", "Chat", "Chien", "Oiseau",
-    "Eau", "Feu", "Soleil", "Lune", "Étoiles",
-    "Nuages", "Pluie", "Neige", "Vent", "Tempête",
-    "Arc-en-ciel", "Aurore", "Coucher de soleil", "Jardin", "Parc",
-    "Restaurant", "Cinéma", "Musée", "Bibliothèque", "Hôpital",
-    "Église", "Marché", "Stade", "Piscine", "Château",
-    "Pont", "Ascenseur", "Escalier", "Couloir", "Grenier",
-    "Cave", "Île", "Désert", "Rivière", "Lac",
-    "Médecin", "Inconnu", "Enfant", "Vieillard", "Personnage célèbre",
-    "Argent", "Clé", "Porte", "Miroir", "Téléphone",
-    "Livre", "Arme", "Véhicule", "Nourriture", "Vêtements"
-  ]
+    "elements": [
+      "Bureau", "Maison", "École", "Université", "Rue",
+      "Forêt", "Montagne", "Mer", "Plage", "Voiture",
+      "Train", "Avion", "Enfants", "Parents", "Frères et sœurs",
+      "Partenaire", "Collègues", "Patron", "Professeur", "Voisins",
+      "Étrangers", "Animaux", "Chat", "Chien", "Oiseau",
+      "Eau", "Feu", "Soleil", "Lune", "Étoiles",
+      "Nuages", "Pluie", "Neige", "Vent", "Tempête",
+      "Arc-en-ciel", "Aurore", "Coucher de soleil", "Jardin", "Parc",
+      "Restaurant", "Cinéma", "Musée", "Bibliothèque", "Hôpital",
+      "Église", "Marché", "Stade", "Piscine", "Château",
+      "Pont", "Ascenseur", "Escalier", "Couloir", "Grenier",
+      "Cave", "Île", "Désert", "Rivière", "Lac",
+      "Médecin", "Inconnu", "Enfant", "Vieillard", "Personnage célèbre",
+      "Argent", "Clé", "Porte", "Miroir", "Téléphone",
+      "Livre", "Arme", "Véhicule", "Nourriture", "Vêtements"
+    ]
 }

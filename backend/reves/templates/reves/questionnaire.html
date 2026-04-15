@@ -564,7 +564,7 @@
 
                     <!-- Revenus -->
                     <div class="form-group">
-                        <label class="form-label" for="id_revenus_tranche">En prenant en compte tous les types de revenus (salaire, aides sociales, aides familiales, revenus du patrimoine...) après impôts, quel est actuellement le montant mensuel des ressources de l’ensemble de votre ménage (conjoint inclus) ? </label>
+                        <label class="form-label" for="id_revenus_tranche">En prenant en compte tous les types de revenus (salaire, aides sociales, chômages, aides familiales, revenus du patrimoine fonciers et financiers...) après impôts, quel est actuellement le montant mensuel des ressources de l’ensemble de votre ménage (conjoint inclus) ? </label>
                         <select id="id_revenus_tranche" name="revenus_tranche" class="form-input">
                             <option value="">Sélectionnez...</option>
                             <option value="1" {% if form.revenus_tranche.value == "1" %}selected{% endif %}>Moins de 400 €</option>
@@ -583,6 +583,57 @@
                             <option value="14" {% if form.revenus_tranche.value == "14" %}selected{% endif %}>10 000 € ou plus</option>
                         </select>
                         {% if form.revenus_tranche.errors %}<div class="error-message">{{ form.revenus_tranche.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Logement / Résidence principale -->
+                    <div class="form-group">
+                        <label class="form-label">Concernant votre résidence principale, êtes-vous…</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="logement" value="1" {% if form.logement.value == "1" %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Propriétaire</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="logement" value="2" {% if form.logement.value == "2" %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Locataire d'un logement social</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="logement" value="3" {% if form.logement.value == "3" %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Locataire hors logement social, dans le parc privé</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="logement" value="4" {% if form.logement.value == "4" %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Logé·e gratuitement</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="logement" value="5" {% if form.logement.value == "5" %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Autre</span>
+                            </label>
+                        </div>
+                        {% if form.logement.errors %}<div class="error-message">{{ form.logement.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Remboursement de prêt (conditionnel: afficher si logement = 1) -->
+                    <div class="form-group is-hidden-inline" id="pret_group">
+                        <label class="form-label">Avez-vous un remboursement de prêt en cours pour votre résidence principale ?</label>
+                        <div class="radio-group">
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="pret" value="True" {% if form.pret.value %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Oui</span>
+                            </label>
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="pret" value="False" {% if form.pret.value == False and form.pret.value is not None %}checked{% endif %} onchange="updateLogementFields()">
+                                <span class="radio-text">Non</span>
+                            </label>
+                        </div>
+                        {% if form.pret.errors %}<div class="error-message">{{ form.pret.errors }}</div>{% endif %}
+                    </div>
+
+                    <!-- Montant du loyer ou prêt mensuel (conditionnel: si (logement=1 et pret=True) OU (logement=2 ou 3)) -->
+                    <div class="form-group is-hidden-inline" id="montant_loyer_group">
+                        <label class="form-label" for="id_montant_loyer">Quel est le montant de ce loyer ou de votre prêt par mois ?</label>
+                        <input type="number" id="id_montant_loyer" name="montant_loyer" step="0.01" min="0" class="form-input" placeholder="€" value="{{ form.montant_loyer.value|default:'' }}">
+                        {% if form.montant_loyer.errors %}<div class="error-message">{{ form.montant_loyer.errors }}</div>{% endif %}
                     </div>
 
                     <!-- Situation de travail -->

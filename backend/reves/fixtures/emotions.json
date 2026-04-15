@@ -21,7 +21,7 @@
     "model": "reves.reveemotion",
     "pk": 3,
     "fields": {
-      "libelle": "Appréhension",
+      "libelle": "Surprise",
       "emoji": "😰",
       "ordre": 3
     }
@@ -39,7 +39,7 @@
     "model": "reves.reveemotion",
     "pk": 5,
     "fields": {
-      "libelle": "Joie",
+      "libelle": "Dégout",
       "emoji": "😊",
       "ordre": 5
     }
@@ -48,7 +48,7 @@
     "model": "reves.reveemotion",
     "pk": 6,
     "fields": {
-      "libelle": "Bonheur",
+      "libelle": "Joie",
       "emoji": "😄",
       "ordre": 6
     }

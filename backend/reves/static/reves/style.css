@@ -518,10 +518,14 @@ html.is-mobile-pwa .notification-bell {
 /* ============================================
    UTILITAIRES DE MIGRATION INLINE -> CSS
    ============================================ */
+.is-hidden-inline {
+    display: none;
+}
+
 .form-actions > a.is-hidden-inline,
 .form-actions > button.is-hidden-inline {
-    display: none !important;
-    visibility: hidden !important;
+    display: none;
+    visibility: hidden;
 }
 
 .input-hidden {

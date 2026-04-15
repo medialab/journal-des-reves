@@ -145,12 +145,16 @@ section3_data = {
     'section': '3',
     'section_duration': '25',
     'annee_naissance': '1985',
-    'genre': 'H',
+    'genre': '1',
+    'habitat': '2',
     'niv_diplome': '10',
     'revenus_tranche': '6',
+    'logement': '1',
+    'pret': 'True',
+    'montant_loyer': '800.50',
     'travail_statut': '1',
-    'profession': 'Ingénieur',
-    'habite': '1',
+    'profession': '201',
+    'statut_couple': '1',
 }
 
 response = client.post(
@@ -180,6 +184,7 @@ if questionnaires.exists():
     print(f"  - Données section 1: freq_reves_not={q.freq_reves_not}, mod_img={q.mod_img}")
     print(f"  - Données section 2: perception_financiere={q.perception_financiere}")
     print(f"  - Données section 3: annee_naissance={q.annee_naissance}, professions={q.profession}")
+    print(f"  - Logement: logement={q.logement}, pret={q.pret}, montant_loyer={q.montant_loyer}")
 else:
     print("✗ Aucun questionnaire trouvé")
 

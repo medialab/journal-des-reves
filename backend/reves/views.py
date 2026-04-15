@@ -1025,10 +1025,11 @@ class QuestionnaireView(View):
             }
             BOOL_RADIO_FIELDS = {
                 'a_deja_travaille', 'fonction_management', 'reveil_nuit', 'aide_sommeil',
+                'pret',
             }
             INT_FIELDS = {
                 'annee_naissance', 'niv_diplome', 'revenus_tranche', 'travail_statut',
-                'genre', 'habitat', 'profession',
+                'genre', 'habitat', 'profession', 'logement',
                 'freq_reves_not', 'etendue_souvenir_reve', 'temps_du_reve',
                 'latence_som', 'nuits_reveil', 'duree_eveil',
                 'statut_couple', 'nb_enfants_cohabitants', 'nb_enfants_moins14',
@@ -1039,6 +1040,7 @@ class QuestionnaireView(View):
                 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
             }
             TIME_FIELDS = {'heure_coucher', 'heure_reveil', 'besoin_som'}
+            DECIMAL_FIELDS = {'montant_loyer'}
 
             SECTION_FIELDS = {
                 '1': [
@@ -1067,6 +1069,7 @@ class QuestionnaireView(View):
                 ],
                 '3': [
                     'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
+                    'logement', 'pret', 'montant_loyer',
                     'travail_statut', 'a_deja_travaille', 'profession', 'fonction_management',
                     'statut_couple',
                     'composition_logement_seul', 'composition_logement_conjoint',
@@ -1109,6 +1112,14 @@ class QuestionnaireView(View):
                     val = request.POST.get(field_name)
                     if val:
                         setattr(q, field_name, val)
+                elif field_name in DECIMAL_FIELDS:
+                    val = request.POST.get(field_name)
+                    if val:
+                        try:
+                            from decimal import Decimal
+                            setattr(q, field_name, Decimal(val))
+                        except (ValueError, TypeError):
+                            pass
                 else:
                     val = request.POST.get(field_name)
                     if val is not None:
