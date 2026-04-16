@@ -53,16 +53,16 @@ RUN mkdir -p /app/static && \
 RUN python manage.py collectstatic --noinput --clear
 
 # Copier la configuration Nginx
-COPY docker/nginx.conf /etc/nginx/sites-available/default
+COPY nginx.conf /etc/nginx/sites-available/default
 # Désactiver le site default nginx
 RUN rm -f /etc/nginx/sites-enabled/default && \
     ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 # Copier la configuration supervisord
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copier le script entrypoint
-COPY docker/entrypoint.sh /app/entrypoint.sh
+COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Changement de permissions
