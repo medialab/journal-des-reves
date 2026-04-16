@@ -1,19 +1,13 @@
 #!/bin/bash
-
-# Entrypoint script pour le conteneur Docker
-# Exécute les migrations et collecte les fichiers statiques avant de lancer supervisord
+# Entrypoint script - Basé sur resin-api
+# Lance les migrations, collecte les fichiers statiques, puis démarre Gunicorn
 
 set -e
 
-echo "🚀 Initialisation du conteneur Docker..."
+echo "Apply database migrations"
+python manage.py migrate
 
-# Appliquer les migrations Django
-echo "📦 Application des migrations Django..."
-cd /app
-python manage.py migrate --noinput
-
-# Collecter les fichiers statiques
-echo "📂 Collecte des fichiers statiques..."
+echo "Collect static files"
 python manage.py collectstatic --noinput --clear
 
 # Vérifier les configurations de sécurité
@@ -22,8 +16,17 @@ python manage.py check --deploy
 
 echo ""
 echo "✅ Initialisation terminée!"
-echo "🌐 Démarrage de l'application avec Nginx + Gunicorn..."
+echo "🌐 Démarrage de Gunicorn sur le port 8000..."
 echo ""
 
-# Lancer supervisord (qui gère Nginx et Gunicorn)
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# Démarrer Gunicorn (exec = remplace ce processus, PID 1)
+echo "Starting Gunicorn."
+exec gunicorn \
+    --workers 4 \
+    --worker-class sync \
+    --bind 0.0.0.0:8000 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level info \
+    config.wsgi:application

@@ -20,14 +20,15 @@ ENV/
 db.sqlite3
 db.sqlite3-journal
 /media/
-backend/media/
-/staticfiles/
-/static/
+backend/media/reves_audio/*
+!backend/media/reves_audio/.gitkeep
 /backups/
-/backend/backups/
+/backend/backups/*
+!/backend/backups/.gitkeep
 /logs/
 access.log*
 application.log*
+_archived/
 
 # Environment variables
 .env

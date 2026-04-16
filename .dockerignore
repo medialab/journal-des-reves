@@ -62,7 +62,9 @@ docker-compose.*.yml
 backups/
 db.sqlite3
 *.sqlite3
-media/old_*
+*.sqlite3-journal
+media/
+
 
 # Node modules (si jamais tu utilises npm)
 node_modules/

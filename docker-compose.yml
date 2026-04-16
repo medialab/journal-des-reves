@@ -1,16 +1,17 @@
 version: '3.9'
 
 services:
-  # Service Django + Nginx
+  # Service Django + Gunicorn (approche microservices simple)
   web:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: site_reves_web
     ports:
-      - "80:80"
-      # Optionnel: Port HTTPS (ajouter certificats SSL later)
-      # - "443:443"
+      # Port Gunicorn
+      - "8000:8000"
+      # Pour Nginx ou reverse proxy externe sur port 80
+      # - "80:80"
     environment:
       # Variables de production - À ADAPTER
       DJANGO_DEBUG: "False"
@@ -27,7 +28,7 @@ services:
       EMAIL_HOST_USER: "${EMAIL_HOST_USER}"
       EMAIL_HOST_PASSWORD: "${EMAIL_HOST_PASSWORD}"
     volumes:
-      # Volumes persistants
+      # Volumes persistants (données uniquement, pas le code)
       - media_data:/app/media
       - static_data:/app/static
       - logs_data:/app/logs
@@ -36,9 +37,9 @@ services:
     env_file:
       - .env.prod
     restart: unless-stopped
-    # Healthcheck
+    # Healthcheck simple (ping Gunicorn)
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
       interval: 30s
       timeout: 10s
       retries: 3

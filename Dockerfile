@@ -1,76 +1,42 @@
-# Stage 1: Builder - Étape de construction
-FROM python:3.12-slim AS builder
+# Dockerfile simple et léger basé sur l'approche resin-api
+FROM python:3.12-slim
 
-WORKDIR /app
+# Variables d'environnement Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Définir le PATH pour utiliser les paquets Python installés
-ENV PATH=/root/.local/bin:$PATH
-
-# Installer les dépendances système requises pour la compilation
+# Installer les dépendances système essentielles
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    ffmpeg \
+    gcc \
     libssl-dev \
     libffi-dev \
     git \
-    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
-
-# Copier requirements et installer les dépendances Python
-COPY requirements.txt .
-RUN pip install --user --no-cache-dir --prefer-binary -r requirements.txt
-
-# Stage 2: Runtime - Étape finale pour la production
-FROM python:3.12-slim
-
-# Installer Nginx, Supervisor, Gunicorn et autres dépendances runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx \
-    supervisor \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
-
-# Installer Gunicorn via pip (en complément à requirements.txt)
-RUN pip install --no-cache-dir gunicorn
 
 WORKDIR /app
 
-# Copier les dépendances Python du builder
-COPY --from=builder /root/.local /root/.local
+# Copier requirements et installer les dépendances Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefer-binary -r requirements.txt && \
+    pip install --no-cache-dir gunicorn
 
-# Définir le PATH pour utiliser les paquets Python installés
-ENV PATH=/root/.local/bin:$PATH PIP_NO_CACHE_DIR=1 PYTHONUNBUFFERED=1
+# Copier uniquement le code source (pas les données)
+COPY backend/config ./config
+COPY backend/reves ./reves
+COPY backend/manage.py .
 
-# Copier le code Django
-COPY backend/ .
-
-# Créer les répertoires nécessaires
+# Créer les répertoires pour les fichiers dynamiques (volumes à runtime)
 RUN mkdir -p /app/static && \
     mkdir -p /app/media && \
-    mkdir -p /app/logs && \
-    mkdir -p /var/log/app
-
-# Collecter les fichiers statiques Django
-RUN python manage.py collectstatic --noinput --clear
-
-# Copier la configuration Nginx
-COPY nginx.conf /etc/nginx/sites-available/default
-# Désactiver le site default nginx
-RUN rm -f /etc/nginx/sites-enabled/default && \
-    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-# Copier la configuration supervisord
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+    mkdir -p /app/logs
 
 # Copier le script entrypoint
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
-# Changement de permissions
-RUN chown -R www-data:www-data /app && \
-    chown -R www-data:www-data /var/log/app
+# Exposer le port 8000 (Gunicorn)
+EXPOSE 8000
 
-# Exposer le port 80 (HTTP)
-EXPOSE 80
-
-# Commande pour démarrer l'entrypoint (qui lance supervisord)
-CMD ["/app/entrypoint.sh"]
+# Lancer l'entrypoint
+CMD ["./entrypoint.sh"]
