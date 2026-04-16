@@ -22,10 +22,10 @@ echo ""
 # Démarrer Gunicorn (exec = remplace ce processus, PID 1)
 echo "Starting Gunicorn."
 exec gunicorn \
-    --workers 4 \
+    --workers 2 \
     --worker-class sync \
     --bind 0.0.0.0:8000 \
-    --timeout 60 \
+    --timeout 300 \
     --access-logfile - \
     --error-logfile - \
     --log-level info \
