@@ -15,18 +15,6 @@ services:
     environment:
       # Variables de production - À ADAPTER
       DJANGO_DEBUG: "False"
-      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
-      DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS}"
-      DJANGO_CSRF_TRUSTED_ORIGINS: "${DJANGO_CSRF_TRUSTED_ORIGINS}"
-      # Base de données (si externe)
-      # DATABASE_URL: "${DATABASE_URL}"
-      # Email
-      EMAIL_BACKEND: "${EMAIL_BACKEND}"
-      EMAIL_HOST: "${EMAIL_HOST}"
-      EMAIL_PORT: "${EMAIL_PORT}"
-      EMAIL_USE_TLS: "${EMAIL_USE_TLS}"
-      EMAIL_HOST_USER: "${EMAIL_HOST_USER}"
-      EMAIL_HOST_PASSWORD: "${EMAIL_HOST_PASSWORD}"
     volumes:
       # Volumes persistants (données uniquement, pas le code)
       - media_data:/app/media

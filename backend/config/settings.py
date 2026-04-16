@@ -65,37 +65,16 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DJANGO_DEBUG', True)
 
-default_allowed_hosts = [
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', [
     '127.0.0.1',
     'localhost',
     'testserver',
-    '.ngrok-free.dev',
-    '.ngrok-free.app',
-    '.ngrok.io',
-]
+])
 
-if DEBUG:
-    ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', default_allowed_hosts)
-else:
-    ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', [])
-    # En production, ALLOWED_HOSTS est OBLIGATOIRE
-    if not ALLOWED_HOSTS:
-        raise ValueError(
-            'DJANGO_ALLOWED_HOSTS must be set when DEBUG=false. '
-            'Exemple: DJANGO_ALLOWED_HOSTS=reves-etude.fr,www.reves-etude.fr'
-        )
-
-# Autoriser les domaines de tunnel HTTPS (ngrok) pour les POST CSRF
-default_csrf_trusted_origins = [
-    'https://*.ngrok-free.dev',
-    'https://*.ngrok-free.app',
-    'https://*.ngrok.io',
-]
 CSRF_TRUSTED_ORIGINS = env_list(
     'DJANGO_CSRF_TRUSTED_ORIGINS',
     default_csrf_trusted_origins if DEBUG else [],
 )
-
 
 # Application definition
 
