@@ -30,6 +30,10 @@ access.log*
 application.log*
 _archived/
 
+# Logs 
+backend/logs*
+!backend/logs/.gitkeep
+
 # Environment variables
 .env
 *.env
