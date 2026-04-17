@@ -35,7 +35,7 @@ backend/logs*
 !backend/logs/.gitkeep
 
 # docker 
-backend/docker
+docker/
 
 # Environment variables
 .env
