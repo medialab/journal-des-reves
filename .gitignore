@@ -34,6 +34,9 @@ _archived/
 backend/logs*
 !backend/logs/.gitkeep
 
+# docker 
+backend/docker
+
 # Environment variables
 .env
 *.env
