@@ -109,6 +109,11 @@ traitlets==5.14.3
 transformers==4.57.6
 typing_extensions==4.15.0
 urllib3==2.6.3
+
+# Ajouter ces deux lignes AVANT openai-whisper
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.0+cpu
+torchaudio==2.7.0+cpu
 openai-whisper==20250625
 wcwidth==0.6.0
 whitenoise==6.12.0

@@ -22,6 +22,8 @@ services:
       - logs_data:/app/logs
       # Base de données (si utilisée)
       - ./backend/db.sqlite3:/app/db.sqlite3
+      # Cache modèle Whisper (évite de re-télécharger à chaque redémarrage)
+      - whisper_cache:/root/.cache/whisper
     env_file:
       - .env.prod
     restart: unless-stopped
@@ -59,6 +61,8 @@ volumes:
   static_data:
     driver: local
   logs_data:
+    driver: local
+  whisper_cache:
     driver: local
 
 networks:

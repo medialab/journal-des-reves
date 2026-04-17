@@ -17,9 +17,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copier requirements et installer les dépendances Python
+# Téléchargemetn de torch pour cpu : pas besoin de torch pour CPu : c'était beaucoup trop gros. 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefer-binary -r requirements.txt && \
+RUN pip install --no-cache-dir --prefer-binary \
+    --extra-index-url https://download.pytorch.org/whl/cpu \ 
+    -r requirements.txt && \
     pip install --no-cache-dir gunicorn
+
+# Pré-télécharger le modèle Whisper dans l'image (parce que ça marchait pas la transcription avant )
+RUN python -c "import whisper; whisper.load_model('large-v3')"
 
 # Copier uniquement le code source (pas les données)
 COPY backend/config ./config
@@ -27,6 +33,7 @@ COPY backend/reves ./reves
 COPY backend/manage.py .
 
 # Créer les répertoires pour les fichiers dynamiques (volumes à runtime)
+# En gros ça va créer une architecture au sein du docker file. 
 RUN mkdir -p /app/static && \
     mkdir -p /app/media && \
     mkdir -p /app/logs
