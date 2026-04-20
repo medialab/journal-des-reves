@@ -69,3 +69,8 @@ DEPLOYMENT.md
 *.wav
 *.WAV
 
+.env.test
+.env.prod
+.env.example
+MIGRATION_POSTGRES.md
+RAPPORT_TESTS_POSTGRESQL.md

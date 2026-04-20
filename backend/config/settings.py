@@ -157,6 +157,11 @@ def _get_database_config() -> dict:
                 'PORT': os.getenv('DATABASE_PORT', '5432'),
                 'ATOMIC_REQUESTS': True,  # Transactions atomiques par requête
                 'CONN_MAX_AGE': 600,  # Connection pooling (10 min)
+                'OPTIONS': {
+                    # Options PostgreSQL commentées pour maintenant
+                    # TODO: Réactiver après test complet
+                    # 'options': '-c default_transaction_isolation="read committed"'
+                },
             }
         }
     elif db_engine == 'django.db.backends.mysql':

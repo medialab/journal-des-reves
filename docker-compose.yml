@@ -1,30 +1,57 @@
 version: '3.9'
 
 services:
+  # Service PostgreSQL (base de données production)
+  postgres:
+    image: postgres:16-alpine
+    container_name: site_reves_postgres
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-reves_prod}
+      POSTGRES_USER: ${DATABASE_USER:-reves_user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+      # Fuseau horaire pour PostgreSQL (IMPORTANT pour éviter les problèmes)
+      TZ: Europe/Paris
+      PGTZ: Europe/Paris
+    volumes:
+      # Persistance des données PostgreSQL
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Port PostgreSQL (local dev uniquement - À DÉSACTIVER en prod)
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-reves_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # Service Django + Gunicorn (approche microservices simple)
   web:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: site_reves_web
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       # Port Gunicorn
       - "8000:8000"
       # Pour Nginx ou reverse proxy externe sur port 80
       # - "80:80"
     environment:
-      # Variables de production - À ADAPTER
-      DJANGO_DEBUG: "False"
+      # Timezone du conteneur
+      TZ: Europe/Paris
     volumes:
       # Volumes persistants (données uniquement, pas le code)
-      - media_data:/app/media
+      # Montage du dossier local pour les audios enregistrés
+      - ./backend/media:/app/media
       - static_data:/app/static
       - logs_data:/app/logs
-      # Base de données (si utilisée)
-      - ./backend/db.sqlite3:/app/db.sqlite3
       # Cache modèle Whisper (évite de re-télécharger à chaque redémarrage)
       - whisper_cache:/root/.cache/whisper
     env_file:
+      # Toutes les variables Django (DEBUG, SECRET_KEY, DB, etc)
       - .env.prod
     restart: unless-stopped
     # Healthcheck simple (ping Gunicorn)
@@ -43,12 +70,12 @@ services:
     container_name: site_reves_backup
     command: python manage.py runscript scripts.backup_database --script-args daily
     environment:
-      DJANGO_DEBUG: "False"
-      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+      TZ: Europe/Paris
     volumes:
       - ./backups:/app/backups
       - ./backend/db.sqlite3:/app/db.sqlite3
     env_file:
+      # Toutes les variables Django depuis .env.prod
       - .env.prod
     # Planifier le backup (ex: tous les jours à minuit)
     # Utiliser cron ou un système externe pour déclencher
@@ -56,7 +83,7 @@ services:
       - backup
 
 volumes:
-  media_data:
+  postgres_data:
     driver: local
   static_data:
     driver: local

@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libssl-dev \
     libffi-dev \
+    postgresql-client \
+    libpq-dev \
     git \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,7 +22,7 @@ WORKDIR /app
 # Téléchargemetn de torch pour cpu : pas besoin de torch pour CPu : c'était beaucoup trop gros. 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefer-binary \
-    --extra-index-url https://download.pytorch.org/whl/cpu \ 
+    --extra-index-url https://download.pytorch.org/whl/cpu \
     -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
