@@ -40,6 +40,11 @@ docker/scripts/
 # Environment variables
 .env
 *.env
+.env.example
+*.env.example
+.env.prod
+*.env.prod
+
 
 # IDE
 .vscode/
