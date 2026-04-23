@@ -65,6 +65,19 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DJANGO_DEBUG', True)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ENVIRONMENT DETECTION (règle TOUS les paramètres de sécurité en un seul endroit)
+# ─────────────────────────────────────────────────────────────────────────────
+# Une seule définition : change this to control dev vs production behavior
+# Values: 'development' (default) or 'production'
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+IS_PROD = ENVIRONMENT == 'production'
+
+# DEBUG doit être False en prod (override automatique si ENVIRONMENT='production')
+if IS_PROD and DEBUG:
+    DEBUG = False
+    print("⚠️  WARNING: ENVIRONMENT=production mais DJANGO_DEBUG=True. Forcing DEBUG=False")
+
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', [
     '127.0.0.1',
     'localhost',
@@ -77,9 +90,11 @@ default_csrf_trusted_origins = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
 ]
+# En DEVELOPMENT : trusted origins locales (pour http://127.0.0.1:8000)
+# En PRODUCTION : liste vide (configure explicitement via DJANGO_CSRF_TRUSTED_ORIGINS)
 CSRF_TRUSTED_ORIGINS = env_list(
     'DJANGO_CSRF_TRUSTED_ORIGINS',
-    default_csrf_trusted_origins if DEBUG else [],
+    default_csrf_trusted_origins if not IS_PROD else [],
 )
 
 # Application definition
@@ -373,13 +388,19 @@ INTERNAL_IPS = [
 ]
 
 
-# Email Configuration
+# ═════════════════════════════════════════════════════════════════════════════
+# EMAIL CONFIGURATION
 # https://docs.djangoproject.com/en/6.0/topics/email/
+# ═════════════════════════════════════════════════════════════════════════════
 
+# En DEVELOPMENT : affiche les emails en console (plus facile pour déboguer)
+# En PRODUCTION : utilise SMTP (vrais serveurs email)
 EMAIL_BACKEND = os.getenv(
     'DJANGO_EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+    'django.core.mail.backends.console.EmailBackend' if not IS_PROD else 'django.core.mail.backends.smtp.EmailBackend',
 )
+
+# Configuration SMTP pour production
 EMAIL_HOST = os.getenv('DJANGO_EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(os.getenv('DJANGO_EMAIL_PORT', '587'))
 EMAIL_USE_TLS = env_bool('DJANGO_EMAIL_USE_TLS', True)
@@ -403,13 +424,14 @@ SESSION_COOKIE_NAME = 'reves_sessionid'
 # Le cookie n'est accessible que via HTTP (protection contre XSS)
 SESSION_COOKIE_HTTPONLY = True
 
-# S'assurer que le cookie est envoyé seulement en HTTPS en production
-SESSION_COOKIE_SECURE = env_bool('DJANGO_SESSION_COOKIE_SECURE', not DEBUG)
+# En PRODUCTION : cookies en HTTPS seulement (sécurisé)
+# En DEVELOPMENT : cookies en HTTP (pour http://127.0.0.1:8000)
+SESSION_COOKIE_SECURE = IS_PROD
 
-# SameSite protection contre les attaques CSRF
+# SameSite protection contre les attaques CSRF (Lax = acceptable dans PWA)
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-# Sauvegarder la session en base de données
+# Sauvegarder la session en base de données (plus sûr qu'en mémoire)
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Mettre à jour la session à chaque requête (glisse la fenêtre de 30j à chaque visite)
@@ -424,26 +446,57 @@ SESSION_SAVE_EVERY_REQUEST = True
 # dans les requêtes fetch/AJAX (notamment depuis le service worker)
 CSRF_COOKIE_HTTPONLY = False
 
-# HTTPS only en production (même logique que le cookie de session)
-CSRF_COOKIE_SECURE = env_bool('DJANGO_CSRF_COOKIE_SECURE', not DEBUG)
+# En PRODUCTION : cookies en HTTPS seulement (sécurisé)
+# En DEVELOPMENT : cookies en HTTP (pour http://127.0.0.1:8000)
+CSRF_COOKIE_SECURE = IS_PROD
 
 # Lax = cookie envoyé pour toutes les requêtes same-site + navigations top-level
 # Compatible PWA standalone (considérée same-site par le navigateur)
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 
-# SECURITY HARDENING
+# ═════════════════════════════════════════════════════════════════════════════
+# SECURITY HARDENING (tous les paramètres contrôlés par ENVIRONMENT)
 # https://docs.djangoproject.com/en/6.0/ref/middleware/#security-middleware
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Trusté les headers X-Forwarded-Proto venant du reverse proxy (nginx/Apache)
+# IMPORTANT : doit être True si derrière un proxy (production)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-USE_X_FORWARDED_HOST = env_bool('DJANGO_USE_X_FORWARDED_HOST', False)
-SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', not DEBUG)
-SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '0' if DEBUG else '31536000'))
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
-SECURE_HSTS_PRELOAD = env_bool('DJANGO_SECURE_HSTS_PRELOAD', not DEBUG)
-SECURE_CONTENT_TYPE_NOSNIFF = env_bool('DJANGO_SECURE_CONTENT_TYPE_NOSNIFF', True)
-X_FRAME_OPTIONS = os.getenv('DJANGO_X_FRAME_OPTIONS', 'DENY')
-SECURE_REFERRER_POLICY = os.getenv('DJANGO_SECURE_REFERRER_POLICY', 'strict-origin-when-cross-origin')
-SECURE_CROSS_ORIGIN_OPENER_POLICY = os.getenv('DJANGO_SECURE_CROSS_ORIGIN_OPENER_POLICY', 'same-origin')
+
+# Permettre au proxy de vérifier l'Host header (production avec domaines custom)
+USE_X_FORWARDED_HOST = IS_PROD
+
+# ─── HTTPS REDIRECT ─────────────────────────────────────────────────────────
+# En PRODUCTION : force HTTP → HTTPS (DANGEREUX en dev sans HTTPS!)
+# En DEVELOPMENT : désactivé (http://127.0.0.1:8000 reste accessible)
+SECURE_SSL_REDIRECT = IS_PROD
+
+# ─── HSTS (HTTP Strict Transport Security) ──────────────────────────────────
+# En PRODUCTION : force HTTPS pendant 1 an (31536000s)
+# En DEVELOPMENT : désactivé (0s) pour éviter les blocages navigateur
+SECURE_HSTS_SECONDS = 31536000 if IS_PROD else 0
+
+# HSTS s'applique à tous les sous-domaines (ex: www.example.com, api.example.com)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = IS_PROD
+
+# Enregistrer le domaine dans la liste de préchargement HSTS du navigateur
+# ⚠️ Attention: ceci rend difficile le passage en HTTP (1 an de mémorisation!)
+SECURE_HSTS_PRELOAD = IS_PROD
+
+# ─── Autres en-têtes de sécurité (TOUJOURS activés, sans risque) ────────────
+# Empêcher le navigateur de deviner le type MIME (XSS protection)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Empêcher le site d'être embedded dans un <iframe> ailleurs (clickjacking)
+X_FRAME_OPTIONS = 'DENY'
+
+# Contrôler le Referrer envoyé lors de navigations
+# 'strict-origin-when-cross-origin' : référer l'origin seulement en cross-site
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Empêcher les autres sites d'accéder à la fenêtre (isolation des contextes)
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 
 # Password reset token validity (24h)
 PASSWORD_RESET_TIMEOUT = int(os.getenv('DJANGO_PASSWORD_RESET_TIMEOUT', str(60 * 60 * 24)))

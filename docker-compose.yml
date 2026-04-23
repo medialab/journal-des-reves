@@ -19,7 +19,7 @@ services:
       # Port PostgreSQL (local dev uniquement - À DÉSACTIVER en prod)
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-reves_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-reves_user} -d ${DATABASE_NAME:-reves_prod}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,13 +54,13 @@ services:
       # Toutes les variables Django (DEBUG, SECRET_KEY, DB, etc)
       - .env.prod
     restart: unless-stopped
-    # Healthcheck simple (ping Gunicorn)
+    # Healthcheck simple (ping Gunicorn) - attend que Gunicorn soit vraiment prêt
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 60s
-      timeout: 30s
+      timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 160s
 
   # Service de backup (optionnel)
   backup:
@@ -69,16 +69,15 @@ services:
       dockerfile: Dockerfile
     container_name: site_reves_backup
     command: python manage.py runscript scripts.backup_database --script-args daily
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       TZ: Europe/Paris
     volumes:
       - ./backups:/app/backups
-      - ./backend/db.sqlite3:/app/db.sqlite3
     env_file:
-      # Toutes les variables Django depuis .env.prod
       - .env.prod
-    # Planifier le backup (ex: tous les jours à minuit)
-    # Utiliser cron ou un système externe pour déclencher
     profiles:
       - backup
 
