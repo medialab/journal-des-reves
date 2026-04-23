@@ -38,6 +38,7 @@ backend/logs*
 docker/scripts/
 
 # Environment variables
+/home/maudyaiche/dev/site_reves/.env.prod
 .env
 *.env
 .env.example
