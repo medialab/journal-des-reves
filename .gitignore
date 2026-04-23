@@ -84,3 +84,8 @@ RAPPORT_TESTS_POSTGRESQL.md
 
 .env.*
 RAPPORT_VERIFICATION_DOCKER.md
+IMPLEMENTATION_SUMMARY.md
+test_autocomplete_implementation.py
+test_emotions_update.py
+test_postgresql_complete.py
+test_questionnaire_reve_complet.py
