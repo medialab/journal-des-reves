@@ -38,14 +38,13 @@ backend/logs*
 docker/scripts/
 
 # Environment variables
-/home/maudyaiche/dev/site_reves/.env.prod
 .env
 *.env
 .env.example
 *.env.example
+.env.test
 .env.prod
 *.env.prod
-
 
 # IDE
 .vscode/
@@ -75,9 +74,7 @@ DEPLOYMENT.md
 *.wav
 *.WAV
 
-.env.test
-.env.prod
-.env.example
 MIGRATION_POSTGRES.md
 RAPPORT_TESTS_POSTGRESQL.md
-.env.prod
+
+
