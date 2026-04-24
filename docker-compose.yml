@@ -35,7 +35,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      # Port Gunicorn
+      # Port Gunicorn -- Il sert pas pour la prod pour le developpement. 
       - "8000:8000"
       # Pour Nginx ou reverse proxy externe sur port 80
       # - "80:80"
