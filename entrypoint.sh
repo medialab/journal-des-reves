@@ -8,10 +8,10 @@ echo "Apply database migrations"
 python manage.py migrate
 
 echo "Collect static files"
-# Ne pas utiliser --clear pour éviter de recréer tous les fichiers comme resin
+# Ne pas utiliser --clear pour éviter de recréer tous les fichiers comme  ce que fait resin
 python manage.py collectstatic --noinput
 
-# Initialiser le compte admin
+# Initialiser le compte admin ( si il n'y en a pas )
 echo ""
 echo "🔐 Initialisation du compte administrateur..."
 python scripts/init_superuser.py
@@ -31,7 +31,7 @@ echo "🌐 Démarrage de Gunicorn sur le port 8000..."
 echo ""
 
 # Démarrer Gunicorn (exec = remplace ce processus, PID 1)
-# DEMANDER à Benjamin les docker 
+# DEMANDER à Benjamin pour le nombre de worker ? !!!!
 echo "Starting Gunicorn."
 exec gunicorn \
     --workers 3 \
