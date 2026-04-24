@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_NAME
+              value: "reves"
+            - name: POSTGRES_USER
+              value: "reves"
+            - name: TZ
+              value: "Europe/Paris"
+            - name: PGTZ
+              value: "Europe/Paris"
+          volumeMounts:
+            - name: postgres-vol
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command:
+              - pg_isready
+              - -U
+              - ${POSTGRES_USER:-reves}
+              - -d
+              - ${POSTGRES_NAME:-reves}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+      restartPolicy: Always
+      volumes:
+        - name: postgres-vol
+          persistentVolumeClaim:
+            claimName: postgres-pvc

@@ -1,0 +1,55 @@
+image: docker:dind
+
+stages:
+  - build
+  - deploy
+  - deploy_pprd
+
+variables:
+  IMAGE_NAME: $CI_REGISTRY/scpomedialab/journal-des-reves
+
+before_script:
+  - IMAGE_TAG=${CI_COMMIT_REF_SLUG}
+  - export KUBECONFIG=$kubeconfig_file
+
+build:
+  stage: build
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG -f ./Dockerfile .
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+  only:
+    - staging
+    - prod
+
+deploy:
+  image:
+    name: jrisp/kubehelper:latest
+    entrypoint: [""]
+  stage: deploy
+  script:
+    - echo "Deploying journal-des-reves prod overlay..."
+    - cp ${DREAMS_SECRETS} k8s/overlays/prod/secrets.env
+    - kubectl apply -f k8s/overlays/prod/ns.yml
+    - kubectl apply -k k8s/overlays/prod
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+  only:
+    - prod
+
+deploy_pprd:
+  image:
+    name: jrisp/kubehelper:latest
+    entrypoint: [""]
+  stage: deploy_pprd
+  script:
+    - echo "Deploying journal-des-reves staging overlay..."
+    - cp ${DREAMS_SECRETS} k8s/overlays/staging/secrets.env
+    - kubectl apply -f k8s/overlays/staging/ns.yml
+    - kubectl apply -k k8s/overlays/staging
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+  only:
+    - staging

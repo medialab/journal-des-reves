@@ -1,0 +1,31 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: db-backup
+spec:
+  schedule: "30 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: db-backup
+              image: postgres:16-alpine
+              env:
+                - name: POSTGRES_HOST
+                  value: 'journal-des-reves-postgres'
+                - name: POSTGRES_PORT
+                  value: '5432'
+              args:
+                - /bin/bash
+                - -c
+                - mkdir -p /backup/reves-postgres; find /backup/reves-postgres -mtime +7 -delete; pg_dumpall -h $POSTGRES_HOST -p $POSTGRES_PORT -c -U postgres | gzip -c > /backup/reves-postgres/dump_postgres_$(date +%F_%H_%M_%S).sql;
+              volumeMounts:
+                - name: postgres-backup
+                  mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: postgres-backup
+              persistentVolumeClaim:
+                claimName: postgresbackup-pvc
