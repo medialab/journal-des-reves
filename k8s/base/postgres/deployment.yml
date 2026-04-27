@@ -37,9 +37,9 @@ spec:
               command:
               - pg_isready
               - -U
-              - ${POSTGRES_USER:-reves}
+              - reves
               - -d
-              - ${POSTGRES_NAME:-reves}
+              - reves
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
