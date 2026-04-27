@@ -8,6 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Installer les dépendances système essentielles
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    curl \
     gcc \
     libssl-dev \
     libffi-dev \
