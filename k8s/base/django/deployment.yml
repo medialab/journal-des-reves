@@ -23,8 +23,6 @@ spec:
               value: "reves"
             - name: DATABASE_USER
               value: "reves"
-            - name: DATABASE_HOST
-              value: "postgres.journal-des-reves.svc.cluster.local"
             - name: DATABASE_PORT
               value: "5432"
             - name: DJANGO_TIME_ZONE
