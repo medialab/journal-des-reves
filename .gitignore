@@ -91,3 +91,4 @@ test_emotions_update.py
 test_postgresql_complete.py
 test_questionnaire_reve_complet.py
 backend/transcription.log.*
+scripts/generate_vapid.sh
