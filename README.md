@@ -1,10 +1,10 @@
-# Site Rêves
+# Journal des rêves
 
-Je construis un site PWA avec un back-end Django pour collecter des récits de reves dans le cadre de ma thèse en sociologie.
+Dans le cadre de ma thèse en sociologie, j'ai construis un site PWA avec un back-end Django pour collecter des récits de rêves.
 
 ## Résumé rapide
 
-Sur ce site, je propose d'une part un journal de rêves grâce à des enregistrements audio. Une transcription se lance automatiquement en arrière-plan. D'autre part, je propose aux utilisateurs et utilisatrices de  de remplir un questionnaire socio-démographique. 
+Sur ce site, les utilisateur·ices peuvent enregistrer leurs rêves en audio directement depuis leur téléphone et une transcription automatique via Whisper se lance ensuite en arrière-plan. Un questionnaire socio-démographique permet aussi de traiter sociologiquement les récits collectés.
 
 ## Licence
 
