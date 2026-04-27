@@ -27,7 +27,9 @@ RUN pip install --no-cache-dir --prefer-binary \
     pip install --no-cache-dir gunicorn
 
 # Pré-télécharger le modèle Whisper dans l'image (parce que ça marchait pas la transcription avant )
-RUN python -c "import whisper; whisper.load_model('large-v3')"
+#RUN python -c "import whisper; whisper.load_model('large-v3')"
+RUN mkdir -p ~/.cache/whisper
+RUN curl -sL "https://openaipublic.azureedge.net/main/whisper/models/e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb/large-v3.pt" > ~/.cache/whisper/large-v3.pt
 
 # Copier uniquement le code source (pas les données)
 COPY backend/config ./config
