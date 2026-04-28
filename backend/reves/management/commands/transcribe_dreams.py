@@ -25,27 +25,27 @@ from django.core.management import CommandError
 
 
 class TranscriberService:
-    """Service pour la transcription des rêves avec Whisper"""
+    """Service pour la transcription des rêves avec Faster-Whisper"""
     
     def __init__(self, model_name=None):
-        """Initialiser le service Whisper"""
+        """Initialiser le service Faster-Whisper"""
         self.model_name = model_name or os.getenv('WHISPER_MODEL', 'large-v3-turbo')
         self.model = None
 
         try:
-            import whisper
-            self.whisper = whisper
-            self.model = self.whisper.load_model(self.model_name)
+            from faster_whisper import WhisperModel
+            # Utiliser int8 quantization pour réduire la RAM et augmenter la vitesse
+            self.model = WhisperModel(self.model_name, device="cpu", compute_type="int8")
             self.is_loaded = True
-            print(f"✅ Modèle Whisper '{self.model_name}' chargé avec succès")
+            print(f"✅ Modèle Faster-Whisper '{self.model_name}' (int8) chargé avec succès")
         except ImportError:
             self.is_loaded = False
-            print("❌ Le module 'openai-whisper' n'est pas installé")
-            print("   Installez-le avec: pip install openai-whisper")
+            print("❌ Le module 'faster-whisper' n'est pas installé")
+            print("   Installez-le avec: pip install faster-whisper")
     
     def transcribe(self, audio_file_path):
         """
-        Transcrire un fichier audio WAV avec Whisper
+        Transcrire un fichier audio avec Faster-Whisper
         
         Args:
             audio_file_path (str): Chemin absolu du fichier audio
@@ -54,9 +54,9 @@ class TranscriberService:
             str: Texte transcrit, ou None si erreur
         """
         if not self.is_loaded:
-            raise Exception("Whisper n'est pas chargé. Installez openai-whisper.")
+            raise Exception("Faster-Whisper n'est pas chargé. Installez faster-whisper.")
         if not self.model:
-            raise Exception("Modèle Whisper non initialisé.")
+            raise Exception("Modèle Faster-Whisper non initialisé.")
         
         if not os.path.exists(audio_file_path):
             raise FileNotFoundError(f"Fichier audio introuvable: {audio_file_path}")
@@ -64,10 +64,11 @@ class TranscriberService:
         print(f"🎤 Transcription de: {audio_file_path}")
         
         try:
-            # Transcrire l'audio
-            result = self.model.transcribe(audio_file_path, language="fr")
+            # Transcrire l'audio avec Faster-Whisper
+            segments, info = self.model.transcribe(audio_file_path, language="fr", beam_size=5)
             
-            transcription_text = result.get("text", "").strip()
+            # Assembler le texte depuis les segments
+            transcription_text = "".join([segment.text for segment in segments]).strip()
             
             if not transcription_text:
                 raise Exception("Aucun texte transcrit")

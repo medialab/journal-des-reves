@@ -111,13 +111,11 @@ traitlets==5.14.3
 transformers==4.57.6
 typing_extensions==4.15.0
 urllib3==2.6.3
-
-# Prendre CPU ET PAS GPU
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.7.0+cpu
-torchaudio==2.7.0+cpu
-openai-whisper==20250625
 wcwidth==0.6.0
 whitenoise==6.12.0
 yarl==1.23.0
 zipp==3.23.0
+
+# Transcription audio avec Faster-Whisper (plus léger que OpenAI Whisper)
+faster-whisper==1.1.2
+onnxruntime==1.20.1
