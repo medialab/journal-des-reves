@@ -117,5 +117,5 @@ yarl==1.23.0
 zipp==3.23.0
 
 # Transcription audio avec Faster-Whisper (plus léger que OpenAI Whisper)
-faster-whisper==1.1.2
-onnxruntime==1.20.1
+faster-whisper==1.2.1
+onnxruntime>=1.18.0
