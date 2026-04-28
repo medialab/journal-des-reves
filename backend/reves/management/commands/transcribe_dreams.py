@@ -29,7 +29,7 @@ class TranscriberService:
     
     def __init__(self, model_name=None):
         """Initialiser le service Whisper"""
-        self.model_name = model_name or os.getenv('WHISPER_MODEL', 'large-v3')
+        self.model_name = model_name or os.getenv('WHISPER_MODEL', 'large-v3-turbo')
         self.model = None
 
         try:
@@ -189,8 +189,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--model',
             type=str,
-            default=os.getenv('WHISPER_MODEL', 'large-v3'),
-            help='Modèle Whisper local à utiliser (défaut: large-v3)'
+            default=os.getenv('WHISPER_MODEL', 'large-v3-turbo'),
+            help='Modèle Whisper local à utiliser (défaut: large-v3-turbo)'
         )
         parser.add_argument(
             '--all',
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transcrire les rêves avec Whisper')
     parser.add_argument('--reve-id', type=int, help='ID spécifique du rêve')
     parser.add_argument('--all', action='store_true', help='Transcrire tous les rêves en attente')
-    parser.add_argument('--model', type=str, default=os.getenv('WHISPER_MODEL', 'large-v3'), help='Modèle Whisper local à utiliser')
+    parser.add_argument('--model', type=str, default=os.getenv('WHISPER_MODEL', 'large-v3-turbo'), help='Modèle Whisper local à utiliser')
     
     args = parser.parse_args()
     
