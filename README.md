@@ -4,7 +4,7 @@ Dans le cadre de ma thèse en sociologie, j'ai construis un site PWA avec un bac
 
 ## Résumé rapide
 
-Sur ce site, les utilisateur·ices peuvent enregistrer leurs rêves en audio directement depuis leur téléphone et une transcription automatique via Whisper se lance ensuite en arrière-plan. Un questionnaire socio-démographique permet aussi de traiter sociologiquement les récits collectés.
+Sur ce site, les utilisateur·ices peuvent enregistrer leurs rêves en audio directement depuis leur téléphone et une transcription automatique via Whisper (fast-whisper diarisé int8) se lance ensuite en arrière-plan. Un questionnaire socio-démographique permet aussi de traiter sociologiquement les récits collectés.
 
 ## Licence
 
