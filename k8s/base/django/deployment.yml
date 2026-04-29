@@ -34,12 +34,7 @@ spec:
           volumeMounts:
             - name: reves-media-vol
               mountPath: /app/media
-            - name: reves-whisper-cache-vol
-              mountPath: /root/.cache/whisper
       volumes:
         - name: reves-media-vol
           persistentVolumeClaim:
             claimName: reves-media-pvc
-        - name: reves-whisper-cache-vol
-          persistentVolumeClaim:
-            claimName: reves-whisper-cache-pvc
