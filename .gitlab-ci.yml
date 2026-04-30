@@ -34,6 +34,7 @@ deploy:
     - cp ${DREAMS_SECRETS} k8s/overlays/prod/secrets.env
     - kubectl apply -f k8s/overlays/prod/ns.yml
     - kubectl apply -k k8s/overlays/prod
+    - kubectl -n journal-des-reves rollout restart deployment django
   environment:
     name: $CI_COMMIT_REF_SLUG
   only:
@@ -49,6 +50,7 @@ deploy_pprd:
     - cp ${DREAMS_SECRETS} k8s/overlays/staging/secrets.env
     - kubectl apply -f k8s/overlays/staging/ns.yml
     - kubectl apply -k k8s/overlays/staging
+    - kubectl -n journal-des-reves-pprd rollout restart deployment django
   environment:
     name: $CI_COMMIT_REF_SLUG
   only:
