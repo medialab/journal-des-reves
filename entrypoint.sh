@@ -4,10 +4,13 @@
 
 set -e
 
-echo "Apply database migrations"
+echo "Application des Migrations"
 python manage.py migrate
 
-echo "Collect static files"
+echo "Chargement des émotions"
+python manage.py loaddata emotions
+
+echo "Collect les dossiers static"
 # Ne pas utiliser --clear pour éviter de recréer tous les fichiers comme  ce que fait resin
 python manage.py collectstatic --noinput
 
