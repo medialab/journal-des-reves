@@ -1030,12 +1030,24 @@ class QuestionnaireEndToEndTest(TestCase):
 
 
 class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
-    """Verifie les restrictions d'acces apres 7 jours sans questionnaire complete."""
+    """Verifie que le questionnaire est optionnel apres 7 jours."""
 
     def setUp(self):
         self.client = Client()
-        self.user, self.profil = make_user_with_profil(username='gate-user', days_old=10)
-        self.client.login(username='gate-user', password='testpass123')
+        # Créer l'utilisateur avec 10 jours d'ancienneté (après le délai de 7 jours)
+        self.user = User.objects.create_user(
+            username='gate-user-new', 
+            email='gate-user-new@test.com',
+            password='testpass123'
+        )
+        self.profil = self.user.profil
+        # Rétrodate la création
+        Profil.objects.filter(pk=self.profil.pk).update(
+            created_at=timezone.now() - timezone.timedelta(days=10)
+        )
+        self.profil.refresh_from_db()
+        
+        self.client.login(username='gate-user-new', password='testpass123')
         self.profil_url = reverse('reves:profil')
         self.enregistrer_url = reverse('reves:enregistrer')
         self.questionnaire_url = reverse('reves:questionnaire')
@@ -1048,21 +1060,21 @@ class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
             completed_at=timezone.now(),
         )
 
-    def test_profil_redirects_to_questionnaire_when_missing_after_delay(self):
+    def test_profil_access_allowed_after_delay_without_questionnaire(self):
+        """Après 7 jours, profil accessible même sans questionnaire"""
         response = self.client.get(self.profil_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, self.questionnaire_url)
+        self.assertEqual(response.status_code, 200)
 
-    def test_enregistrer_get_redirects_to_questionnaire_when_missing_after_delay(self):
+    def test_enregistrer_get_access_allowed_after_delay_without_questionnaire(self):
+        """Après 7 jours, enregistrer accessible même sans questionnaire"""
         response = self.client.get(self.enregistrer_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, self.questionnaire_url)
+        self.assertEqual(response.status_code, 200)
 
-    def test_enregistrer_post_returns_403_when_missing_after_delay(self):
+    def test_enregistrer_post_access_allowed_after_delay_without_questionnaire(self):
+        """Après 7 jours, POST enregistrer accessible même sans questionnaire"""
         response = self.client.post(self.enregistrer_url, {'existence_souvenir': '0'})
-        self.assertEqual(response.status_code, 403)
-        payload = response.json()
-        self.assertFalse(payload['success'])
+        # Devrait retourner 200 ou traiter la soumission (pas de 403)
+        self.assertNotEqual(response.status_code, 403)
 
     def test_profil_access_allowed_when_questionnaire_completed(self):
         self._complete_questionnaire_once()
@@ -1076,8 +1088,16 @@ class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
 
     def test_enregistrer_access_allowed_before_seven_days_without_questionnaire(self):
         self.client.logout()
-        young_user, _ = make_user_with_profil(username='young-user', days_old=3)
-        self.client.login(username='young-user', password='testpass123')
+        young_user = User.objects.create_user(
+            username='young-user-new', 
+            email='young-user-new@test.com',
+            password='testpass123'
+        )
+        young_profil = young_user.profil
+        Profil.objects.filter(pk=young_profil.pk).update(
+            created_at=timezone.now() - timezone.timedelta(days=3)
+        )
+        self.client.login(username='young-user-new', password='testpass123')
 
         response = self.client.get(self.enregistrer_url)
         self.assertEqual(response.status_code, 200)

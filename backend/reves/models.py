@@ -97,8 +97,8 @@ class Profil(models.Model):
         return self.questionnaires.filter(is_completed=True).exists()
 
     def must_complete_questionnaire_for_extended_access(self):
-        """Bloque certaines fonctionnalites apres 7 jours tant que le questionnaire n'est pas complete."""
-        return self.can_access_questionnaire() and not self.has_completed_questionnaire()
+        """Vérifie si le questionnaire a été complété au moins une fois."""
+        return not self.has_completed_questionnaire()
 
 
 # MODELES POUR LES REVES ========================

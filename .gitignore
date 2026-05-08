@@ -93,3 +93,4 @@ test_questionnaire_reve_complet.py
 backend/transcription.log.*
 scripts/generate_vapid.sh
 backend/logs/security.log.2026-04-01
+backend/test_questionnaire_optional_after_7days.py

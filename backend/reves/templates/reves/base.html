@@ -342,40 +342,10 @@
         });
     });
 
-    // Gestion de la modal du questionnaire après 7 jours
+    // Initialiser le NotificationManager
     document.addEventListener('DOMContentLoaded', function() {
         {% if user.is_authenticated %}
-            // Passer le statut admin au NotificationManager
             window.notificationManager.isAdmin = {{ user.is_staff|lower }};
-            
-            // Ne pas afficher la modal si on est déjà sur la page questionnaire
-            if (window.location.pathname === '/questionnaire/') {
-                return;
-            }
-            
-            const profilData = {
-                created_at: '{{ user.profil.created_at|date:"Y-m-dTH:i:s" }}',
-                has_questionnaire: '{{ has_questionnaire }}' === 'True'
-            };
-            
-            if (!profilData.has_questionnaire && profilData.created_at) {
-                const createdDate = new Date(profilData.created_at);
-                const now = new Date();
-                const daysEllapsed = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
-                
-                // Vérifier si 7 jours sont écoulés et que celui-ci n'a pas été rejeté
-                if (daysEllapsed >= 7) {
-                    const dismissedTime = localStorage.getItem('questionnaire_modal_dismissed');
-                    const shouldShow = !dismissedTime;
-                    
-                    if (shouldShow) {
-                        // Attendre que le DOM soit complètement chargé
-                        setTimeout(() => {
-                            notificationManager.showQuestionnaireModal(daysEllapsed);
-                        }, 1000);
-                    }
-                }
-            }
         {% endif %}
     });
 </script>

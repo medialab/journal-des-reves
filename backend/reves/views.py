@@ -159,13 +159,6 @@ class ProfilView(LoginRequiredMixin, View):
             messages.error(request, "Profil non trouve. Veuillez contacter l'administrateur.")
             return HttpResponseRedirect(reverse("reves:index"))
 
-        if profil.must_complete_questionnaire_for_extended_access():
-            messages.warning(
-                request,
-                "Veuillez completer le questionnaire pour acceder aux statistiques du profil."
-            )
-            return HttpResponseRedirect(reverse("reves:questionnaire"))
-
         journal_data = get_journal_data(profil)
 
         context = {
@@ -242,13 +235,6 @@ class EnregistrerView(LoginRequiredMixin, View):
         except Profil.DoesNotExist:
             messages.error(request, "Profil utilisateur introuvable")
             return HttpResponseRedirect(reverse("reves:index"))
-
-        if profil.must_complete_questionnaire_for_extended_access():
-            messages.warning(
-                request,
-                "Veuillez completer le questionnaire avant d'enregistrer un nouveau reve."
-            )
-            return HttpResponseRedirect(reverse("reves:questionnaire"))
         
         # Récupérer les émotions pour le formulaire
         emotions = ReveEmotion.objects.all().order_by('ordre')
@@ -293,12 +279,6 @@ class EnregistrerView(LoginRequiredMixin, View):
                     'success': False,
                     'message': 'Profil utilisateur introuvable'
                 }, status=400)
-
-            if profil.must_complete_questionnaire_for_extended_access():
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Veuillez completer le questionnaire avant d\'enregistrer un nouveau reve.'
-                }, status=403)
 
             recording_mode = self._get_recording_mode(request.user)
 
@@ -904,17 +884,6 @@ class QuestionnaireView(View):
                 "Vous avez déjà atteint la limite de 5 soumissions complètes du questionnaire.",
             )
             return HttpResponseRedirect(reverse("reves:profil"))
-        
-        if not profil.can_access_questionnaire():
-            # Afficher la page d'attente
-            from django.utils import timezone
-            access_date = profil.questionnaire_access_reference_date() + timezone.timedelta(days=7)
-            context = {
-                'days_remaining': profil.days_until_questionnaire_access(),
-                'access_date': access_date,
-                'is_authenticated': True
-            }
-            return render(request, self.waiting_template_name, context)
         
         # L'utilisateur peut accéder au questionnaire
         form = QuestionnaireForm()
