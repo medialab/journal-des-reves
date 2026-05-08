@@ -236,6 +236,11 @@ class EnregistrerView(LoginRequiredMixin, View):
             messages.error(request, "Profil utilisateur introuvable")
             return HttpResponseRedirect(reverse("reves:index"))
         
+        # Vérifier que le questionnaire a été complété
+        if not profil.has_completed_questionnaire():
+            messages.warning(request, "Veuillez complèter le questionnaire avant d'enregistrer un rêve.")
+            return HttpResponseRedirect(reverse("reves:questionnaire"))
+        
         # Récupérer les émotions pour le formulaire
         emotions = ReveEmotion.objects.all().order_by('ordre')
         custom_emotions = ReveEmotionCustom.objects.filter(profil=profil).order_by('libelle')
@@ -279,6 +284,10 @@ class EnregistrerView(LoginRequiredMixin, View):
                     'success': False,
                     'message': 'Profil utilisateur introuvable'
                 }, status=400)
+
+            # Vérifier que le questionnaire a été complété
+            if not profil.has_completed_questionnaire():
+                return HttpResponseRedirect(reverse("reves:questionnaire"))
 
             recording_mode = self._get_recording_mode(request.user)
 
@@ -930,12 +939,6 @@ class QuestionnaireView(View):
                 )
             messages.error(request, "Limite atteinte: maximum 5 soumissions complètes du questionnaire.")
             return HttpResponseRedirect(reverse("reves:profil"))
-
-        if not profil.can_access_questionnaire():
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'message': 'Accès non autorisé.'}, status=403)
-            messages.error(request, "Vous devez attendre 1 semaine après la création de votre compte pour remplir le questionnaire.")
-            return HttpResponseRedirect(reverse("reves:questionnaire"))
         
         # Check if this is an AJAX request (intermediate save during section navigation)
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'

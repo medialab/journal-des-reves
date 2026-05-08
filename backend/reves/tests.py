@@ -580,8 +580,8 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
         resp = self._ajax_post('1', SECTION1_DATA)
         self.assertEqual(resp.status_code, 401)
 
-    def test_ajax_blocked_before_7_days(self):
-        """Utilisateur créé il y a seulement 3 jours → accès refusé."""
+    def test_ajax_allows_access_anytime(self):
+        """Utilisateur créé il y a seulement 3 jours → accès PERMIS (questionnaire TOUJOURS accessible)."""
         user2, profil2 = make_user_with_profil('newcomer', days_old=3)
         client2 = Client()
         client2.login(username='newcomer', password='testpass123')
@@ -590,7 +590,7 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
             {'section': '1', **SECTION1_DATA},
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
         )
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
 
 class SignupQuestionnaireBypassTest(TestCase):
@@ -1066,15 +1066,17 @@ class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_enregistrer_get_access_allowed_after_delay_without_questionnaire(self):
-        """Après 7 jours, enregistrer accessible même sans questionnaire"""
-        response = self.client.get(self.enregistrer_url)
-        self.assertEqual(response.status_code, 200)
+        """Après 7 jours, enregistrer REDIRIGÉ vers questionnaire si pas complété (TOUJOURS obligatoire)"""
+        response = self.client.get(self.enregistrer_url, follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/questionnaire/', response.url)
 
     def test_enregistrer_post_access_allowed_after_delay_without_questionnaire(self):
-        """Après 7 jours, POST enregistrer accessible même sans questionnaire"""
-        response = self.client.post(self.enregistrer_url, {'existence_souvenir': '0'})
-        # Devrait retourner 200 ou traiter la soumission (pas de 403)
-        self.assertNotEqual(response.status_code, 403)
+        """Après 7 jours, POST enregistrer TOUJOURS redirigé sans questionnaire (obligatoire toujours)"""
+        response = self.client.post(self.enregistrer_url, {'existence_souvenir': '0'}, follow=False)
+        # Doit rediriger (302) car questionnaire est TOUJOURS obligatoire
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/questionnaire/', response.url)
 
     def test_profil_access_allowed_when_questionnaire_completed(self):
         self._complete_questionnaire_once()
@@ -1099,8 +1101,9 @@ class QuestionnaireMandatoryAfterSevenDaysAccessTest(TestCase):
         )
         self.client.login(username='young-user-new', password='testpass123')
 
-        response = self.client.get(self.enregistrer_url)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.enregistrer_url, follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/questionnaire/', response.url)
 
 
 class QuestionnaireAdminSmokeTest(TestCase):
