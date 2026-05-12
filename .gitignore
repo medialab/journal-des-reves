@@ -97,3 +97,13 @@ backend/test_questionnaire_optional_after_7days.py
 backend/reves/site_reves.code-workspace
 backend/test_questionnaire_mandatory.py
 backend/reves/tests.py
+
+
+/home/maudyaiche/dev/site_reves/env_leg_benjamin/
+env_leg_benjamin/
+env_leg_benjamin/lib64/
+env_leg_benjamin/pyvenv.cfg
+Dockerfile
+requirements_copy.txt
+requirements_leg_benjamin.txt
+Dockerfile
