@@ -14,13 +14,13 @@ spec:
               image: postgres:16-alpine
               env:
                 - name: POSTGRES_HOST
-                  value: 'journal-des-reves-postgres'
+                  value: 'postgres.journal-des-reves.svc.cluster.local'
                 - name: POSTGRES_PORT
                   value: '5432'
               args:
                 - /bin/bash
                 - -c
-                - mkdir -p /backup/reves-postgres; find /backup/reves-postgres -mtime +7 -delete; pg_dumpall -h $POSTGRES_HOST -p $POSTGRES_PORT -c -U postgres | gzip -c > /backup/reves-postgres/dump_postgres_$(date +%F_%H_%M_%S).sql;
+                - mkdir -p /backup/reves-postgres; find /backup/reves-postgres -mtime +7 -delete; pg_dumpall -h $POSTGRES_HOST -p $POSTGRES_PORT -c -U reves -w | gzip -c > /backup/reves-postgres/dump_postgres_$(date +%F_%H_%M_%S).sql.gz;
               volumeMounts:
                 - name: postgres-backup
                   mountPath: /backup
