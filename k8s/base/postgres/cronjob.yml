@@ -13,10 +13,10 @@ spec:
             - name: db-backup
               image: postgres:16-alpine
               env:
-                - name: POSTGRES_HOST
-                  value: 'postgres.journal-des-reves.svc.cluster.local'
                 - name: POSTGRES_PORT
                   value: '5432'
+                - name: POSTGRES_NAME
+                  value: 'reves'
                 - name: POSTGRES_USER
                   value: 'reves'
                 - name: POSTGRES_PASSWORD
@@ -27,7 +27,7 @@ spec:
               args:
                 - /bin/bash
                 - -c
-                - echo "$POSTGRES_HOST:$POSTGRES_PORT:reves:$POSTGRES_USER:$POSTGRES_PASSWORD" > ~/.pgpass; chmod 600 ~/.pgpass; mkdir -p /backup/reves-postgres; find /backup/reves-postgres -mtime +7 -delete; pg_dumpall -h $POSTGRES_HOST -p $POSTGRES_PORT -c | gzip -c > /backup/reves-postgres/dump_postgres_$(date +%F_%H_%M_%S).sql.gz;
+                - mkdir -p /backup/reves-postgres; find /backup/reves-postgres -mtime +7 -delete; PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER $POSTGRES_NAME -Fc > /backup/reves-postgres/dump_postgres_$(date +%F_%H_%M_%S).dump;
               volumeMounts:
                 - name: postgres-backup
                   mountPath: /backup
