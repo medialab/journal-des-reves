@@ -22,8 +22,8 @@ spec:
                 - name: POSTGRES_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: nocodb
-                      key: postgres_password
+                      name: secrets
+                      key: POSTGRES_PASSWORD
               args:
                 - /bin/bash
                 - -c
