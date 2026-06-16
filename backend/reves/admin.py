@@ -37,6 +37,7 @@ class ProfilAdmin(ModelAdmin):
         'consent_data_processing',
         'consent_password_account',
         'consent_quote_expressions',
+        'consent_age_vulnerability',
         'consent_date',
     ]
     search_fields = ['user__username', 'user__email']
@@ -54,6 +55,7 @@ class ProfilInline(admin.StackedInline):
         'consent_data_processing',
         'consent_password_account',
         'consent_quote_expressions',
+        'consent_age_vulnerability',
         'consent_date',
         'welcome_email_sent',
         'created_at',

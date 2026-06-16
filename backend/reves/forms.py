@@ -752,7 +752,13 @@ class SignUpForm(UserCreationForm):
     consent_quote_expressions = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'autorise qu\'une partie de mes expressions puisse être citée, étant entendu qu\'il ne sera pas possible de m\'identifier.'
+        label='J\'autorise qu\'une partie de mes expressions puisse être citée, étant entendu qu\'il ne sera pas possible de m\'identifier. J\'accepte que le son de mes enregistrements, une fois anonymisé et regroupé avec celui des autres participant·es, soit analysé.'
+    )
+    
+    consent_age_vulnerability = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='J\'atteste avoir 18 ans ou plus et ne pas être en situation de vulnérabilité.'
     )
     
     class Meta:
@@ -847,6 +853,7 @@ class SignUpForm(UserCreationForm):
                         consent_data_processing=self.cleaned_data['consent_data_processing'],
                         consent_password_account=self.cleaned_data['consent_password_account'],
                         consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
+                        consent_age_vulnerability=self.cleaned_data['consent_age_vulnerability'],
                         consent_date=timezone.now(),
                         welcome_email_sent=False,
                         created_at_trick=timezone.now() - timezone.timedelta(days=8)

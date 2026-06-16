@@ -38,7 +38,13 @@ class Profil(models.Model):
     consent_quote_expressions = models.BooleanField(
         default=False,
         verbose_name="Autorize la citation d'expressions",
-        help_text="J'autorise qu'une partie de mes expressions puisse être citée"
+        help_text="J'autorise qu'une partie de mes expressions puisse être citée, étant entendu qu'il ne sera pas possible de m'identifier.  J'accepte que le son de mes enregistrements, une fois anonymisés et regroupés avec ceux des autres participant·es, soit analysé."
+    )
+    
+    consent_age_vulnerability = models.BooleanField(
+        default=False,
+        verbose_name="Attestation d'âge et d'absence de vulnérabilité",
+        help_text="J'atteste avoir 18 ans ou plus et ne pas être en situation de vulnérabilité"
     )
     
     # Date d'acceptation des consentements

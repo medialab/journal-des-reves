@@ -84,6 +84,16 @@
                                     <div class="error-message">{{ form.consent_quote_expressions.errors|striptags }}</div>
                                 {% endif %}
                             </div>
+
+                            <div class="form-group checkbox-item">
+                                <label for="{{ form.consent_age_vulnerability.id_for_label }}" class="checkbox-label">
+                                    <input type="checkbox" name="consent_age_vulnerability" id="{{ form.consent_age_vulnerability.id_for_label }}" class="checkbox-input" required>
+                                    <span>{{ form.consent_age_vulnerability.label }}</span>
+                                </label>
+                                {% if form.consent_age_vulnerability.errors %}
+                                    <div class="error-message">{{ form.consent_age_vulnerability.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
