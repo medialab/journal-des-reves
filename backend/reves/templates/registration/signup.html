@@ -30,72 +30,9 @@
                     </div>
                 {% endif %}
 
-                <!-- Informations et consentement -->
-                <div class="consent-section">
-                    <h2 class="consent-title">Mention d'information et consentement</h2>
-                    
-                    <div class="consent-content">
-                        <p>L’enquête étudie  les récits de rêves et les liens avec la position sociale du rêveur (classe sociale, métier, niveau d’études, et de revenu, genre, âge et d'autres caractéristiques sociales). Cette collecte comprend vos récits audio, ainsi qu’un questionnaire permettant de comprendre vos caractéristiques sociales. Les seules personnes qui auront accès aux données brutes sont Maud Yaïche et ses directeurs de thèse, Jean-Philippe Cointet et Nicolas Duvoux.</p>
-
-                        <p>Les traitements statistiques portent sur des données audio, la transcription de ces enregistrements et le croisement avec les réponses au questionnaire. Aucune donnée ne sortira des serveurs de Sciences Po ni d'un ordinateur sécurisé en local. Les données brutes seront supprimées 15 ans après la collecte.</p>
-
-                        <p>L'enquête fera l'objet d'une thèse, de publications scientifiques sous forme de chapitres d'ouvrages, d'un livre et d'articles scientifiques. Pour les publications, vous ne pourrez pas être identifié individuellement. Si vous y consentez, des extraits de texte de vos rêves pourront être publiées.</p>
-
-                        <p>La base légale de ce projet est le consentement. Vous pouvez retirer votre consentement sur le site si vous changez d'avis et, après cette période, vous pouvez adresser un mail à <a href="mailto:maud.yaiche@sciencespo.fr">maud.yaiche@sciencespo.fr</a></p>
-                    </div>
-                </div>
-
                 <!-- Formulaire d'inscription -->
                 <form method="post" class="modern-form">
                     {% csrf_token %}
-
-                    <!-- Champs de consentement -->
-                    <div class="form-section">
-                        <h3>Consentements obligatoires</h3>
-                        <p class="form-help">Vous devez cocher toutes les cases pour créer votre compte.</p>
-
-                        <div class="checkbox-group">
-                            <div class="form-group checkbox-item">
-                                <label for="{{ form.consent_data_processing.id_for_label }}" class="checkbox-label">
-                                    <input type="checkbox" name="consent_data_processing" id="{{ form.consent_data_processing.id_for_label }}" class="checkbox-input" required>
-                                    <span>{{ form.consent_data_processing.label }}</span>
-                                </label>
-                                {% if form.consent_data_processing.errors %}
-                                    <div class="error-message">{{ form.consent_data_processing.errors|striptags }}</div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group checkbox-item">
-                                <label for="{{ form.consent_password_account.id_for_label }}" class="checkbox-label">
-                                    <input type="checkbox" name="consent_password_account" id="{{ form.consent_password_account.id_for_label }}" class="checkbox-input" required>
-                                    <span>{{ form.consent_password_account.label }}</span>
-                                </label>
-                                {% if form.consent_password_account.errors %}
-                                    <div class="error-message">{{ form.consent_password_account.errors|striptags }}</div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group checkbox-item">
-                                <label for="{{ form.consent_quote_expressions.id_for_label }}" class="checkbox-label">
-                                    <input type="checkbox" name="consent_quote_expressions" id="{{ form.consent_quote_expressions.id_for_label }}" class="checkbox-input" required>
-                                    <span>{{ form.consent_quote_expressions.label }}</span>
-                                </label>
-                                {% if form.consent_quote_expressions.errors %}
-                                    <div class="error-message">{{ form.consent_quote_expressions.errors|striptags }}</div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group checkbox-item">
-                                <label for="{{ form.consent_age_vulnerability.id_for_label }}" class="checkbox-label">
-                                    <input type="checkbox" name="consent_age_vulnerability" id="{{ form.consent_age_vulnerability.id_for_label }}" class="checkbox-input" required>
-                                    <span>{{ form.consent_age_vulnerability.label }}</span>
-                                </label>
-                                {% if form.consent_age_vulnerability.errors %}
-                                    <div class="error-message">{{ form.consent_age_vulnerability.errors|striptags }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Champs utilisateur -->
                     <div class="form-section">
@@ -150,6 +87,62 @@
                             {% if form.password2.help_text %}
                                 <small class="form-help">{{ form.password2.help_text|safe }}</small>
                             {% endif %}
+                        </div>
+                    </div>
+
+
+                    <!-- Champs de consentement -->
+                    <div class="form-section">
+                        <h3>Consentements obligatoires</h3>
+
+
+                        <p class="form-help">Vous devez cocher toutes les cases pour créer votre compte.</p>
+                        <div class="checkbox-group">
+                         <div class="form-group checkbox-item">
+                                <label for="{{ form.consent_password_account.id_for_label }}" class="checkbox-label">
+                                    <input type="checkbox" name="consent_password_account" id="{{ form.consent_password_account.id_for_label }}" class="checkbox-input" required>
+                                    <span>{{ form.consent_password_account.label }}</span>
+                                </label>
+                                {% if form.consent_password_account.errors %}
+                                    <div class="error-message">{{ form.consent_password_account.errors|striptags }}</div>
+                                {% endif %}
+
+
+                            </div>
+
+                            <div class="form-group checkbox-item">
+                                <label for="{{ form.consent_age_vulnerability.id_for_label }}" class="checkbox-label">
+                                    <input type="checkbox" name="consent_age_vulnerability" id="{{ form.consent_age_vulnerability.id_for_label }}" class="checkbox-input" required>
+                                    <span>{{ form.consent_age_vulnerability.label }}</span>
+                                </label>
+                                {% if form.consent_age_vulnerability.errors %}
+                                    <div class="error-message">{{ form.consent_age_vulnerability.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+
+                            <div class="form-group checkbox-item">
+                                <label for="{{ form.consent_data_processing.id_for_label }}" class="checkbox-label">
+                                    <input type="checkbox" name="consent_data_processing" id="{{ form.consent_data_processing.id_for_label }}" class="checkbox-input" required>
+                                    <span>{{ form.consent_data_processing.label }}</span>
+                                </label>
+                                {% if form.consent_data_processing.errors %}
+                                    <div class="error-message">{{ form.consent_data_processing.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                           
+
+                            <div class="form-group checkbox-item">
+                                <label for="{{ form.consent_quote_expressions.id_for_label }}" class="checkbox-label">
+                                    <input type="checkbox" name="consent_quote_expressions" id="{{ form.consent_quote_expressions.id_for_label }}" class="checkbox-input" required>
+                                    <span>{{ form.consent_quote_expressions.label }}</span>
+                                </label>
+                                {% if form.consent_quote_expressions.errors %}
+                                    <div class="error-message">{{ form.consent_quote_expressions.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
                         </div>
                     </div>
 

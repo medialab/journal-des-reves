@@ -740,7 +740,7 @@ class SignUpForm(UserCreationForm):
     consent_data_processing = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'accepte que mes données soient traitées par l\'équipe de recherche composée de Maud Yaïche et de ses directeurs de recherche.'
+        label='J\'accepte que mes données soient traitées par la chercheuse Maud Yaïche et de ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu\'elles soient versées aux archives 10 ans après la collecte dans l\'entrepôt de données sécurisé de Sciences Po, où l\'accès est encadré sur demande par la chercheuse.'
     )
     
     consent_password_account = forms.BooleanField(
@@ -752,7 +752,7 @@ class SignUpForm(UserCreationForm):
     consent_quote_expressions = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'autorise qu\'une partie de mes expressions puisse être citée, étant entendu qu\'il ne sera pas possible de m\'identifier. J\'accepte que le son de mes enregistrements, une fois anonymisé et regroupé avec celui des autres participant·es, soit analysé.'
+        label='J\'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation).'
     )
     
     consent_age_vulnerability = forms.BooleanField(
