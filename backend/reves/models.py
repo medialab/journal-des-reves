@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 import datetime
 import os
+import uuid
 import secrets
 import string
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -11,7 +12,129 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 # PROFIL USER : ------------------------
 
-class Profil(models.Model):
+
+class PublicKeyModel(models.Model):
+    key = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        verbose_name="Clé publique",
+    )
+
+    class Meta:
+        abstract = True
+
+
+class ParticipantKeyQuerySet(models.QuerySet):
+    def _rewrite_participant_kwargs(self, kwargs):
+        rewritten = dict(kwargs)
+        participant_key = rewritten.pop('participant_key', None)
+
+        if participant_key is None:
+            profil = rewritten.pop('profil', None)
+            user = rewritten.pop('user', None)
+            profil_id = rewritten.pop('profil_id', None)
+            user_id = rewritten.pop('user_id', None)
+
+            if profil is not None:
+                participant_key = getattr(profil, 'key', profil)
+            elif user is not None:
+                participant_key = getattr(getattr(user, 'profil', None), 'key', None)
+            elif profil_id is not None:
+                participant_key = Profil.objects.filter(pk=profil_id).values_list('key', flat=True).first()
+            elif user_id is not None:
+                participant_key = Profil.objects.filter(user_id=user_id).values_list('key', flat=True).first()
+
+        if participant_key is not None:
+            rewritten['participant_key'] = participant_key
+
+        return rewritten
+
+    def filter(self, *args, **kwargs):
+        return super().filter(*args, **self._rewrite_participant_kwargs(kwargs))
+
+    def exclude(self, *args, **kwargs):
+        return super().exclude(*args, **self._rewrite_participant_kwargs(kwargs))
+
+
+class ParticipantKeyManager(models.Manager.from_queryset(ParticipantKeyQuerySet)):
+    pass
+
+
+class ParticipantKeyModel(PublicKeyModel):
+    participant_key = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        db_index=True,
+        verbose_name="Clé du participant",
+    )
+
+    objects = ParticipantKeyManager()
+
+    class Meta:
+        abstract = True
+
+    def __init__(self, *args, **kwargs):
+        profil = kwargs.pop('profil', None)
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if profil is not None:
+            self.profil = profil
+        elif user is not None:
+            self.user = user
+
+    def _get_cached_profil(self):
+        cached = getattr(self, '_participant_profil_cache', None)
+        if cached is not None:
+            return cached
+        if not self.participant_key:
+            return None
+        try:
+            cached = Profil.objects.select_related('user').get(key=self.participant_key)
+        except Profil.DoesNotExist:
+            cached = None
+        self._participant_profil_cache = cached
+        return cached
+
+    @property
+    def profil(self):
+        return self._get_cached_profil()
+
+    @profil.setter
+    def profil(self, value):
+        if value is None:
+            self.participant_key = None
+            self._participant_profil_cache = None
+            return
+
+        profil = value if isinstance(value, Profil) else Profil.objects.select_related('user').get(key=value)
+        self.participant_key = profil.key
+        self._participant_profil_cache = profil
+
+    @property
+    def user(self):
+        profil = self.profil
+        return profil.user if profil else None
+
+    @user.setter
+    def user(self, value):
+        if value is None:
+            self.participant_key = None
+            self._participant_profil_cache = None
+            return
+
+        profil = getattr(value, 'profil', None)
+        if profil is None:
+            profil = Profil.objects.select_related('user').get(user=value)
+        self.profil = profil
+
+    def participant_label(self):
+        profil = self.profil
+        if profil and getattr(profil, 'user_id', None):
+            return profil.user.username
+        return str(self.participant_key) if self.participant_key else '—'
+
+class Profil(PublicKeyModel):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE
@@ -100,16 +223,19 @@ class Profil(models.Model):
 
     def has_completed_questionnaire(self):
         """Indique si le profil a deja complete le questionnaire au moins une fois."""
-        return self.questionnaires.filter(is_completed=True).exists()
+        return Questionnaire.objects.filter(participant_key=self.key, is_completed=True).exists()
 
     def must_complete_questionnaire_for_extended_access(self):
         """Vérifie si le questionnaire a été complété au moins une fois."""
         return not self.has_completed_questionnaire()
 
+    def __str__(self):
+        return f"Profil {self.key} ({self.user.username})"
+
 
 # MODELES POUR LES REVES ========================
 
-class ReveImageModalite(models.Model):
+class ReveImageModalite(PublicKeyModel):
     """Modalités d'images que la personne peut se souvenir (couleur, netteté, etc.)"""
     libelle = models.CharField(
         max_length=100,
@@ -127,10 +253,8 @@ class ReveImageModalite(models.Model):
         verbose_name_plural = "Modalités d'images"
 
     def __str__(self):
-        return self.libelle
-
-
-class ReveEmotion(models.Model):
+        return f"{self.libelle} [{self.key}]"
+class ReveEmotion(PublicKeyModel):
     """Émotions prédéfinies par les chercheurs"""
     libelle = models.CharField(
         max_length=100,
@@ -153,10 +277,8 @@ class ReveEmotion(models.Model):
         verbose_name_plural = "Émotions"
 
     def __str__(self):
-        return f"{self.emoji} {self.libelle}"
-
-
-class ReveEmotionCustom(models.Model):
+        return f"{self.emoji} {self.libelle} [{self.key}]"
+class ReveEmotionCustom(PublicKeyModel):
     """Émotions personnalisées par profil"""
     profil = models.ForeignKey(
         Profil,
@@ -176,10 +298,8 @@ class ReveEmotionCustom(models.Model):
         unique_together = ('profil', 'libelle')
 
     def __str__(self):
-        return f"{self.libelle} ({self.profil.user.username})"
-
-
-class ReveElementCustom(models.Model):
+        return f"{self.libelle} ({self.profil.user.username}) [{self.key}]"
+class ReveElementCustom(PublicKeyModel):
     """Elements personnalisés (personnes, lieux, situations) par profil"""
     profil = models.ForeignKey(
         Profil,
@@ -199,7 +319,7 @@ class ReveElementCustom(models.Model):
         unique_together = ('profil', 'libelle')
 
     def __str__(self):
-        return f"{self.libelle} ({self.profil.user.username})"
+        return f"{self.libelle} ({self.profil.user.username}) [{self.key}]"
 
 
 
@@ -217,22 +337,8 @@ def reve_audio_upload_to(_instance, filename):
         if not Reve.objects.filter(audio=candidate).exists():
             return candidate
 
-class Reve(models.Model):
+class Reve(ParticipantKeyModel):
     """Modèle pour les rêves enregistrés"""
-    
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="reves",
-        null=True,
-        blank=True
-    )
-    
-    profil = models.ForeignKey(
-        Profil,
-        on_delete=models.CASCADE,
-        related_name="reves"
-    )
 
     date = models.DateField(auto_now_add=True)
 
@@ -384,27 +490,13 @@ class Reve(models.Model):
         ordering = ['-date', '-created_at']
 
     def __str__(self):
-        return f"Rêve de {self.profil.user.username} - {self.date}"
+        return f"Rêve de {self.participant_label()} - {self.date} [{self.key}]"
 
 
 # QUESTIONNAIRE ------------------------
 
-class Questionnaire(models.Model):
+class Questionnaire(ParticipantKeyModel):
     """Modèle pour stocker les réponses au questionnaire sur les rêves"""
-    
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="questionnaires",
-        null=True,
-        blank=True
-    )
-    
-    profil = models.ForeignKey(
-        Profil,
-        on_delete=models.CASCADE,
-        related_name="questionnaires"
-    )
     
     # ===== PARTIE 1: VARIABLES SOCIO-DÉMOGRAPHIQUES =====
     
@@ -1099,7 +1191,7 @@ class Questionnaire(models.Model):
         verbose_name_plural = "Questionnaires"
     
     def __str__(self):
-        return f"Questionnaire de {self.profil.user.username} - {self.created_at.strftime('%d/%m/%Y')}"
+        return f"Questionnaire de {self.participant_label()} - {self.created_at.strftime('%d/%m/%Y')} [{self.key}]"
 
     def save(self, *args, **kwargs):
         """Calcule automatiquement le score de détresse psychologique avant la sauvegarde"""
@@ -1141,7 +1233,7 @@ class Questionnaire(models.Model):
 
 # MODELE POUR LES NOTIFICATIONS ========================
 
-class Notification(models.Model):
+class Notification(PublicKeyModel):
     """Modèle pour tracer les notifications envoyées aux utilisateurs"""
     
     class NotificationType(models.TextChoices):
@@ -1192,7 +1284,7 @@ class Notification(models.Model):
         verbose_name_plural = "Notifications"
     
     def __str__(self):
-        return f"{self.get_notification_type_display()} - {self.profil.user.username}"
+        return f"{self.get_notification_type_display()} - {self.profil.user.username} [{self.key}]"
     
     def mark_as_read(self):
         """Marquer la notification comme lue"""
