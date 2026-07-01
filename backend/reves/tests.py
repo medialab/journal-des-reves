@@ -46,7 +46,9 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import Questionnaire, Profil, Reve, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite
+from uuid import UUID
+
+from .models import Notification, Questionnaire, Profil, Reve, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite
 from .forms import QuestionnaireForm, SignUpForm
 
 
@@ -218,6 +220,7 @@ class QuestionnaireFormValidationTest(TestCase):
         data['aide_tisane'] = 'on'
         form = QuestionnaireForm(data=data)
         self.assertTrue(form.is_valid(), msg=f"Erreurs: {form.errors}")
+
         self.assertTrue(form.cleaned_data.get('aide_tisane'))
 
     # --- pens_rien exclusif ---
@@ -605,6 +608,8 @@ class SignupQuestionnaireBypassTest(TestCase):
             'consent_data_processing': True,
             'consent_password_account': True,
             'consent_quote_expressions': True,
+            'consent_sensitive_data': True,
+            'consent_age_vulnerability': True,
         })
         self.assertTrue(form.is_valid(), form.errors)
 
@@ -794,7 +799,6 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
         self._final_post(full_post_data())
         count_after = Questionnaire.objects.filter(profil=self.profil).count()
         self.assertEqual(count_before, count_after)  # Pas de doublon
-
     def test_double_submit_is_idempotent(self):
         """Deux soumissions rapides ne doivent pas créer de doublon de questionnaire complété."""
         first = self._final_post(full_post_data())
@@ -1162,6 +1166,32 @@ class QuestionnaireAdminSmokeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Dashboard')
         self.assertContains(response, 'Data')
+
+
+class PublicKeyFieldTest(TestCase):
+    def test_models_receive_uuid_keys(self):
+        user = User.objects.create_user(username='keyuser', password='testpass123')
+        profil = user.profil
+        Profil.objects.filter(pk=profil.pk).update(
+            created_at=timezone.now() - timezone.timedelta(days=10)
+        )
+        profil.refresh_from_db()
+        reve = Reve.objects.create(profil=profil, user=user)
+        questionnaire = Questionnaire.objects.create(profil=profil, user=user)
+        notification = Notification.objects.create(
+            profil=profil,
+            notification_type='general',
+            title='Test',
+            message='Message de test',
+        )
+        emotion = ReveEmotion.objects.create(libelle='Joie', emoji='🙂')
+        emotion_custom = ReveEmotionCustom.objects.create(profil=profil, libelle='Réassurance')
+        element_custom = ReveElementCustom.objects.create(profil=profil, libelle='Maison')
+        image_modalite = ReveImageModalite.objects.create(libelle='Flou')
+
+        for obj in [profil, reve, questionnaire, notification, emotion, emotion_custom, element_custom, image_modalite]:
+            self.assertIsInstance(obj.key, UUID)
+            self.assertTrue(obj.key)
 
 
 class ReveAdminSmokeTest(TestCase):

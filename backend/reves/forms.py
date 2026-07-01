@@ -740,7 +740,7 @@ class SignUpForm(UserCreationForm):
     consent_data_processing = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'accepte que mes données soient traitées par l\'équipe de recherche composée de Maud Yaïche et de ses directeurs de recherche.'
+        label='J\'accepte que mes données soient traitées par la chercheuse Maud Yaïche et de ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu\'elles soient versées aux archives 10 ans après la collecte dans l\'entrepôt de données sécurisé de Sciences Po, où l\'accès est encadré sur demande par la chercheuse.'
     )
     
     consent_password_account = forms.BooleanField(
@@ -752,7 +752,19 @@ class SignUpForm(UserCreationForm):
     consent_quote_expressions = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'autorise qu\'une partie de mes expressions puisse être citée, étant entendu qu\'il ne sera pas possible de m\'identifier.'
+        label='J\'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation).'
+    )
+
+    consent_sensitive_data = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='Je consens à la collecte et à l\'analyse des données sensibles que je choisis de partager concernant mon origine ou ma vie affective et sexuelle.'
+    )
+    
+    consent_age_vulnerability = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='J\'atteste avoir 18 ans ou plus et ne pas être en situation de vulnérabilité.'
     )
     
     class Meta:
@@ -847,6 +859,8 @@ class SignUpForm(UserCreationForm):
                         consent_data_processing=self.cleaned_data['consent_data_processing'],
                         consent_password_account=self.cleaned_data['consent_password_account'],
                         consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
+                        consent_sensitive_data=self.cleaned_data['consent_sensitive_data'],
+                        consent_age_vulnerability=self.cleaned_data['consent_age_vulnerability'],
                         consent_date=timezone.now(),
                         welcome_email_sent=False,
                         created_at_trick=timezone.now() - timezone.timedelta(days=8)

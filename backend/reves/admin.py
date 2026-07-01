@@ -33,13 +33,17 @@ from .models import (
 # Profil Admin
 class ProfilAdmin(ModelAdmin):
     list_display = [
+        'key',
+        'email',
         'user',
         'consent_data_processing',
         'consent_password_account',
         'consent_quote_expressions',
+        'consent_sensitive_data',
+        'consent_age_vulnerability',
         'consent_date',
     ]
-    search_fields = ['user__username', 'user__email']
+    search_fields = ['key', 'email', 'user__username', 'user__email']
     list_filter = ['consent_data_processing', 'consent_date']
 
 
@@ -50,15 +54,18 @@ class ProfilInline(admin.StackedInline):
     extra = 0
     verbose_name_plural = 'Profil associé'
     fields = (
+        'key',
         'email',
         'consent_data_processing',
         'consent_password_account',
         'consent_quote_expressions',
+        'consent_sensitive_data',
+        'consent_age_vulnerability',
         'consent_date',
         'welcome_email_sent',
         'created_at',
     )
-    readonly_fields = ('created_at',)
+    readonly_fields = ('key', 'created_at')
 
 
 class GroupBulkUpdateForm(forms.Form):
@@ -95,7 +102,8 @@ class UserAdminForm(forms.ModelForm):
 class UserAdmin(DjangoUserAdmin):
     form = UserAdminForm
     inlines = (ProfilInline,)
-    actions = ('bulk_update_groups', 'delete_selected', 'quick_delete_users')
+    change_list_template = 'admin/auth/user/change_list.html'
+    actions = ('bulk_update_groups', 'delete_selected', 'quick_delete_users', 'export_selected_as_csv')
     actions_on_top = True
     actions_on_bottom = True
     filter_horizontal = ('user_permissions',)
@@ -149,6 +157,17 @@ class UserAdmin(DjangoUserAdmin):
     )
     list_select_related = ()
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'export-csv/',
+                self.admin_site.admin_view(self.export_all_as_csv_view),
+                name='auth_user_export_csv',
+            ),
+        ]
+        return custom_urls + urls
+
     @admin.display(description='Groupes')
     def groups_display(self, obj):
         values = [group.name for group in obj.groups.all()]
@@ -161,6 +180,58 @@ class UserAdmin(DjangoUserAdmin):
             '<a href="{}" style="display:inline-block;padding:0.2rem 0.55rem;border-radius:999px;border:1px solid #dc2626;color:#dc2626;font-weight:600;text-decoration:none;">Supprimer</a>',
             delete_url,
         )
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        response = super().changelist_view(request, extra_context=extra_context)
+
+        if hasattr(response, 'context_data') and response.context_data.get('cl'):
+            response.context_data['csv_export_url'] = f"{reverse('admin:auth_user_export_csv')}?{request.GET.urlencode()}"
+
+        return response
+
+    def export_queryset_as_csv(self, queryset):
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="users.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'is_staff',
+            'is_superuser',
+            'last_login',
+            'date_joined',
+            'groups',
+        ])
+
+        for user in queryset.prefetch_related('groups').order_by('id'):
+            writer.writerow([
+                user.id,
+                user.username,
+                user.email,
+                user.first_name,
+                user.last_name,
+                user.is_active,
+                user.is_staff,
+                user.is_superuser,
+                user.last_login.isoformat() if user.last_login else '',
+                user.date_joined.isoformat() if user.date_joined else '',
+                ' | '.join(group.name for group in user.groups.all()),
+            ])
+
+        return response
+
+    @admin.action(description='Exporter la sélection en CSV')
+    def export_selected_as_csv(self, request, queryset):
+        return self.export_queryset_as_csv(queryset)
+
+    def export_all_as_csv_view(self, request):
+        return self.export_queryset_as_csv(self.get_queryset(request))
 
     @admin.action(description='Modifier les groupes (choix multiples)')
     def bulk_update_groups(self, request, queryset):
@@ -249,7 +320,7 @@ class GroupAdmin(DjangoGroupAdmin):
 class ReveAdmin(ModelAdmin):
     change_list_template = 'admin/reves/reve/data_change_list.html'
     list_display = [
-        'dreamer',
+        'participant_key',
         'date',
         'existence_souvenir',
         'type_reve',
@@ -264,7 +335,7 @@ class ReveAdmin(ModelAdmin):
         'transcription_excerpt',
         'created_at',
     ]
-    search_fields = ['user__username', 'profil__user__username', 'transcription', 'commentaire_libre']
+    search_fields = ['participant_key', 'key', 'transcription', 'commentaire_libre']
     list_filter = [
         'date',
         'existence_souvenir',
@@ -279,12 +350,12 @@ class ReveAdmin(ModelAdmin):
         'temps_futur_lointain',
         'temps_difficile',
     ]
-    readonly_fields = ['created_at', 'date']
+    readonly_fields = ['key', 'participant_key', 'created_at', 'date']
     actions = ['export_selected_as_csv']
     list_per_page = 25
     date_hierarchy = 'date'
     fieldsets = [
-        ("Informations", {"fields": ["user", "profil", "date", "created_at", "existence_souvenir", "audio", "transcription_ready"]}),
+        ("Informations", {"fields": ["participant_key", "key", "date", "created_at", "existence_souvenir", "audio", "transcription_ready"]}),
         ("Transcription", {"fields": ["transcription"]}),
         ("Rêve - Métadonnées", {
             "fields": ["type_reve", "etendue_reve", "sens", "images_modalites"],
@@ -296,7 +367,6 @@ class ReveAdmin(ModelAdmin):
             "fields": ["elements_reve", "temps_passe_lointain", "temps_passe_recent", "temps_veille", "temps_futur_proche", "temps_futur_lointain", "temps_difficile", "commentaire_libre"],
         }),
     ]
-
     temps_field_specs = [
         ('temps_passe_lointain', 'Passé lointain'),
         ('temps_passe_recent', 'Passé récent'),
@@ -307,7 +377,7 @@ class ReveAdmin(ModelAdmin):
     ]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'profil', 'profil__user').prefetch_related(
+        return super().get_queryset(request).prefetch_related(
             'images_modalites',
             'emotions_reve',
             'emotions_custom',
@@ -328,14 +398,6 @@ class ReveAdmin(ModelAdmin):
             ),
         ]
         return custom_urls + urls
-
-    @admin.display(description='Participant', ordering='profil__user__username')
-    def dreamer(self, obj):
-        if obj.profil_id and obj.profil.user_id:
-            return obj.profil.user.username
-        if obj.user_id:
-            return obj.user.username
-        return '—'
 
     @admin.display(description='Audio', boolean=True)
     def audio_present(self, obj):
@@ -401,7 +463,7 @@ class ReveAdmin(ModelAdmin):
 
     def build_dashboard_context(self, queryset):
         total_count = queryset.count()
-        total_profiles = queryset.values('profil_id').distinct().count()
+        total_profiles = queryset.values('participant_key').distinct().count()
         memory_count = queryset.filter(existence_souvenir=True).count()
         transcription_ready_count = queryset.filter(transcription_ready=True).count()
         audio_count = queryset.exclude(audio='').exclude(audio__isnull=True).count()
@@ -549,7 +611,7 @@ class ReveAdmin(ModelAdmin):
 
         writer = csv.writer(response)
         model_fields = list(Reve._meta.fields)
-        header = ['username', 'email']
+        header = ['participant_key']
         for field in model_fields:
             header.append(field.name)
             if field.choices:
@@ -563,17 +625,10 @@ class ReveAdmin(ModelAdmin):
         writer.writerow(header)
 
         for reve in queryset:
-            row = [
-                reve.profil.user.username if reve.profil_id and reve.profil.user_id else '',
-                reve.profil.email if reve.profil_id else '',
-            ]
+            row = [reve.participant_key]
             for field in model_fields:
                 value = getattr(reve, field.name)
-                if field.name == 'user':
-                    export_value = reve.user.username if reve.user_id else ''
-                elif field.name == 'profil':
-                    export_value = reve.profil_id
-                elif field.name == 'audio':
+                if field.name == 'audio':
                     export_value = value.name if value else ''
                 else:
                     export_value = value
@@ -603,16 +658,15 @@ class ReveAdmin(ModelAdmin):
 class QuestionnaireAdmin(ModelAdmin):
     change_list_template = 'admin/reves/questionnaire/data_change_list.html'
     list_display = [
-        'user',
-        'profil',
+        'participant_key',
         'completion_badge',
         'created_at',
         'completed_at',
         'completion_duration_display',
     ]
-    search_fields = ['user__username', 'profil__user__username']
+    search_fields = ['participant_key', 'key']
     list_filter = ['is_completed', 'created_at', 'completed_at']
-    readonly_fields = ['created_at', 'updated_at', 'completed_at', 'completion_duration_seconds']
+    readonly_fields = ['key', 'participant_key', 'created_at', 'updated_at', 'completed_at', 'completion_duration_seconds']
     actions = ['export_selected_as_csv']
 
     key_field_specs = [
@@ -631,7 +685,7 @@ class QuestionnaireAdmin(ModelAdmin):
     ]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'profil', 'profil__user')
+        return super().get_queryset(request)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -715,7 +769,7 @@ class QuestionnaireAdmin(ModelAdmin):
             user__is_active=True,
             created_at__lte=eligible_since,
         ).count()
-        completed_profiles_count = Questionnaire.objects.filter(is_completed=True).values('profil_id').distinct().count()
+        completed_profiles_count = Questionnaire.objects.filter(is_completed=True).values('participant_key').distinct().count()
 
         total_count = queryset.count()
         completed_count = queryset.filter(is_completed=True).count()
@@ -822,7 +876,7 @@ class QuestionnaireAdmin(ModelAdmin):
         writer = csv.writer(response)
         model_fields = list(Questionnaire._meta.fields)
 
-        header = ['username', 'email']
+        header = ['participant_key']
         for field in model_fields:
             header.append(field.name)
             if field.choices:
@@ -830,17 +884,12 @@ class QuestionnaireAdmin(ModelAdmin):
         header.extend(['duree_som_minutes', 'deficit_som_minutes'])
         writer.writerow(header)
 
-        for questionnaire in queryset.select_related('profil__user', 'user'):
-            row = [
-                questionnaire.profil.user.username if questionnaire.profil_id and questionnaire.profil.user_id else '',
-                questionnaire.profil.email if questionnaire.profil_id else '',
-            ]
+        for questionnaire in queryset:
+            row = [questionnaire.participant_key]
             for field in model_fields:
                 value = getattr(questionnaire, field.name)
-                if field.name == 'user':
-                    export_value = questionnaire.user.username if questionnaire.user_id else ''
-                elif field.name == 'profil':
-                    export_value = questionnaire.profil_id
+                if field.name == 'participant_key':
+                    export_value = value
                 else:
                     export_value = value
                 row.append(export_value)
@@ -862,38 +911,38 @@ class QuestionnaireAdmin(ModelAdmin):
 
 # Notification Admin
 class NotificationAdmin(ModelAdmin):
-    list_display = ['profil', 'notification_type', 'title', 'is_read', 'created_at']
-    search_fields = ['profil__user__username', 'title']
+    list_display = ['key', 'profil', 'notification_type', 'title', 'is_read', 'created_at']
+    search_fields = ['key', 'profil__user__username', 'title']
     list_filter = ['notification_type', 'is_read', 'created_at']
-    readonly_fields = ['created_at', 'read_at']
+    readonly_fields = ['key', 'created_at', 'read_at']
     fieldsets = [
-        ("Information", {"fields": ["profil", "notification_type", "title", "message"]}),
+        ("Information", {"fields": ["key", "profil", "notification_type", "title", "message"]}),
         ("Statut", {"fields": ["is_read", "created_at", "read_at"]}),
     ]
 
 
 class ReveEmotionAdmin(ModelAdmin):
-    list_display = ['libelle', 'emoji', 'ordre']
-    search_fields = ['libelle', 'emoji']
+    list_display = ['key', 'libelle', 'emoji', 'ordre']
+    search_fields = ['key', 'libelle', 'emoji']
     ordering = ['ordre', 'libelle']
 
 
 class ReveEmotionCustomAdmin(ModelAdmin):
-    list_display = ['libelle', 'profil', 'created_at']
-    search_fields = ['libelle', 'profil__user__username', 'profil__email']
+    list_display = ['key', 'libelle', 'profil', 'created_at']
+    search_fields = ['key', 'libelle', 'profil__user__username', 'profil__email']
     list_filter = ['created_at']
     autocomplete_fields = ['profil']
 
 
 class ReveImageModaliteAdmin(ModelAdmin):
-    list_display = ['libelle', 'ordre']
-    search_fields = ['libelle']
+    list_display = ['key', 'libelle', 'ordre']
+    search_fields = ['key', 'libelle']
     ordering = ['ordre', 'libelle']
 
 
 class ReveElementCustomAdmin(ModelAdmin):
-    list_display = ['libelle', 'profil', 'created_at']
-    search_fields = ['libelle', 'profil__user__username', 'profil__email']
+    list_display = ['key', 'libelle', 'profil', 'created_at']
+    search_fields = ['key', 'libelle', 'profil__user__username', 'profil__email']
     list_filter = ['created_at']
     autocomplete_fields = ['profil']
 
