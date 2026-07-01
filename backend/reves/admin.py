@@ -34,14 +34,16 @@ from .models import (
 class ProfilAdmin(ModelAdmin):
     list_display = [
         'key',
+        'email',
         'user',
         'consent_data_processing',
         'consent_password_account',
         'consent_quote_expressions',
+        'consent_sensitive_data',
         'consent_age_vulnerability',
         'consent_date',
     ]
-    search_fields = ['key', 'user__username', 'user__email']
+    search_fields = ['key', 'email', 'user__username', 'user__email']
     list_filter = ['consent_data_processing', 'consent_date']
 
 
@@ -57,6 +59,7 @@ class ProfilInline(admin.StackedInline):
         'consent_data_processing',
         'consent_password_account',
         'consent_quote_expressions',
+        'consent_sensitive_data',
         'consent_age_vulnerability',
         'consent_date',
         'welcome_email_sent',
@@ -317,8 +320,7 @@ class GroupAdmin(DjangoGroupAdmin):
 class ReveAdmin(ModelAdmin):
     change_list_template = 'admin/reves/reve/data_change_list.html'
     list_display = [
-        'key',
-        'participant',
+        'participant_key',
         'date',
         'existence_souvenir',
         'type_reve',
@@ -333,7 +335,7 @@ class ReveAdmin(ModelAdmin):
         'transcription_excerpt',
         'created_at',
     ]
-    search_fields = ['key', 'participant_key', 'transcription', 'commentaire_libre']
+    search_fields = ['participant_key', 'key', 'transcription', 'commentaire_libre']
     list_filter = [
         'date',
         'existence_souvenir',
@@ -348,12 +350,12 @@ class ReveAdmin(ModelAdmin):
         'temps_futur_lointain',
         'temps_difficile',
     ]
-    readonly_fields = ['key', 'created_at', 'date']
+    readonly_fields = ['key', 'participant_key', 'created_at', 'date']
     actions = ['export_selected_as_csv']
     list_per_page = 25
     date_hierarchy = 'date'
     fieldsets = [
-        ("Informations", {"fields": ["key", "participant_key", "date", "created_at", "existence_souvenir", "audio", "transcription_ready"]}),
+        ("Informations", {"fields": ["participant_key", "key", "date", "created_at", "existence_souvenir", "audio", "transcription_ready"]}),
         ("Transcription", {"fields": ["transcription"]}),
         ("Rêve - Métadonnées", {
             "fields": ["type_reve", "etendue_reve", "sens", "images_modalites"],
@@ -396,10 +398,6 @@ class ReveAdmin(ModelAdmin):
             ),
         ]
         return custom_urls + urls
-
-    @admin.display(description='Participant', ordering='participant_key')
-    def participant(self, obj):
-        return obj.participant_label()
 
     @admin.display(description='Audio', boolean=True)
     def audio_present(self, obj):
@@ -660,16 +658,15 @@ class ReveAdmin(ModelAdmin):
 class QuestionnaireAdmin(ModelAdmin):
     change_list_template = 'admin/reves/questionnaire/data_change_list.html'
     list_display = [
-        'key',
-        'participant',
+        'participant_key',
         'completion_badge',
         'created_at',
         'completed_at',
         'completion_duration_display',
     ]
-    search_fields = ['key', 'participant_key']
+    search_fields = ['participant_key', 'key']
     list_filter = ['is_completed', 'created_at', 'completed_at']
-    readonly_fields = ['key', 'created_at', 'updated_at', 'completed_at', 'completion_duration_seconds']
+    readonly_fields = ['key', 'participant_key', 'created_at', 'updated_at', 'completed_at', 'completion_duration_seconds']
     actions = ['export_selected_as_csv']
 
     key_field_specs = [
@@ -734,10 +731,6 @@ class QuestionnaireAdmin(ModelAdmin):
         if minutes:
             return f'{minutes} min {remaining_seconds:02d}s'
         return f'{remaining_seconds}s'
-
-    @admin.display(description='Participant', ordering='participant_key')
-    def participant(self, obj):
-        return obj.participant_label()
 
     def dashboard_view(self, request):
         changelist = self.get_changelist_instance(request)

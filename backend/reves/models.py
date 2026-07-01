@@ -128,6 +128,26 @@ class ParticipantKeyModel(PublicKeyModel):
             profil = Profil.objects.select_related('user').get(user=value)
         self.profil = profil
 
+    def _resolve_participant_profil(self):
+        cached = getattr(self, '_participant_profil_cache', None)
+        if cached is not None:
+            return cached
+        if not self.participant_key:
+            return None
+        try:
+            cached = Profil.objects.select_related('user').get(key=self.participant_key)
+        except Profil.DoesNotExist:
+            cached = None
+        self._participant_profil_cache = cached
+        return cached
+
+    def save(self, *args, **kwargs):
+        profil = self._resolve_participant_profil()
+        if profil is not None:
+            self.participant_key = profil.key
+            self._participant_profil_cache = profil
+        super().save(*args, **kwargs)
+
     def participant_label(self):
         profil = self.profil
         if profil and getattr(profil, 'user_id', None):
@@ -162,6 +182,12 @@ class Profil(PublicKeyModel):
         default=False,
         verbose_name="Autorize la citation d'expressions",
         help_text="J'autorise qu'une partie de mes expressions puisse être citée, étant entendu qu'il ne sera pas possible de m'identifier.  J'accepte que le son de mes enregistrements, une fois anonymisés et regroupés avec ceux des autres participant·es, soit analysé."
+    )
+
+    consent_sensitive_data = models.BooleanField(
+        default=False,
+        verbose_name="Consentement sur les données sensibles",
+        help_text="Je consens à la collecte et à l'analyse des données sensibles que je choisis de partager concernant mon origine ou ma vie affective et sexuelle."
     )
     
     consent_age_vulnerability = models.BooleanField(
@@ -231,6 +257,31 @@ class Profil(PublicKeyModel):
 
     def __str__(self):
         return f"Profil {self.key} ({self.user.username})"
+
+    def save(self, *args, **kwargs):
+        user_email = (self.user.email or '').strip() if self.user_id else ''
+        profile_email = (self.email or '').strip()
+
+        if user_email:
+            self.email = user_email
+        elif profile_email and self.user_id:
+            from django.contrib.auth.models import User as UserModel
+            UserModel.objects.filter(pk=self.user_id).update(email=profile_email)
+        elif self.user_id and not profile_email:
+            self.email = ''
+
+        super().save(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        old_key = None
+        if self.pk:
+            old_key = Profil.objects.filter(pk=self.pk).values_list('key', flat=True).first()
+
+        super().save(*args, **kwargs)
+
+        if old_key and old_key != self.key:
+            Reve.objects.filter(participant_key=old_key).update(participant_key=self.key)
+            Questionnaire.objects.filter(participant_key=old_key).update(participant_key=self.key)
 
 
 # MODELES POUR LES REVES ========================
@@ -490,7 +541,7 @@ class Reve(ParticipantKeyModel):
         ordering = ['-date', '-created_at']
 
     def __str__(self):
-        return f"Rêve de {self.participant_label()} - {self.date} [{self.key}]"
+        return f"Rêve de {self.participant_label()} - {self.date} [{self.participant_key}]"
 
 
 # QUESTIONNAIRE ------------------------
@@ -1191,7 +1242,7 @@ class Questionnaire(ParticipantKeyModel):
         verbose_name_plural = "Questionnaires"
     
     def __str__(self):
-        return f"Questionnaire de {self.participant_label()} - {self.created_at.strftime('%d/%m/%Y')} [{self.key}]"
+        return f"Questionnaire de {self.participant_label()} - {self.created_at.strftime('%d/%m/%Y')} [{self.participant_key}]"
 
     def save(self, *args, **kwargs):
         """Calcule automatiquement le score de détresse psychologique avant la sauvegarde"""

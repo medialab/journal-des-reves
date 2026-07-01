@@ -63,7 +63,7 @@
                         <div class="form-group">
                             <div class="error-message" style="background-color: #ffece6; border-color: #f0564e; color: #7a1200;">
                                 <strong>AVERTISSEMENT :</strong>
-                                Pour des raisons de sécurité sur cette application en développement, votre mot de passe ne pourra pas être modifié. Notez-le dans un endroit fiable : si vous le perdez, vous perdrez l'accès à votre compte.
+                                Pour des raisons de sécurité sur ce site, votre mot de passe ne pourra pas être modifié. Notez-le dans un endroit fiable : si vous le perdez, vous perdrez l'accès à votre compte.
                             </div>
                         </div>
 
@@ -130,7 +130,17 @@
                                     <div class="error-message">{{ form.consent_data_processing.errors|striptags }}</div>
                                 {% endif %}
                             </div>
+                            
 
+                            <div class="form-group checkbox-item">
+                                <label for="{{ form.consent_sensitive_data.id_for_label }}" class="checkbox-label">
+                                    <input type="checkbox" name="consent_sensitive_data" id="{{ form.consent_sensitive_data.id_for_label }}" class="checkbox-input" required>
+                                    <span>{{ form.consent_sensitive_data.label }}</span>
+                                </label>
+                                {% if form.consent_sensitive_data.errors %}
+                                    <div class="error-message">{{ form.consent_sensitive_data.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
                            
 
                             <div class="form-group checkbox-item">
@@ -142,6 +152,7 @@
                                     <div class="error-message">{{ form.consent_quote_expressions.errors|striptags }}</div>
                                 {% endif %}
                             </div>
+
 
                         </div>
                     </div>

@@ -193,6 +193,8 @@ class ProfilView(LoginRequiredMixin, View):
         
         # Mettre à jour les champs autorisés
         if 'email' in data:
+            request.user.email = data['email']
+            request.user.save(update_fields=['email'])
             profil.email = data['email']
         
         try:

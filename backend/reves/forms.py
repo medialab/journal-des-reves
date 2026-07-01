@@ -754,6 +754,12 @@ class SignUpForm(UserCreationForm):
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
         label='J\'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation).'
     )
+
+    consent_sensitive_data = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        label='Je consens à la collecte et à l\'analyse des données sensibles que je choisis de partager concernant mon origine ou ma vie affective et sexuelle.'
+    )
     
     consent_age_vulnerability = forms.BooleanField(
         required=True,
@@ -853,6 +859,7 @@ class SignUpForm(UserCreationForm):
                         consent_data_processing=self.cleaned_data['consent_data_processing'],
                         consent_password_account=self.cleaned_data['consent_password_account'],
                         consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
+                        consent_sensitive_data=self.cleaned_data['consent_sensitive_data'],
                         consent_age_vulnerability=self.cleaned_data['consent_age_vulnerability'],
                         consent_date=timezone.now(),
                         welcome_email_sent=False,

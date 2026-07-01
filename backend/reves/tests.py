@@ -608,6 +608,8 @@ class SignupQuestionnaireBypassTest(TestCase):
             'consent_data_processing': True,
             'consent_password_account': True,
             'consent_quote_expressions': True,
+            'consent_sensitive_data': True,
+            'consent_age_vulnerability': True,
         })
         self.assertTrue(form.is_valid(), form.errors)
 
