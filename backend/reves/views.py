@@ -177,7 +177,7 @@ class ProfilView(LoginRequiredMixin, View):
         with transaction.atomic():
             profil = Profil.objects.select_for_update().get(pk=profil.pk)
             profil_data = None
-            if palier >= 7 and not profil.profil_code:
+            if palier >= 6 and not profil.profil_code:
                 profil_data = calculer_profil(request.user)
                 profil.profil_code = profil_data["code"]
                 profil.profil_revele_le = timezone.now()
@@ -206,8 +206,8 @@ class ProfilView(LoginRequiredMixin, View):
             "progress_message": (
                 "Notez votre premier rêve demain matin pour commencer." if palier == 0
                 else "Bravo, vous avez complété vos 7 nuits !" if palier == 7
-                else "Plus qu'une nuit ! Demain, votre profil de rêveur sera révélé." if palier == 6
-                else f"Plus que {7 - palier} nuits avant de découvrir votre profil de rêveur."
+                else "Plus qu'une nuit ! Demain, votre rapport personnalisé sera débloqué." if palier == 6
+                else f"Plus que {6 - palier} nuits avant de découvrir votre profil de rêveur."
             ),
             "new_content": new_content,
             "profil_data": profil_data,

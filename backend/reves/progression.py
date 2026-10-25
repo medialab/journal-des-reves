@@ -11,8 +11,8 @@ PALIERS = (
     {"niveau": 3, "cle": "emotions", "libelle": "Émotions"},
     {"niveau": 4, "cle": "temps", "libelle": "Temps"},
     {"niveau": 5, "cle": "themes", "libelle": "Thèmes"},
-    {"niveau": 6, "cle": "rapport", "libelle": "Rapport"},
-    {"niveau": 7, "cle": "profil", "libelle": "Profil"},
+    {"niveau": 6, "cle": "profil", "libelle": "Profil"},
+    {"niveau": 7, "cle": "rapport", "libelle": "Rapport"},
 )
 PROFILS = {
     "oublieux": {
