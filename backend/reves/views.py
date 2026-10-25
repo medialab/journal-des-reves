@@ -1004,13 +1004,14 @@ class QuestionnaireView(View):
             INT_FIELDS = {
                 'annee_naissance', 'niv_diplome', 'revenus_tranche', 'travail_statut',
                 'genre', 'habitat', 'profession', 'logement',
-                'freq_reves_not', 'etendue_souvenir_reve', 'temps_du_reve',
+                'recrutement', 'freq_reves_not', 'parler_reves', 'freq_reves',
+                'freq_cauchemar', 'etendue_souvenir_reve', 'temps_du_reve',
                 'latence_som', 'nuits_reveil', 'duree_eveil',
                 'statut_couple', 'nb_enfants_cohabitants', 'nb_enfants_moins14',
                 'pere_niv_diplome', 'pere_csp', 'mere_niv_diplome', 'mere_csp',
                 'conj_niv_diplome', 'conj_csp', 'lieu_naissance', 'lieu_naissance_pere',
                 'perception_financiere', 'perception_risque_pauvrete', 'position_subjective_classe',
-                'perception_mobilite', 'discri_presence', 'sante_generale',
+                'perception_mobilite', 'discri_presence', 'sante_generale', 'gali',
                 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
             }
             TIME_FIELDS = {'heure_coucher', 'heure_reveil', 'besoin_som'}
@@ -1018,7 +1019,8 @@ class QuestionnaireView(View):
 
             SECTION_FIELDS = {
                 '1': [
-                    'freq_reves_not', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
+                    'recrutement', 'recrutement_autre', 'freq_reves_not', 'parler_reves',
+                    'freq_reves', 'freq_cauchemar', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
                     'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
                     'etendue_souvenir_reve', 'temps_du_reve',
                     'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
@@ -1039,7 +1041,7 @@ class QuestionnaireView(View):
                     'discri_contexte_emploi', 'discri_contexte_logement', 'discri_contexte_travail',
                     'discri_contexte_education', 'discri_contexte_sante', 'discri_contexte_famille',
                     'discri_contexte_autre',
-                    'sante_generale', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
+                    'sante_generale', 'gali', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
                 ],
                 '3': [
                     'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
@@ -1066,7 +1068,7 @@ class QuestionnaireView(View):
                 except Questionnaire.DoesNotExist:
                     q = None
             if q is None:
-                q = Questionnaire(profil=profil, user=request.user)
+                q = Questionnaire(profil=profil)
 
             for field_name in SECTION_FIELDS.get(str(section), []):
                 if field_name in BOOL_CHECKBOX_FIELDS:

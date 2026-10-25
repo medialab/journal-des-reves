@@ -962,6 +962,7 @@ html.is-mobile-pwa .notification-bell {
 
 #questionnaireForm .detresse-card {
     margin-top: 1.45rem;
+    margin-bottom: 2.4rem;
     padding: 1.2rem;
     border-radius: 1rem;
     border: 1px solid rgba(50, 69, 189, 0.24);

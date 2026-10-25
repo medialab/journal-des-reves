@@ -53,7 +53,12 @@ class QuestionnaireForm(forms.ModelForm):
         fields = [
             # CONDITIONS SOCIALES DU REVE ET DU SOMMEIL
             # pratiques_reves
+            'recrutement',
+            'recrutement_autre',
             'freq_reves_not',
+            'parler_reves',
+            'freq_reves',
+            'freq_cauchemar',
             # perception_reves
             'mod_img',
             'mod_son',
@@ -151,6 +156,7 @@ class QuestionnaireForm(forms.ModelForm):
             'discri_contexte_famille',
             'discri_contexte_autre',
             'sante_generale',
+            'gali',
             'det_1',
             'det_2',
             'det_3',
@@ -159,7 +165,12 @@ class QuestionnaireForm(forms.ModelForm):
         ]
         
         widgets = {
+            'recrutement': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'recrutement_autre': forms.TextInput(attrs={'class': 'form-input'}),
             'freq_reves_not': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'parler_reves': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'freq_reves': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'freq_cauchemar': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'mod_img': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'mod_son': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'mod_sens': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
@@ -280,6 +291,7 @@ class QuestionnaireForm(forms.ModelForm):
             'discri_contexte_famille': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'discri_contexte_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'sante_generale': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'gali': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_1': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_2': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_3': forms.RadioSelect(attrs={'class': 'radio-input'}),
@@ -288,7 +300,12 @@ class QuestionnaireForm(forms.ModelForm):
         }
         
         labels = {
+            'recrutement': 'Comment avez-vous connu cette étude ?',
+            'recrutement_autre': 'Précisez autre mode de recrutement',
             'freq_reves_not': 'Avant cette enquête, vous est-il arrivé de noter vos rêves ?',
+            'parler_reves': 'À quelle fréquence parlez-vous de vos rêves et cauchemars à votre entourage ces derniers temps (au cours des derniers mois) ?',
+            'freq_reves': 'À quelle fréquence vous souvenez-vous de vos rêves ces derniers temps (au cours des derniers mois) ?',
+            'freq_cauchemar': 'À quelle fréquence avez-vous fait des cauchemars ces derniers temps (au cours des derniers mois) ?',
             'mod_img': 'Images',
             'mod_son': 'Sons, voix',
             'mod_sens': 'Sensations du corps',
@@ -378,6 +395,7 @@ class QuestionnaireForm(forms.ModelForm):
             'discri_contexte_famille': 'Dans le cadre familial',
             'discri_contexte_autre': 'Lors d’une autre situation',
             'sante_generale': 'Comment est votre état de santé en général ?',
+            'gali': 'Êtes-vous limité(e), depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?',
             'det_1': 'Nerveux·se',
             'det_2': 'Triste et abattu·e',
             'det_3': 'Calme et détendu·e',
@@ -740,7 +758,7 @@ class SignUpForm(UserCreationForm):
     consent_data_processing = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'accepte que mes données soient traitées par la chercheuse Maud Yaïche et de ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu\'elles soient versées aux archives 10 ans après la collecte dans l\'entrepôt de données sécurisé de Sciences Po, où l\'accès est encadré sur demande par la chercheuse.'
+        label='J\'accepte que mes données soient traitées par la chercheuse Maud Yaïche et de ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu\'elles soient versées aux archives 5 ans après la collecte dans l\'entrepôt de données sécurisé de Sciences Po, où l\'accès est encadré sur demande par la chercheuse.'
     )
     
     consent_password_account = forms.BooleanField(

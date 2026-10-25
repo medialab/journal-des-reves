@@ -13,9 +13,11 @@
 					Ajouter un rêve
 					<span class="btn-arrow">→</span>
 				</a>
-				<a href="{% url 'reves:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
-					Remplissez le questionnaire
-				</a>
+				{% if not has_questionnaire %}
+					<a href="{% url 'reves:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
+						Remplissez le questionnaire
+					</a>
+				{% endif %}
 			</div>
 		</div>
 	</section>
