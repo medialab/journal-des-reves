@@ -10,7 +10,7 @@ from ..models import Reve
 
 def get_journal_data(profil):
 
-    reves = Reve.objects.filter(profil=profil)
+    reves = Reve.objects.filter(profil=profil, existence_souvenir=True)
 
     total = reves.count()
 

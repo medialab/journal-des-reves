@@ -42,6 +42,9 @@ class ProfilAdmin(ModelAdmin):
         'consent_sensitive_data',
         'consent_age_vulnerability',
         'consent_date',
+        'dernier_palier_vu',
+        'profil_code',
+        'profil_revele_le',
     ]
     search_fields = ['key', 'email', 'user__username', 'user__email']
     list_filter = ['consent_data_processing', 'consent_date']
@@ -62,6 +65,9 @@ class ProfilInline(admin.StackedInline):
         'consent_sensitive_data',
         'consent_age_vulnerability',
         'consent_date',
+        'dernier_palier_vu',
+        'profil_code',
+        'profil_revele_le',
         'welcome_email_sent',
         'created_at',
     )

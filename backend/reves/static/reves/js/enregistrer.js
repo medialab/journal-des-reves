@@ -657,7 +657,7 @@ function initFormHandlers() {
 				}, 100);
 
 				setTimeout(() => {
-					window.location.href = redirectUrl || '/journal/';
+					window.location.href = data.redirect_url || redirectUrl || '/journal/';
 				}, 5000);
 			} else {
 				if (loadingMessage && loadingMessage.parentNode) {

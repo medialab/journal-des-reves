@@ -224,6 +224,10 @@ class Profil(PublicKeyModel):
         verbose_name="Date de référence questionnaire (temporaire)"
     )
 
+    dernier_palier_vu = models.PositiveSmallIntegerField(default=0)
+    profil_code = models.CharField(max_length=32, null=True, blank=True)
+    profil_revele_le = models.DateTimeField(null=True, blank=True)
+
     def questionnaire_access_reference_date(self):
         """Date utilisée pour la logique des 7 jours questionnaire."""
         return self.created_at_trick or self.created_at

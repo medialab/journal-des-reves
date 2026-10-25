@@ -20,7 +20,7 @@
 				{% endfor %}
 			{% endif %}
 
-			<form method="post" id="reve-form" enctype="multipart/form-data" class="form-card initial-recorder-view" data-recording-mode="{{ recording_mode|default:'audio_recording' }}" data-submit-url="{% url 'reves:enregistrer' %}" data-redirect-url="{% url 'reves:journal' %}">
+			<form method="post" id="reve-form" enctype="multipart/form-data" class="form-card initial-recorder-view" data-recording-mode="{{ recording_mode|default:'audio_recording' }}" data-submit-url="{% url 'reves:enregistrer' %}" data-redirect-url="{% url 'reves:profil' %}">
 				{% csrf_token %}
 				
 				<!-- Champ caché pour existence_souvenir -->

@@ -4,6 +4,56 @@
 {% block title %}Accueil – Journal des Rêves{% endblock %}
 
 {% block content %}
+<style>
+    .hero-badges {
+        list-style: none;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0;
+    }
+
+    .hero-text {
+        padding-top: 3rem;
+    }
+
+    .hero-title {
+        font-size: clamp(2.2rem, 7vw, 4.2rem);
+        margin-bottom: 2rem;
+    }
+
+    .hero-badges {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.65rem;
+        justify-content: center;
+        margin-bottom: 2.5rem;
+        max-width: 900px;
+    }
+
+    .hero-badge {
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .hero-badge:not(:first-child)::before {
+        color: #fff;
+        content: "·";
+        margin-right: 0.65rem;
+    }
+
+    @media (max-width: 639px) {
+        .hero-text {
+            padding-top: 1.5rem;
+        }
+
+        .hero-badges {
+            margin-bottom: 2.5rem;
+        }
+    }
+</style>
 <div class="page active">
 
     <section class="hero-section">
@@ -15,16 +65,24 @@
         <div class="hero-content">
             <div class="hero-text">
                 <h1 class="hero-title">
-                    <span class="title-line">Explorez</span>
-                    <span class="title-line highlight">vos rêves</span>
+                    <span class="title-line">Que racontent</span>
+                    <span class="title-line highlight">vos rêves ? </span>
                 </h1>
             </div>
 
             <p class="hero-description">
-                Un journal de rêves pour soi et pour les sciences sociales.
-                Enregistrez vos rêves à chaque réveil pendant une semaine, après avoir rempli un questionnaire 
-                pour aider la recherche. 
+                 Chaque matin, racontez votre rêve en message vocal, en moins de deux minutes.
+                Gardez une trace de vos nuits et découvrez, au fil des jours, ce qu'elles disent de vous.
+                Vos récits nourrissent aussi une enquête sociologique de Sciences Po sur notre façon de rêver, anonyme et confidentielle.
             </p>
+
+            {% if not is_authenticated %}
+                <ul class="hero-badges">
+                    <li class="hero-badge">Gratuit</li>
+                    <li class="hero-badge">Données confidentielles</li>
+                    <li class="hero-badge">Enquête Sciences Po</li>
+                </ul>
+            {% endif %}
 
             <div class="hero-buttons">
                 <a href="{% url 'reves:enregistrer' %}" class="btn btn-primary btn-large">
