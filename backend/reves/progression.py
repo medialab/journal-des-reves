@@ -14,43 +14,42 @@ PALIERS = (
     {"niveau": 6, "cle": "rapport", "libelle": "Rapport"},
     {"niveau": 7, "cle": "profil", "libelle": "Profil"},
 )
-
 PROFILS = {
     "oublieux": {
         "name": "Oublieux·se", "color": "#98a2b3",
-        "hook": "Vos rêves passent parfois comme des lucioles : brefs, présents, puis déjà loin.",
-        "paragraph": "Vous racontez surtout les fragments qui restent au réveil : une image, une sensation ou une émotion. Les détails et les thèmes se font plus discrets, mais chaque souvenir compte. Votre récit va à l'essentiel, avec une place importante laissée à ce qui revient malgré l'oubli.",
-        "traits": ("Fragments marquants", "Récits à l'essentiel", "Émotions-souvenirs"),
+        "hook": "Profil marqué par un rappel onirique faible : les récits sont courts et fragmentaires.",
+        "paragraph": "Vos récits sont brefs et contiennent peu d'éléments narratifs : une image isolée, une sensation ou une émotion résiduelle. Ce schéma correspond à un rappel onirique partiel, phénomène très répandu qui varie notamment selon les conditions de réveil, la qualité du sommeil et l'attention portée aux rêves. La faible densité de thèmes et de personnages limite l'analyse détaillée, mais les éléments rapportés sont en général ceux qui présentent la plus forte saillance émotionnelle.",
+        "traits": ("Rappel fragmentaire", "Faible densité narrative", "Saillance émotionnelle"),
     },
     "nostalgique": {
         "name": "Nostalgique", "color": "#ca8aa0",
-        "hook": "Vos nuits savent retrouver les chemins doux qui ramènent vers hier.",
-        "paragraph": "Vos rêves aiment revenir vers le passé, les lieux familiers et les personnes qui ont compté. Vous racontez les scènes avec une attention particulière aux détails qui donnent une couleur au souvenir. Une émotion douce accompagne souvent le récit, sans l'enfermer dans une seule lecture.",
-        "traits": ("Souvenirs du passé", "Détails affectifs", "Récits tout en nuances"),
+        "hook": "Profil orienté vers le passé, avec une tonalité émotionnelle plutôt positive.",
+        "paragraph": "Vos récits mobilisent fréquemment la mémoire autobiographique : lieux familiers, personnes de l'entourage passé, situations déjà vécues. Les figures relationnelles (famille, amis, anciens proches) y occupent une place importante, ce qui rejoint l'hypothèse de continuité, selon laquelle le rêve reprend les préoccupations et les liens sociaux de la vie éveillée. La valence émotionnelle dominante est positive ou apaisée, et le niveau de détail descriptif est élevé.",
+        "traits": ("Orientation vers le passé", "Forte présence relationnelle", "Valence positive"),
     },
     "melancolique": {
         "name": "Mélancolique", "color": "#3245bd",
-        "hook": "Vos rêves aiment revenir en arrière, là où les souvenirs gardent encore une résonance.",
-        "paragraph": "Vos récits revisitent souvent le passé : lieux d'enfance, personnes perdues de vue ou scènes que vous pensiez oubliées. Vous prêtez attention à ce qui a compté et aux émotions qui accompagnent ces retours. Votre manière de raconter laisse une place aux nuances et aux silences, comme une mémoire qui se déploie doucement.",
-        "traits": ("Souvenirs d'enfance fréquents", "Récits riches en émotions", "Attention aux détails"),
+        "hook": "Profil orienté vers le passé, avec une tonalité émotionnelle négative ou ambivalente.",
+        "paragraph": "Comme dans le profil nostalgique, vos récits s'appuient sur la mémoire autobiographique (enfance, anciens lieux de vie, personnes perdues de vue), mais la valence émotionnelle y est plus souvent négative ou mixte : tristesse, regret, sentiment de perte. Les thèmes liés aux ruptures biographiques (séparations, déménagements, deuils) y sont plus fréquents. Les récits sont longs, détaillés, et les émotions y sont souvent nommées explicitement.",
+        "traits": ("Mémoire autobiographique", "Valence négative ou mixte", "Thèmes de la perte"),
     },
     "explorateur": {
         "name": "Explorateur·rice", "color": "#3e8e9c",
-        "hook": "Vos rêves ouvrent des portes vers des situations nouvelles, avec un élan curieux.",
-        "paragraph": "Vos récits se tournent volontiers vers le présent et ce qui pourrait arriver ensuite. Vous explorez des lieux, des situations et des possibilités variées, en racontant les changements qui traversent la scène. Les émotions sont souvent mêlées à l'action, ce qui donne à vos histoires un mouvement très vivant.",
-        "traits": ("Goût des situations nouvelles", "Récits en mouvement", "Curiosité narrative"),
+        "hook": "Profil orienté vers le présent et la nouveauté, avec une forte dynamique narrative.",
+        "paragraph": "Vos récits comportent de nombreux changements de lieu, d'action et de situation, et peu de références au passé. Les cadres inconnus ou inhabituels y sont plus fréquents que les cadres familiers. Les émotions rapportées sont associées à l'action (surprise, curiosité, excitation) plutôt qu'à la réflexion, ce qui se traduit par une proportion élevée de verbes d'action et de transitions entre les scènes.",
+        "traits": ("Cadres inhabituels", "Forte densité d'actions", "Émotions liées à l'action"),
     },
     "vigilant": {
         "name": "Vigilant·e", "color": "#d4a017",
-        "hook": "Vos nuits observent le présent et l'avenir avec une attention fine.",
-        "paragraph": "Vous racontez des rêves ancrés dans les préoccupations du moment et les événements à venir. Votre récit repère les signaux, les obstacles et les décisions qui donnent du relief à la scène. Les émotions peuvent être intenses, mais votre façon de les décrire reste attentive et concrète.",
-        "traits": ("Attention au présent", "Anticipation de l'avenir", "Récits précis"),
+        "hook": "Profil orienté vers le présent et l'avenir, centré sur les préoccupations et l'anticipation.",
+        "paragraph": "Vos récits reprennent fréquemment des enjeux de la vie éveillée : travail, études, obligations, échéances à venir. On y relève une part élevée de situations de contrainte (retard, obstacle, épreuve, évaluation), que certaines théories rapprochent d'une fonction de simulation ou de préparation aux situations menaçantes et sociales. Les émotions relèvent souvent de l'appréhension ou du stress, mais sont décrites de façon factuelle et précise.",
+        "traits": ("Continuité avec la vie éveillée", "Situations de contrainte", "Anticipation"),
     },
     "equilibriste": {
         "name": "Équilibriste", "color": "#6b9de1",
-        "hook": "Vos rêves circulent librement entre souvenirs, présent et futurs possibles.",
-        "paragraph": "Vos récits passent d'une époque à l'autre sans s'installer durablement dans un seul registre. Vous associez des thèmes, des lieux et des émotions variés avec une grande souplesse. Votre style de récit garde une tonalité nuancée, capable de faire coexister plusieurs impressions dans une même histoire.",
-        "traits": ("Registres variés", "Émotions nuancées", "Récits souples"),
+        "hook": "Profil sans orientation temporelle dominante, avec une forte diversité thématique.",
+        "paragraph": "Vos récits se répartissent de manière relativement homogène entre passé, présent et futur, sans registre dominant. La diversité des thèmes, des lieux et des personnages est élevée, et les émotions rapportées sont variées, parfois combinées au sein d'un même récit. Ce profil correspond moins à une tendance marquée qu'à une distribution équilibrée des différents indicateurs.",
+        "traits": ("Pas d'orientation dominante", "Diversité thématique", "Émotions mixtes"),
     },
 }
 
