@@ -389,9 +389,10 @@ EMAIL_BACKEND = os.getenv(
 EMAIL_HOST = os.getenv('DJANGO_EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(os.getenv('DJANGO_EMAIL_PORT', '587'))
 EMAIL_USE_TLS = env_bool('DJANGO_EMAIL_USE_TLS', True)
+EMAIL_USE_SSL = env_bool('DJANGO_EMAIL_USE_SSL', False)
 EMAIL_HOST_USER = os.getenv('DJANGO_EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('DJANGO_EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DJANGO_DEFAULT_FROM_EMAIL', 'noreply@reves-etude.fr')
+DEFAULT_FROM_EMAIL = os.getenv('DJANGO_DEFAULT_FROM_EMAIL', 'site@reves-journal.fr')
 
 
 # SESSION & COOKIES CONFIGURATION
@@ -600,4 +601,3 @@ LOGGING = {
         },
     },
 }
-
