@@ -224,7 +224,7 @@ class QuestionnaireForm(forms.ModelForm):
                 'placeholder': 'AAAA'
             }),
             'genre': forms.RadioSelect(attrs={'class': 'radio-input'}),
-            'habitat': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'habitat': forms.Select(attrs={'class': 'form-input'}),
             'niv_diplome': forms.Select(attrs={
                 'class': 'form-input'
             }),

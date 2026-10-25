@@ -574,9 +574,12 @@ class Questionnaire(ParticipantKeyModel):
     
     # Habitat
     class HabitatChoices(models.IntegerChoices):
-        RURAL = 1, "Rural"
-        URBAIN = 2, "Urbain"
-    
+        VILLAGE_CAMPAGNE = 1, "Un village ou à la campagne"
+        PETITE_VILLE = 2, "Une petite ville ou sa périphérie (moins de 20 000 habitants)"
+        VILLE_MOYENNE = 3, "Une ville moyenne ou sa périphérie (de 20 000 à 200 000 habitants, ex. : Amiens, Annecy, Poitiers)"
+        GRANDE_VILLE = 4, "Une grande ville ou sa périphérie (plus de 200 000 habitants, ex. : Lyon, Lille, Toulouse, Bordeaux)"
+        PARIS_REGION = 5, "À Paris ou en région parisienne"
+
     habitat = models.IntegerField(
         choices=HabitatChoices.choices,
         verbose_name="Environnement d'habitat",
@@ -1405,4 +1408,3 @@ class Notification(PublicKeyModel):
         self.is_read = True
         self.read_at = timezone.now()
         self.save()
-

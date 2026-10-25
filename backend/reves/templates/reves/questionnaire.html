@@ -575,17 +575,15 @@
 
                         <!-- Habitat -->
                         <div class="form-group">
-                            <label class="form-label">Vous vivez plutôt dans un environnement :</label>
-                            <div class="radio-group">
-                                <label class="radio-label choice-label">
-                                    <input type="radio" name="habitat" value="1" required {% if form.habitat.value == "1" %}checked{% endif %}>
-                                    <span class="radio-text">Rural</span>
-                                </label>
-                                <label class="radio-label choice-label">
-                                    <input type="radio" name="habitat" value="2" {% if form.habitat.value == "2" %}checked{% endif %}>
-                                    <span class="radio-text">Urbain</span>
-                                </label>
-                            </div>
+                            <label class="form-label" for="id_habitat">Vous vivez plutôt dans :</label>
+                            <select id="id_habitat" name="habitat" class="form-input" required>
+                                <option value="">Sélectionnez une réponse</option>
+                                {% for value, label in form.habitat.field.choices %}
+                                {% if value %}
+                                <option value="{{ value }}" {% if form.habitat.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
                             {% if form.habitat.errors %}<div class="error-message">{{ form.habitat.errors }}</div>{% endif %}
                         </div>
                     </div>
