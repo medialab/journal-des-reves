@@ -1,9 +1,21 @@
 # Generated manually to replace the old profil foreign key with a stable participant UUID.
 
 import uuid
-
 from django.db import migrations, models
 
+
+def drop_legacy_rls_policies(apps, schema_editor):
+    if schema_editor.connection.vendor != 'postgresql':
+        return
+
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute(
+            'DROP POLICY IF EXISTS user_can_view_own_reves ON reves_reve'
+        )
+        cursor.execute(
+            'DROP POLICY IF EXISTS user_can_view_own_questionnaire '
+            'ON reves_questionnaire'
+        )
 
 def populate_participant_keys(apps, schema_editor):
     profil_model = apps.get_model('reves', 'Profil')
@@ -30,6 +42,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(
+            drop_legacy_rls_policies,
+            migrations.RunPython.noop,
+        ),
         migrations.AddField(
             model_name='reve',
             name='participant_key',

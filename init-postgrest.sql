@@ -68,7 +68,7 @@ ALTER TABLE reves_reve ENABLE ROW LEVEL SECURITY;
 -- USING (...) = la condition: le USER_ID du rêve doit être l'utilisateur courant
 --
 -- EXPLICATION: 
---   reves_reve.profil_id → va chercher le profil lié
+--   reves_reve.participant_key → va chercher le profil lié
 --   → reves_profil.user_id → récupère le user Django
 --   current_setting('app.user_id') → récupère l'ID de l'utilisateur connecté
 --   Les deux doivent être égaux pour voir le rêve
@@ -76,7 +76,7 @@ CREATE POLICY user_can_view_own_reves ON reves_reve
   FOR SELECT
   TO web_anon
   USING (
-    (SELECT user_id FROM reves_profil WHERE id = reves_reve.profil_id) 
+    (SELECT user_id FROM reves_profil WHERE key = reves_reve.participant_key)
     = CAST(current_setting('app.user_id', true) AS INT)
   );
 
@@ -92,7 +92,7 @@ CREATE POLICY user_can_view_own_questionnaire ON reves_questionnaire
   FOR SELECT
   TO web_anon
   USING (
-    (SELECT user_id FROM reves_profil WHERE id = reves_questionnaire.profil_id) 
+    (SELECT user_id FROM reves_profil WHERE key = reves_questionnaire.participant_key)
     = CAST(current_setting('app.user_id', true) AS INT)
   );
 
@@ -123,4 +123,3 @@ CREATE POLICY user_can_view_own_questionnaire ON reves_questionnaire
 --   User 1 + User 2 ensemble = 8 rêves en BD
 --   → Mais chacun voit que les siens (5 et 3)
 --   → Impossible de voir les données de l'autre!
-

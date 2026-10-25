@@ -4,6 +4,53 @@ import django.core.validators
 from django.db import migrations, models
 
 
+def recreate_rls_policies(apps, schema_editor):
+    if schema_editor.connection.vendor != 'postgresql':
+        return
+
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute(
+            """
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM pg_roles
+                    WHERE rolname = 'web_anon'
+                ) THEN
+                    CREATE POLICY user_can_view_own_reves ON reves_reve
+                        FOR SELECT
+                        TO web_anon
+                        USING (
+                            participant_key = (
+                                SELECT key
+                                FROM reves_profil
+                                WHERE user_id = CAST(
+                                    current_setting('app.user_id', true) AS INT
+                                )
+                            )
+                        );
+
+                    CREATE POLICY user_can_view_own_questionnaire
+                        ON reves_questionnaire
+                        FOR SELECT
+                        TO web_anon
+                        USING (
+                            participant_key = (
+                                SELECT key
+                                FROM reves_profil
+                                WHERE user_id = CAST(
+                                    current_setting('app.user_id', true) AS INT
+                                )
+                            )
+                        );
+                END IF;
+            END
+            $$;
+            """
+        )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -53,5 +100,9 @@ class Migration(migrations.Migration):
             model_name='questionnaire',
             name='duree_eveil',
             field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(1440)], verbose_name='En général, combien de temps restez-vous éveillé(e) durant un éveil ?'),
+        ),
+        migrations.RunPython(
+            recreate_rls_policies,
+            migrations.RunPython.noop,
         ),
     ]
