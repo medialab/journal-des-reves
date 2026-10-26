@@ -549,6 +549,9 @@ function bindSocialConditionsListeners() {
 	document.querySelectorAll('input[name="aide_sommeil"]').forEach(radio => {
 		radio.addEventListener('change', updateSocialConditionsFields);
 	});
+	document.querySelectorAll('input[name="recrutement"]').forEach(radio => {
+		radio.addEventListener('change', updateSocialConditionsFields);
+	});
 
 	const pensRien = document.getElementById('id_pens_rien');
 	if (pensRien) {
@@ -583,6 +586,9 @@ function bindSocialConditionsListeners() {
 				contRienCheckbox.checked = false;
 				contRienCheckbox.disabled = false;
 			}
+			document.querySelectorAll('.cont-option').forEach(option => {
+				option.disabled = false;
+			});
 		});
 	});
 
@@ -689,6 +695,17 @@ function updateSocialConditionsFields() {
 		}
 	}
 
+	const recrutementAutre = document.querySelector('input[name="recrutement"][value="8"]');
+	const recrutementAutreGroup = document.getElementById('recrutement_autre_group');
+	const recrutementAutreText = document.getElementById('id_recrutement_autre');
+	if (recrutementAutreGroup && recrutementAutre) {
+		const shouldShow = recrutementAutre.checked;
+		recrutementAutreGroup.style.display = shouldShow ? 'block' : 'none';
+		if (!shouldShow && recrutementAutreText) {
+			recrutementAutreText.value = '';
+		}
+	}
+
 	const pensAutre = document.getElementById('id_pens_autre');
 	const pensAutreTxtGroup = document.getElementById('pens_autre_txt_group');
 	if (pensAutre && pensAutreTxtGroup) {
@@ -766,11 +783,15 @@ function updateLogementFields() {
 	// Afficher/masquer le groupe "pret" si logement = 1 (Propriétaire)
 	if (logementValue === '1') {
 		pretGroup.style.display = 'block';
+		pretRadios.forEach(radio => {
+			radio.required = true;
+		});
 	} else {
 		pretGroup.style.display = 'none';
 		// Réinitialiser le champ pret
 		pretRadios.forEach(radio => {
 			radio.checked = false;
+			radio.required = false;
 		});
 	}
 	
@@ -778,11 +799,9 @@ function updateLogementFields() {
 	let showMontantLoyer = false;
 	
 	if (logementValue === '1') {
-		// Propriétaire: visible si pret = True
+		// Propriétaire: le montant est demandé uniquement en cas de prêt.
 		const pretChecked = document.querySelector('input[name="pret"]:checked');
-		if (pretChecked && pretChecked.value === 'True') {
-			showMontantLoyer = true;
-		}
+		showMontantLoyer = pretChecked && pretChecked.value === 'True';
 	} else if (logementValue === '2' || logementValue === '3') {
 		// Locataire social ou privé: toujours visible
 		showMontantLoyer = true;
@@ -797,7 +816,13 @@ function updateLogementFields() {
 		const montantInput = document.getElementById('id_montant_loyer');
 		if (montantInput) {
 			montantInput.value = '';
+			montantInput.required = false;
 		}
+	}
+
+	const montantInput = document.getElementById('id_montant_loyer');
+	if (montantInput) {
+		montantInput.required = showMontantLoyer;
 	}
 }
 

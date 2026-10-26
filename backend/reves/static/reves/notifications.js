@@ -119,7 +119,7 @@ class NotificationManager {
             panelHTML += `
                 <div class="notifications-panel-empty">
                     <div class="notifications-panel-empty-icon">✓</div>
-                    <div class="notifications-panel-empty-title">Vous etes a jour</div>
+                    <div class="notifications-panel-empty-title">Vous êtes à jour</div>
                     <div class="notifications-panel-empty-text">Aucune notification en attente pour le moment.</div>
                 </div>
             `;

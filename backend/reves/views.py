@@ -21,6 +21,7 @@ from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom,
 from .services.journal_service import get_journal_data
 from .services.transcription_service import start_transcription_async
 from .forms import ReveForm, QuestionnaireForm, SignUpForm
+from .progression import PALIERS, PROFILS, calculer_profil, get_nuits, get_nuits_avec_souvenir, get_palier
 
 
 # Security/abuse protection constants
@@ -151,21 +152,82 @@ def add_questionnaire_context(context, profil):
     return context
 
 
+def _reveal_profile_if_ready(user, profil):
+    if get_palier(user) < 7:
+        return
+    with transaction.atomic():
+        locked = Profil.objects.select_for_update().get(pk=profil.pk)
+        if not locked.profil_code:
+            locked.profil_code = calculer_profil(user)["code"]
+            locked.profil_revele_le = timezone.now()
+            locked.save(update_fields=["profil_code", "profil_revele_le"])
+
+
 class ProfilView(LoginRequiredMixin, View):
     def get(self, request):
+        if request.GET.get("nuit", "").isdigit():
+            messages.success(request, f"Nuit {request.GET['nuit']} enregistrée ✓")
         try:
             profil = request.user.profil
         except Profil.DoesNotExist:
             messages.error(request, "Profil non trouve. Veuillez contacter l'administrateur.")
             return HttpResponseRedirect(reverse("reves:index"))
 
-        journal_data = get_journal_data(profil)
+        palier = get_palier(request.user)
+        with transaction.atomic():
+            profil = Profil.objects.select_for_update().get(pk=profil.pk)
+            profil_data = None
+            if palier >= 6 and not profil.profil_code:
+                profil_data = calculer_profil(request.user)
+                profil.profil_code = profil_data["code"]
+                profil.profil_revele_le = timezone.now()
+                profil.save(update_fields=["profil_code", "profil_revele_le"])
+            elif profil.profil_code:
+                profil_data = calculer_profil(request.user)
+                profil_data.update({
+                    "code": profil.profil_code,
+                    "name": PROFILS[profil.profil_code]["name"],
+                    "color": PROFILS[profil.profil_code]["color"],
+                    "hook": PROFILS[profil.profil_code]["hook"],
+                    "paragraph": PROFILS[profil.profil_code]["paragraph"],
+                    "traits": PROFILS[profil.profil_code]["traits"],
+                })
+            new_content = palier > profil.dernier_palier_vu
+            profil.dernier_palier_vu = palier
+            profil.save(update_fields=["dernier_palier_vu"])
 
+        journal_data = get_journal_data(profil)
         context = {
             "profil": profil,
             "user": request.user,
-            **journal_data
+            "palier": palier,
+            "paliers": PALIERS,
+            "progress_pct": round((palier - 1) / 6 * 100, 1) if palier else 0,
+            "progress_message": (
+                "Notez votre premier rêve demain matin pour commencer." if palier == 0
+                else "Bravo, vous avez complété vos 7 nuits !" if palier == 7
+                else "Plus qu'une nuit ! Demain, votre rapport personnalisé sera débloqué." if palier == 6
+                else f"Plus que {6 - palier} nuits avant de découvrir votre profil de rêveur."
+            ),
+            "new_content": new_content,
+            "profil_data": profil_data,
+            "nuits": get_nuits(request.user),
+            "nuits_avec_souvenir": get_nuits_avec_souvenir(request.user),
         }
+        unlocked = {
+            1: ("weekly_curve_labels", "weekly_curve_counts"),
+            2: ("valence_total", "valence_cursor_pct", "valence_segments"),
+            3: ("emotions_labels", "emotions_counts"),
+            4: ("temps_stats",),
+            5: ("top_themes",),
+        }
+        for level, keys in unlocked.items():
+            if palier >= level:
+                context.update({key: journal_data[key] for key in keys})
+        for key in ("weekly_curve_labels", "weekly_curve_counts", "emotions_labels", "emotions_counts"):
+            if key in context:
+                context[key] = json.dumps(context[key], ensure_ascii=False)
+        context["report_unlocked"] = palier >= 7
         
         # Ajouter les infos questionnaire
         context = add_questionnaire_context(context, profil)
@@ -299,17 +361,26 @@ class EnregistrerView(LoginRequiredMixin, View):
 
             # Si la personne n'a aucun souvenir, créer un rêve vide
             if not existence_souvenir:
+                if Reve.objects.filter(profil=profil, date=timezone.localdate()).exists():
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Cette nuit est déjà comptée.',
+                        'redirect_url': reverse("reves:profil"),
+                    })
                 reve = Reve.objects.create(
                     profil=profil,
                     user=request.user,
                     existence_souvenir=False,
                     transcription_ready=True  # Pas de transcription nécessaire
                 )
+                _reveal_profile_if_ready(request.user, profil)
+                nuit = get_palier(request.user)
                 
                 return JsonResponse({
                     'success': True,
                     'message': 'Entrée enregistrée : aucun souvenir de rêve cette nuit',
                     'reve_id': reve.id,
+                    'redirect_url': f'{reverse("reves:profil")}?nuit={nuit}',
                 })
 
             # Sinon, traitement normal avec audio
@@ -432,6 +503,8 @@ class EnregistrerView(LoginRequiredMixin, View):
 
             reve.elements_reve = selected_elements
             reve.save(update_fields=['elements_reve'])
+            _reveal_profile_if_ready(request.user, profil)
+            nuit = get_palier(request.user)
 
             # Ajouter les modalités d'images
             if images_modalites_ids:
@@ -450,6 +523,7 @@ class EnregistrerView(LoginRequiredMixin, View):
                     else 'Rêve enregistré !'
                 ),
                 'reve_id': reve.id,
+                'redirect_url': f'{reverse("reves:profil")}?nuit={nuit}',
             })
 
         except Exception as error:
@@ -647,7 +721,7 @@ class JournalView(LoginRequiredMixin, View):
         context = {
             "profil": profil,
             "total_reves": journal_data['total_reves'],
-            "reves": journal_data['reves'],
+            "reves": Reve.objects.filter(profil=profil).order_by("-date", "-created_at"),
             "stats_mensuelles": journal_data['stats_mensuelles'],
             # Convertir les données pour Chart.js en JSON valide
             "emotions_labels": json.dumps(journal_data['emotions_labels'], ensure_ascii=False),
@@ -767,6 +841,7 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
             'date',
             'created_at',
             'existence_souvenir',
+            'sans_souvenir',
             'type_reve',
             'etendue_reve',
             'sens',
@@ -784,6 +859,8 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
             'transcription',
             'transcription_ready',
             'audio_url',
+            'profil_code',
+            'profil_revele_le',
         ])
 
         for reve in reves:
@@ -797,6 +874,7 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
                 reve.date.isoformat() if reve.date else '',
                 reve.created_at.isoformat() if reve.created_at else '',
                 'oui' if reve.existence_souvenir else 'non',
+                '0' if reve.existence_souvenir else '1',
                 reve.get_type_reve_display() if reve.type_reve else '',
                 reve.get_etendue_reve_display() if reve.etendue_reve else '',
                 reve.get_sens_display() if reve.sens else '',
@@ -814,6 +892,8 @@ class ExportRevesCsvView(LoginRequiredMixin, View):
                 reve.transcription or '',
                 'oui' if reve.transcription_ready else 'non',
                 reve.audio.url if reve.audio else '',
+                profil.profil_code or '',
+                profil.profil_revele_le.isoformat() if profil.profil_revele_le else '',
             ]
             writer.writerow([_safe_csv_cell(value) for value in row])
 
@@ -1004,13 +1084,14 @@ class QuestionnaireView(View):
             INT_FIELDS = {
                 'annee_naissance', 'niv_diplome', 'revenus_tranche', 'travail_statut',
                 'genre', 'habitat', 'profession', 'logement',
-                'freq_reves_not', 'etendue_souvenir_reve', 'temps_du_reve',
+                'recrutement', 'freq_reves_not', 'parler_reves', 'freq_reves',
+                'freq_cauchemar', 'etendue_souvenir_reve', 'temps_du_reve',
                 'latence_som', 'nuits_reveil', 'duree_eveil',
                 'statut_couple', 'nb_enfants_cohabitants', 'nb_enfants_moins14',
                 'pere_niv_diplome', 'pere_csp', 'mere_niv_diplome', 'mere_csp',
                 'conj_niv_diplome', 'conj_csp', 'lieu_naissance', 'lieu_naissance_pere',
                 'perception_financiere', 'perception_risque_pauvrete', 'position_subjective_classe',
-                'perception_mobilite', 'discri_presence', 'sante_generale',
+                'perception_mobilite', 'discri_presence', 'sante_generale', 'gali',
                 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
             }
             TIME_FIELDS = {'heure_coucher', 'heure_reveil', 'besoin_som'}
@@ -1018,7 +1099,8 @@ class QuestionnaireView(View):
 
             SECTION_FIELDS = {
                 '1': [
-                    'freq_reves_not', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
+                    'recrutement', 'recrutement_autre', 'freq_reves_not', 'parler_reves',
+                    'freq_reves', 'freq_cauchemar', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
                     'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
                     'etendue_souvenir_reve', 'temps_du_reve',
                     'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
@@ -1039,7 +1121,7 @@ class QuestionnaireView(View):
                     'discri_contexte_emploi', 'discri_contexte_logement', 'discri_contexte_travail',
                     'discri_contexte_education', 'discri_contexte_sante', 'discri_contexte_famille',
                     'discri_contexte_autre',
-                    'sante_generale', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
+                    'sante_generale', 'gali', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
                 ],
                 '3': [
                     'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
@@ -1066,7 +1148,7 @@ class QuestionnaireView(View):
                 except Questionnaire.DoesNotExist:
                     q = None
             if q is None:
-                q = Questionnaire(profil=profil, user=request.user)
+                q = Questionnaire(profil=profil)
 
             for field_name in SECTION_FIELDS.get(str(section), []):
                 if field_name in BOOL_CHECKBOX_FIELDS:

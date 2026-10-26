@@ -13,9 +13,11 @@
 					Ajouter un rêve
 					<span class="btn-arrow">→</span>
 				</a>
-				<a href="{% url 'reves:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
-					Remplissez le questionnaire
-				</a>
+				{% if not has_questionnaire %}
+					<a href="{% url 'reves:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
+						Remplissez le questionnaire
+					</a>
+				{% endif %}
 			</div>
 		</div>
 	</section>
@@ -46,7 +48,7 @@
 										<div class="dream-content">
 											{% if not reve.existence_souvenir %}
 												<div class="dream-empty">
-													<p><em>Aucun souvenir de rêve cette nuit</em></p>
+													<p><em>🌙 Nuit sans souvenir — {{ reve.date|date:"d/m/Y" }}</em></p>
 												</div>
 											{% else %}
 													<!-- Texte complet -->
@@ -117,4 +119,3 @@
 <script src="{% static 'reves/js/journal.js' %}"></script>
 
 {% endblock %}
-

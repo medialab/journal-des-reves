@@ -37,7 +37,7 @@
         })();
     </script>
     <title>{% block title %}Journal des Rêves{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'reves/style.css' %}?v=33">
+    <link rel="stylesheet" href="{% static 'reves/style.css' %}?v=38">
     <link rel="stylesheet" href="{% static 'reves/forms.css' %}?v=32">
     <link rel="stylesheet" href="{% static 'reves/pages.css' %}?v=27">
     <link rel="stylesheet" href="{% static 'reves/notifications.css' %}?v=20260316-notifs">
@@ -91,13 +91,11 @@
                 <a href="{% url 'reves:profil' %}" class="nav-link">
                     <span class="nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path d="M18 17V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path d="M3 3v16a2 2 0 0 0 2 2h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path d="M8 17v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2"></circle>
+                            <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2"></path>
                         </svg>
                     </span>
-                    <span class="nav-label">Stats</span>
+                    <span class="nav-label">Profil</span>
                 </a>
             </li>
             <li>
@@ -231,7 +229,7 @@
     </div>
 </div>
 
-<script src="{% static 'reves/notifications.js' %}?v=20260316-notifs"></script>
+<script src="{% static 'reves/notifications.js' %}?v=20261023-notifs"></script>
 
 <script>
     // Gestion du modal de connexion

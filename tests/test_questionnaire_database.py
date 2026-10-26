@@ -84,12 +84,16 @@ class QuestionnaireIntegrationTests(TestCase):
         q = Questionnaire.objects.create(
             profil=self.profil,
             user=self.user,
-            habitat=Questionnaire.HabitatChoices.URBAIN
+            habitat=Questionnaire.HabitatChoices.PETITE_VILLE
         )
         
         q_from_db = Questionnaire.objects.get(id=q.id)
-        self.assertEqual(q_from_db.habitat, 2, "L'habitat devrait être 2 (Urbain)")
-        self.assertEqual(q_from_db.get_habitat_display(), "Urbain", "Le label devrait être 'Urbain'")
+        self.assertEqual(q_from_db.habitat, 2, "L'habitat devrait être 2 (petite ville)")
+        self.assertEqual(
+            q_from_db.get_habitat_display(),
+            "Une petite ville ou sa périphérie (moins de 20 000 habitants)",
+            "Le label devrait correspondre au choix de petite ville",
+        )
 
     def test_diplome_field_integer_choices(self):
         """Teste que le champ diplôme enregistre correctement une valeur IntegerField"""
@@ -459,7 +463,7 @@ class QuestionnaireIntegrationTests(TestCase):
         # Mise à jour groupée
         Questionnaire.objects.filter(id=q.id).update(
             genre=Questionnaire.GenreChoices.AUTRE,
-            habitat=Questionnaire.HabitatChoices.RURAL,
+            habitat=Questionnaire.HabitatChoices.VILLAGE_CAMPAGNE,
             is_completed=True
         )
         

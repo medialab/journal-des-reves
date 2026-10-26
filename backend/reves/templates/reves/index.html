@@ -14,22 +14,32 @@
 
         <div class="hero-content">
             <div class="hero-text">
+                <span class="hero-kicker">7 nuits · 1 rapport personnel</span>
                 <h1 class="hero-title">
-                    <span class="title-line">Explorez</span>
-                    <span class="title-line highlight">vos rêves</span>
+                    <span class="title-line">Que racontent</span>
+                    <span class="title-line highlight">vos rêves ? </span>
                 </h1>
             </div>
 
             <p class="hero-description">
-                Un journal de rêves pour soi et pour les sciences sociales.
-                Enregistrez vos rêves à chaque réveil, après avoir rempli un questionnaire 
-                pour aider la recherche. 
+                    Chaque matin, enregistrez le récit de votre rêve et conservez une transcription.
+                    Au bout de 7 nuits, <strong>vous débloquez l'envoi d'un rapport personnel</strong> qui contiendra les thèmes, les émotions qui colorent vos nuits, les personnages qui reviennent vous visiter
+                    et <strong>surtout ce qui rend vos rêves différents de ceux de tous les autres participant·es.</strong>
+                    Vos récits nourrissent une enquête sociologique à Sciences Po sur notre façon de rêver, anonyme et confidentielle.
             </p>
+
+            {% if not is_authenticated %}
+                <ul class="hero-badges">
+                    <li class="hero-badge">Gratuit</li>
+                    <li class="hero-badge">Données confidentielles</li>
+                    <li class="hero-badge">Enquête Sciences Po</li>
+                </ul>
+            {% endif %}
 
             <div class="hero-buttons">
                 <a href="{% url 'reves:enregistrer' %}" class="btn btn-primary btn-large">
-                    Commencer
-                    <span class="btn-arrow">→</span>
+                    Je m'inscrits
+                    <span class="btn-arrow" aria-hidden="true">→</span>
                 </a>
 
                 <a href="{% url 'reves:journal' %}" class="btn btn-outline btn-large hero-journal-link">

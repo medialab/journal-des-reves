@@ -224,6 +224,10 @@ class Profil(PublicKeyModel):
         verbose_name="Date de référence questionnaire (temporaire)"
     )
 
+    dernier_palier_vu = models.PositiveSmallIntegerField(default=0)
+    profil_code = models.CharField(max_length=32, null=True, blank=True)
+    profil_revele_le = models.DateTimeField(null=True, blank=True)
+
     def questionnaire_access_reference_date(self):
         """Date utilisée pour la logique des 7 jours questionnaire."""
         return self.created_at_trick or self.created_at
@@ -574,9 +578,12 @@ class Questionnaire(ParticipantKeyModel):
     
     # Habitat
     class HabitatChoices(models.IntegerChoices):
-        RURAL = 1, "Rural"
-        URBAIN = 2, "Urbain"
-    
+        VILLAGE_CAMPAGNE = 1, "Un village ou à la campagne"
+        PETITE_VILLE = 2, "Une petite ville ou sa périphérie (moins de 20 000 habitants)"
+        VILLE_MOYENNE = 3, "Une ville moyenne ou sa périphérie (de 20 000 à 200 000 habitants, ex. : Amiens, Annecy, Poitiers)"
+        GRANDE_VILLE = 4, "Une grande ville ou sa périphérie (plus de 200 000 habitants, ex. : Lyon, Lille, Toulouse, Bordeaux)"
+        PARIS_REGION = 5, "À Paris ou en région parisienne"
+
     habitat = models.IntegerField(
         choices=HabitatChoices.choices,
         verbose_name="Environnement d'habitat",
@@ -1082,6 +1089,28 @@ class Questionnaire(ParticipantKeyModel):
     # - avant_dormir
 
     # pratiques_reves
+    class RecrutementChoices(models.IntegerChoices):
+        ENTOURAGE = 1, "Une personne de mon entourage (enquêtrice, famille, ami·e, collègue…)"
+        PRESENTATION = 2, "Lors d’une présentation de l’enquête (cours, conférence, association…)"
+        AFFICHE = 3, "Une affiche"
+        GROUPE_ENQUETRICE = 4, "Un post de l'enquêtrice sur un groupe (Facebook, Reddit, Discord, etc.)"
+        RESEAUX_SOCIAUX = 5, "Sur les réseaux sociaux"
+        LISTE_DIFFUSION = 6, "Une liste de diffusion"
+        MEDIAS = 7, "Les médias (presse, radio, télévision)"
+        AUTRE = 8, "Autre"
+
+    recrutement = models.IntegerField(
+        choices=RecrutementChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Comment avez-vous connu cette étude ?"
+    )
+    recrutement_autre = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Précisez autre mode de recrutement"
+    )
+
     class FreqRevesNotChoices(models.IntegerChoices):
         OUI_SOUVENT = 1, "Oui souvent"
         QUELQUES_FOIS = 2, "Quelques fois"
@@ -1092,6 +1121,34 @@ class Questionnaire(ParticipantKeyModel):
         null=True,
         blank=True,
         verbose_name="Avant cette enquête, vous est-il arrivé de noter vos rêves ?"
+    )
+
+    class FrequenceRevesChoices(models.IntegerChoices):
+        PRESQUE_TOUS_LES_JOURS = 1, "Presque tous les jours"
+        PLUSIEURS_FOIS_PAR_SEMAINE = 2, "Plusieurs fois par semaine"
+        ENVIRON_UNE_FOIS_PAR_SEMAINE = 3, "Environ une fois par semaine"
+        ENVIRON_2_A_3_FOIS_PAR_MOIS = 4, "Environ 2 à 3 fois par mois"
+        ENVIRON_UNE_FOIS_PAR_MOIS = 5, "Environ une fois par mois"
+        MOINS_D_UNE_FOIS_PAR_MOIS = 6, "Moins d'une fois par mois"
+        JAMAIS = 7, "Jamais"
+
+    parler_reves = models.IntegerField(
+        choices=FrequenceRevesChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="À quelle fréquence parlez-vous de vos rêves et cauchemars à votre entourage ces derniers temps (au cours des derniers mois) ?"
+    )
+    freq_reves = models.IntegerField(
+        choices=FrequenceRevesChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="À quelle fréquence vous souvenez-vous de vos rêves ces derniers temps (au cours des derniers mois) ?"
+    )
+    freq_cauchemar = models.IntegerField(
+        choices=FrequenceRevesChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="À quelle fréquence avez-vous fait des cauchemars ces derniers temps (au cours des derniers mois) ?"
     )
 
     # perception_reves
@@ -1119,6 +1176,18 @@ class Questionnaire(ParticipantKeyModel):
         null=True,
         blank=True,
         verbose_name="Vous vous souvenez plutôt"
+    )
+
+    class GaliChoices(models.IntegerChoices):
+        FORTEMENT_LIMITE = 1, "Oui, fortement limité(e)"
+        LIMITE = 2, "Oui, limité(e), mais pas fortement"
+        PAS_LIMITE = 3, "Non, pas limité(e) du tout"
+
+    gali = models.IntegerField(
+        choices=GaliChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Êtes-vous limité(e), depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?"
     )
 
     class TempsDuReveChoices(models.IntegerChoices):
@@ -1179,7 +1248,7 @@ class Questionnaire(ParticipantKeyModel):
         null=True,
         blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(1440)],
-        verbose_name="En général, combien de temps restez-vous éveillé(e) au cours de la nuit ?"
+        verbose_name="En général, combien de temps restez-vous éveillé(e) durant un éveil ?"
     )
 
     aide_sommeil = models.BooleanField(
@@ -1343,4 +1412,3 @@ class Notification(PublicKeyModel):
         self.is_read = True
         self.read_at = timezone.now()
         self.save()
-

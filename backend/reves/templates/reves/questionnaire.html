@@ -78,6 +78,24 @@
                         <p class="section-description">Première page du questionnaire</p>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">Comment avez-vous connu cette étude ?</label>
+                        <div class="radio-group">
+                            {% for value, label in form.recrutement.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="recrutement" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.recrutement.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="form-group is-hidden-inline" id="recrutement_autre_group">
+                            <label class="form-label" for="id_recrutement_autre">Précisez :</label>
+                            <input id="id_recrutement_autre" name="recrutement_autre" class="form-input" type="text" value="{{ form.recrutement_autre.value|default:'' }}">
+                        </div>
+                    </div>
+
 
                     <div class="form-group">
                         <label class="form-label">Avant cette enquête, vous est-il arrivé de noter vos rêves ?</label>
@@ -96,6 +114,52 @@
                             </label>
                         </div>
                         {% if form.freq_reves_not.errors %}<div class="error-message">{{ form.freq_reves_not.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="detresse-card">
+                        <h4 class="detresse-title">Ces derniers temps (au cours des derniers mois), à quelle fréquence...</h4>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">... parlez-vous de vos rêves et cauchemars à votre entourage ?</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.parler_reves.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="parler_reves" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.parler_reves.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">... vous souvenez-vous de vos rêves ?</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.freq_reves.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="freq_reves" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.freq_reves.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="detresse-row">
+                            <p class="detresse-question">... avez-vous fait des cauchemars ?</p>
+                            <div class="detresse-grid">
+                                {% for value, label in form.freq_cauchemar.field.choices %}
+                                {% if value != '' %}
+                                <label class="radio-label choice-label detresse-choice">
+                                    <input type="radio" name="freq_cauchemar" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.freq_cauchemar.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                    <span class="radio-text">{{ label }}</span>
+                                </label>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -183,7 +247,7 @@
                             <input type="number" id="id_nuits_reveil" name="nuits_reveil" min="0" max="7" class="form-input" value="{{ form.nuits_reveil.value|default:'' }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="id_duree_eveil">En général, combien de temps restez-vous éveillé·e au cours de la nuit ?</label>
+                            <label class="form-label" for="id_duree_eveil">En général, combien de temps restez-vous éveillé·e durant un éveil (en minutes)?</label>
                             <input type="number" id="id_duree_eveil" name="duree_eveil" min="0" max="1440" class="form-input" value="{{ form.duree_eveil.value|default:'' }}">
                         </div>
                     </div>
@@ -384,6 +448,21 @@
                         {% if form.sante_generale.errors %}<div class="error-message">{{ form.sante_generale.errors }}</div>{% endif %}
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">Êtes-vous limité(e), depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?</label>
+                        <div class="radio-group inline-boolean-group compact-choices compact-inline-row">
+                            {% for value, label in form.gali.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="gali" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.gali.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.gali.errors %}<div class="error-message">{{ form.gali.errors }}</div>{% endif %}
+                    </div>
+
                     <div class="detresse-card">
                         <h4 class="detresse-title">Au cours des 4 dernières semaines, à quelle fréquence vous êtes-vous senti·e...</h4>
 
@@ -496,17 +575,15 @@
 
                         <!-- Habitat -->
                         <div class="form-group">
-                            <label class="form-label">Vous vivez plutôt dans un environnement :</label>
-                            <div class="radio-group">
-                                <label class="radio-label choice-label">
-                                    <input type="radio" name="habitat" value="1" required {% if form.habitat.value == "1" %}checked{% endif %}>
-                                    <span class="radio-text">Rural</span>
-                                </label>
-                                <label class="radio-label choice-label">
-                                    <input type="radio" name="habitat" value="2" {% if form.habitat.value == "2" %}checked{% endif %}>
-                                    <span class="radio-text">Urbain</span>
-                                </label>
-                            </div>
+                            <label class="form-label" for="id_habitat">Vous vivez plutôt dans :</label>
+                            <select id="id_habitat" name="habitat" class="form-input" required>
+                                <option value="">Sélectionnez une réponse</option>
+                                {% for value, label in form.habitat.field.choices %}
+                                {% if value %}
+                                <option value="{{ value }}" {% if form.habitat.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
                             {% if form.habitat.errors %}<div class="error-message">{{ form.habitat.errors }}</div>{% endif %}
                         </div>
                     </div>
@@ -615,7 +692,7 @@
 
                     <!-- Remboursement de prêt (conditionnel: afficher si logement = 1) -->
                     <div class="form-group is-hidden-inline" id="pret_group">
-                        <label class="form-label">Avez-vous un remboursement de prêt en cours pour votre résidence principale ?</label>
+                        <label class="form-label">Avez-vous un remboursement de prêt en cours pour votre résidence principale ? *</label>
                         <div class="radio-group">
                             <label class="radio-label choice-label">
                                 <input type="radio" name="pret" value="True" {% if form.pret.value %}checked{% endif %} onchange="updateLogementFields()">
@@ -631,7 +708,7 @@
 
                     <!-- Montant du loyer ou prêt mensuel (conditionnel: si (logement=1 et pret=True) OU (logement=2 ou 3)) -->
                     <div class="form-group is-hidden-inline" id="montant_loyer_group">
-                        <label class="form-label" for="id_montant_loyer">Quel est le montant de ce loyer ou de votre prêt par mois ?</label>
+                        <label class="form-label" for="id_montant_loyer">Quel est le montant de ce loyer ou de votre prêt par mois ? *</label>
                         <input type="number" id="id_montant_loyer" name="montant_loyer" step="0.01" min="0" class="form-input" placeholder="€" value="{{ form.montant_loyer.value|default:'' }}">
                         {% if form.montant_loyer.errors %}<div class="error-message">{{ form.montant_loyer.errors }}</div>{% endif %}
                     </div>
