@@ -1,6 +1,6 @@
 import csv
 from collections import Counter
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django import forms
 from django.contrib import admin
@@ -11,7 +11,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib import messages
 from django.db import models
 from django.db.models import Count
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils import timezone
@@ -27,6 +27,18 @@ from .models import (
     ReveEmotion,
     ReveEmotionCustom,
     ReveImageModalite,
+)
+from .enquete import (
+    AT_MOST_BREVET,
+    BAC_PLUS_DEUX,
+    GENRE_FEMME,
+    GENRE_HOMME,
+    HABITAT_PARIS_REGION,
+    QUOTA_TARGETS,
+    SURVEY_TARGET,
+    TRAVAIL_AU_CHOMAGE,
+    TRAVAIL_EN_EMPLOI,
+    TRAVAIL_EN_ETUDES,
 )
 
 
@@ -697,6 +709,16 @@ class QuestionnaireAdmin(ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path(
+                'suivi-enquete/',
+                self.admin_site.admin_view(self.survey_follow_up_view),
+                name='reves_questionnaire_survey_follow_up',
+            ),
+            path(
+                'suivi-enquete/data/',
+                self.admin_site.admin_view(self.survey_follow_up_data_view),
+                name='reves_questionnaire_survey_follow_up_data',
+            ),
+            path(
                 'dashboard/',
                 self.admin_site.admin_view(self.dashboard_view),
                 name='reves_questionnaire_dashboard',
@@ -708,6 +730,135 @@ class QuestionnaireAdmin(ModelAdmin):
             ),
         ]
         return custom_urls + urls
+
+    def survey_follow_up_view(self, request):
+        start_date = self.parse_survey_start_date(request)
+        context = {
+            **self.admin_site.each_context(request),
+            'title': 'Suivi enquête',
+            'start_date': start_date.isoformat(),
+            'data_url': reverse('admin:reves_questionnaire_survey_follow_up_data'),
+            'questionnaire_url': reverse('admin:reves_questionnaire_dashboard'),
+        }
+        return TemplateResponse(request, 'admin/reves/questionnaire/survey_follow_up.html', context)
+
+    def survey_follow_up_data_view(self, request):
+        start_date = self.parse_survey_start_date(request)
+        return JsonResponse(self.build_survey_follow_up_data(start_date))
+
+    @staticmethod
+    def parse_survey_start_date(request):
+        value = request.GET.get('start_date')
+        parsed = forms.DateField(required=False).clean(value) if value else None
+        if parsed:
+            return parsed
+        earliest = Questionnaire.objects.filter(
+            is_completed=True,
+            completed_at__isnull=False,
+        ).order_by('completed_at').values_list('completed_at', flat=True).first()
+        return earliest.date() if earliest else date.today()
+
+    def build_survey_follow_up_data(self, start_date):
+        rows = list(
+            Questionnaire.objects.filter(
+                is_completed=True,
+                completed_at__isnull=False,
+                completed_at__date__gte=start_date,
+            ).values(
+                'annee_naissance',
+                'genre',
+                'habitat',
+                'niv_diplome',
+                'travail_statut',
+                'a_deja_travaille',
+            )
+        )
+        current_year = timezone.localdate().year
+        counts = Counter()
+        for row in rows:
+            age = current_year - row['annee_naissance'] if row['annee_naissance'] else None
+            age_group = self.age_group(age)
+            genre = row['genre']
+            if genre == GENRE_FEMME:
+                counts['genre:Femmes'] += 1
+            elif genre == GENRE_HOMME:
+                counts['genre:Hommes'] += 1
+            if age_group:
+                counts[f'age:{age_group}'] += 1
+                if genre == GENRE_FEMME:
+                    counts[f'genre_age:Femmes {age_group}'] += 1
+                elif genre == GENRE_HOMME:
+                    counts[f'genre_age:Hommes {age_group}'] += 1
+            else:
+                counts['age:hors tranche'] += 1
+
+            status = row['travail_statut']
+            studies_plus_work = status == TRAVAIL_EN_ETUDES and row['a_deja_travaille'] is True
+            if status == TRAVAIL_EN_ETUDES:
+                counts[f'situation:{"Études + emploi" if studies_plus_work else "En études"}'] += 1
+                counts['situation:Étudiants (études + cumul)'] += 1
+            elif status == TRAVAIL_EN_EMPLOI:
+                counts['situation:En emploi'] += 1
+                counts['situation:Non-étudiants'] += 1
+            elif status == TRAVAIL_AU_CHOMAGE:
+                counts['situation:Au chômage'] += 1
+                counts['situation:Non-étudiants'] += 1
+            elif status:
+                counts['situation:Inactif (hors études)'] += 1
+                counts['situation:Non-étudiants'] += 1
+
+            if row['habitat'] == HABITAT_PARIS_REGION:
+                counts['habitat:Île-de-France'] += 1
+            elif row['habitat']:
+                counts['habitat:Hors Île-de-France'] += 1
+
+            if age_group == '25-29 ans':
+                if row['niv_diplome'] in AT_MOST_BREVET:
+                    counts['diplome:Au plus le brevet'] += 1
+                elif row['niv_diplome'] in BAC_PLUS_DEUX:
+                    counts['diplome:Bac+2 ou plus'] += 1
+
+        def quota_rows(group):
+            return [
+                {
+                    'label': label,
+                    'count': counts[f'{group}:{label}'],
+                    'target': target,
+                    'percentage': round(counts[f'{group}:{label}'] / target * 100, 1),
+                    'progress': min(100, round(counts[f'{group}:{label}'] / target * 100, 1)),
+                    'color': self.progress_color(counts[f'{group}:{label}'] / target),
+                }
+                for label, target in QUOTA_TARGETS[group].items()
+            ]
+
+        return {
+            'registered_count': Profil.objects.count(),
+            'complete_count': len(rows),
+            'start_date': start_date.isoformat(),
+            'quotas': {group: quota_rows(group) for group in QUOTA_TARGETS},
+            'out_of_age_range': counts['age:hors tranche'],
+            'target': SURVEY_TARGET,
+        }
+
+    @staticmethod
+    def age_group(age):
+        if age is None:
+            return None
+        if 18 <= age <= 20:
+            return '18-20 ans'
+        if 21 <= age <= 24:
+            return '21-24 ans'
+        if 25 <= age <= 29:
+            return '25-29 ans'
+        return None
+
+    @staticmethod
+    def progress_color(ratio):
+        if ratio < 0.5:
+            return 'red'
+        if ratio < 0.9:
+            return 'orange'
+        return 'green'
 
     @admin.display(description='Statut', ordering='is_completed')
     def completion_badge(self, obj):

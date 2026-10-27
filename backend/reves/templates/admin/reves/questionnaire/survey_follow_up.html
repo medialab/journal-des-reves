@@ -1,0 +1,65 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<style>
+  .survey-page { max-width: 1200px; }
+  .survey-filter, .survey-card { background: var(--color-panel, #fff); border: 1px solid #d9d9d9; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+  .survey-filter { display: flex; align-items: end; gap: 1rem; flex-wrap: wrap; }
+  .survey-filter label { display: block; font-weight: 600; margin-bottom: .35rem; }
+  .survey-filter input { padding: .5rem; }
+  .survey-summary, .survey-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+  .survey-card h2 { font-size: 1rem; margin: 0 0 .8rem; }
+  .summary-value { font-size: 1.8rem; font-weight: 700; }
+  .quota { margin: .8rem 0 1rem; }
+  .quota-meta { display: flex; justify-content: space-between; gap: .75rem; margin-bottom: .3rem; font-size: .9rem; }
+  .quota-track { height: 11px; background: #edf1f3; border-radius: 999px; overflow: hidden; }
+  .quota-fill { height: 100%; border-radius: 999px; }
+  .quota-fill.red { background: #dc2626; } .quota-fill.orange { background: #f59e0b; } .quota-fill.green { background: #16a34a; }
+  .quota-note { color: #646464; font-size: .85rem; }
+</style>
+
+<div class="survey-page">
+  <h1>Suivi enquête</h1>
+  <form class="survey-filter" id="survey-filter">
+    <div>
+      <label for="start-date">Date de début</label>
+      <input id="start-date" name="start_date" type="date" value="{{ start_date }}" required>
+    </div>
+  </form>
+
+  <div class="survey-summary">
+    <section class="survey-card"><h2>Inscrits</h2><div class="summary-value" id="registered-count">—</div></section>
+    <section class="survey-card"><h2>Questionnaires complets</h2><div class="summary-value" id="complete-count">—</div></section>
+  </div>
+  <div id="quota-content" class="survey-grid" aria-live="polite"></div>
+</div>
+
+<script>
+  const dataUrl = "{{ data_url }}";
+  const dateInput = document.getElementById("start-date");
+  const quotaContent = document.getElementById("quota-content");
+  const labels = {
+    genre: "Genre", age: "Âge", genre_age: "Genre × âge", situation: "Situation",
+    habitat: "Habitat", diplome: "Diplôme (25-29 ans)"
+  };
+  function render(data) {
+    document.getElementById("registered-count").textContent = data.registered_count;
+    document.getElementById("complete-count").textContent = data.complete_count;
+    quotaContent.innerHTML = Object.entries(data.quotas).map(([group, quotas]) => `
+      <section class="survey-card"><h2>${labels[group]}</h2>
+        ${quotas.map(item => `<div class="quota">
+          <div class="quota-meta"><span>${item.label}</span><strong>${item.count} / ${item.target} (${item.percentage}%)</strong></div>
+          <div class="quota-track"><div class="quota-fill ${item.color}" style="width:${item.progress}%"></div></div>
+        </div>`).join("")}
+        ${group === "age" ? `<div class="quota-note">Hors tranche : ${data.out_of_age_range}</div>` : ""}
+      </section>`).join("");
+  }
+  async function refresh() {
+    const response = await fetch(`${dataUrl}?start_date=${encodeURIComponent(dateInput.value)}`, {headers: {"Accept": "application/json"}});
+    if (!response.ok) throw new Error("Impossible de charger le suivi de l'enquête.");
+    render(await response.json());
+  }
+  dateInput.addEventListener("change", refresh);
+  refresh().catch(error => { quotaContent.textContent = error.message; });
+</script>
+{% endblock %}

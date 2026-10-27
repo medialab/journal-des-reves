@@ -758,7 +758,7 @@ class SignUpForm(UserCreationForm):
     consent_data_processing = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'accepte que mes données soient traitées par la chercheuse Maud Yaïche et de ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu\'elles soient versées aux archives 5 ans après la collecte dans l\'entrepôt de données sécurisé de Sciences Po, où l\'accès est encadré sur demande par la chercheuse.'
+        label='J\'accepte que mes données soient traitées par la chercheuse Maud Yaïche et de ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu\'elles soient versées aux archives 5 ans après la thèse dans l\'entrepôt de données sécurisé de Sciences Po, où l\'accès est encadré sur demande par la chercheuse.'
     )
     
     consent_password_account = forms.BooleanField(
@@ -768,15 +768,15 @@ class SignUpForm(UserCreationForm):
     )
     
     consent_quote_expressions = forms.BooleanField(
-        required=True,
+        required=False,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='J\'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation).'
+        label='Je consens à la collecte et à l\'analyse des données sensibles et j\'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation).'
     )
 
     consent_sensitive_data = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-        label='Je consens à la collecte et à l\'analyse des données sensibles que je choisis de partager concernant mon origine ou ma vie affective et sexuelle.'
+        label='Je consens à la collecte et à l\'analyse des données sensibles et j\'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation).'
     )
     
     consent_age_vulnerability = forms.BooleanField(
@@ -871,14 +871,17 @@ class SignUpForm(UserCreationForm):
                     user.save()
                     
                     # CRÉER LE PROFIL MANUELLEMENT avec les consentements
+                    combined_sensitive_consent = self.cleaned_data.get('consent_sensitive_data', False)
+                    combined_quote_consent = self.cleaned_data.get('consent_quote_expressions', combined_sensitive_consent)
+
                     profil = Profil.objects.create(
                         user=user,
                         email=user.email,
-                        consent_data_processing=self.cleaned_data['consent_data_processing'],
-                        consent_password_account=self.cleaned_data['consent_password_account'],
-                        consent_quote_expressions=self.cleaned_data['consent_quote_expressions'],
-                        consent_sensitive_data=self.cleaned_data['consent_sensitive_data'],
-                        consent_age_vulnerability=self.cleaned_data['consent_age_vulnerability'],
+                        consent_data_processing=self.cleaned_data.get('consent_data_processing', False),
+                        consent_password_account=self.cleaned_data.get('consent_password_account', False),
+                        consent_quote_expressions=combined_quote_consent,
+                        consent_sensitive_data=combined_sensitive_consent,
+                        consent_age_vulnerability=self.cleaned_data.get('consent_age_vulnerability', False),
                         consent_date=timezone.now(),
                         welcome_email_sent=False,
                         created_at_trick=timezone.now() - timezone.timedelta(days=8)

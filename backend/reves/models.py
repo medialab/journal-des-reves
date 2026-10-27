@@ -171,7 +171,7 @@ class Profil(PublicKeyModel):
     consent_data_processing = models.BooleanField(
         default=False,
         verbose_name="Accepte le traitement des données",
-        help_text="J'accepte que mes données soient traitées par l'équipe de recherche"
+        help_text="J'accepte que mes données soient traitées par la chercheuse Maud Yaïche et ses directeurs de recherche selon les modalités explicitées dans la description du projet et qu'elles soient versées aux archives 5 ans après la thèse dans l'entrepôt de données sécurisé de Sciences Po, où l'accès est encadré sur demande par la chercheuse."
     )
     consent_password_account = models.BooleanField(
         default=False,
@@ -180,14 +180,14 @@ class Profil(PublicKeyModel):
     )
     consent_quote_expressions = models.BooleanField(
         default=False,
-        verbose_name="Autorize la citation d'expressions",
-        help_text="J'autorise qu'une partie de mes expressions puisse être citée, étant entendu qu'il ne sera pas possible de m'identifier.  J'accepte que le son de mes enregistrements, une fois anonymisés et regroupés avec ceux des autres participant·es, soit analysé."
+        verbose_name="Autorise la citation d'expressions",
+        help_text="Je consens à la collecte et à l'analyse des données sensibles et j'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation)."
     )
 
     consent_sensitive_data = models.BooleanField(
         default=False,
         verbose_name="Consentement sur les données sensibles",
-        help_text="Je consens à la collecte et à l'analyse des données sensibles que je choisis de partager concernant mon origine ou ma vie affective et sexuelle."
+        help_text="Je consens à la collecte et à l'analyse des données sensibles et j'accepte que mes récits de rêves et données puissent être utilisés à des fins de recherche dans des publications et communication scientifiques, étant assuré que je ne serai pas identifiable (pseudonymisation)."
     )
     
     consent_age_vulnerability = models.BooleanField(
