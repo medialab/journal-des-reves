@@ -1262,6 +1262,12 @@ class Questionnaire(ParticipantKeyModel):
     aide_autre = models.BooleanField(default=False, verbose_name='Autre aide')
 
     # avant_dormir
+    pens_avant_dormir = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Pensées avant de s’endormir',
+        help_text='Liste des réponses sélectionnées avant de s’endormir'
+    )
     pens_trav = models.BooleanField(default=False, verbose_name='Travail / etudes')
     pens_fin = models.BooleanField(default=False, verbose_name='Situation financiere')
     pens_fam = models.BooleanField(default=False, verbose_name='Famille')
@@ -1271,6 +1277,12 @@ class Questionnaire(ParticipantKeyModel):
     pens_rien = models.BooleanField(default=False, verbose_name='Je ne pense pas a des choses en particulier')
     pens_autre_txt = models.TextField(blank=True, null=True, verbose_name='Precisez autre pensee')
 
+    contenus_avant_dormir = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Contenus ou activités avant de s’endormir',
+        help_text='Liste des contenus ou activités sélectionnés avant de s’endormir'
+    )
     cont_tv = models.BooleanField(default=False, verbose_name='Television')
     cont_series_films = models.BooleanField(default=False, verbose_name='Series / films')
     cont_rs = models.BooleanField(default=False, verbose_name='Reseaux sociaux')

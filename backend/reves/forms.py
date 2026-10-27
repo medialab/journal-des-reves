@@ -47,6 +47,36 @@ class ReveForm(forms.ModelForm):
 
 class QuestionnaireForm(forms.ModelForm):
     """Formulaire pour le questionnaire sur les rêves"""
+
+    PENSEES_CHOICES = (
+        ('travail', 'Travail / études'),
+        ('finances', 'Situation financière'),
+        ('famille', 'Famille'),
+        ('proches', 'Proches'),
+        ('actualite', 'Actualité'),
+        ('autre', 'Autre'),
+        ('rien', 'Je ne pense pas à des choses en particulier'),
+    )
+    CONTENUS_CHOICES = (
+        ('television', 'Télévision'),
+        ('series_films', 'Séries / films'),
+        ('reseaux_sociaux', 'Réseaux sociaux'),
+        ('jeux_videos', 'Jeux vidéos'),
+        ('livres_journaux', 'Livres, journaux'),
+        ('rien', 'Rien'),
+        ('autre', 'Autres'),
+    )
+
+    pens_avant_dormir = forms.MultipleChoiceField(
+        choices=PENSEES_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+    contenus_avant_dormir = forms.MultipleChoiceField(
+        choices=CONTENUS_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
     
     class Meta:
         model = Questionnaire
@@ -86,6 +116,7 @@ class QuestionnaireForm(forms.ModelForm):
             'aide_tisane',
             'aide_autre',
             # avant_dormir
+            'pens_avant_dormir',
             'pens_trav',
             'pens_fin',
             'pens_fam',
@@ -94,6 +125,7 @@ class QuestionnaireForm(forms.ModelForm):
             'pens_autre',
             'pens_rien',
             'pens_autre_txt',
+            'contenus_avant_dormir',
             'cont_tv',
             'cont_series_films',
             'cont_rs',
@@ -635,8 +667,97 @@ class QuestionnaireForm(forms.ModelForm):
                 if value not in (None, '')
             ]
 
+        if self.instance and self.instance.pk:
+            if not self.initial.get('pens_avant_dormir'):
+                self.initial['pens_avant_dormir'] = self._legacy_values(
+                    self.instance,
+                    {
+                        'pens_trav': 'travail',
+                        'pens_fin': 'finances',
+                        'pens_fam': 'famille',
+                        'pens_proch': 'proches',
+                        'pens_actu': 'actualite',
+                        'pens_autre': 'autre',
+                        'pens_rien': 'rien',
+                    },
+                    'pens_avant_dormir',
+                )
+            if not self.initial.get('contenus_avant_dormir'):
+                self.initial['contenus_avant_dormir'] = self._legacy_values(
+                    self.instance,
+                    {
+                        'cont_tv': 'television',
+                        'cont_series_films': 'series_films',
+                        'cont_rs': 'reseaux_sociaux',
+                        'cont_jeux': 'jeux_videos',
+                        'cont_livres': 'livres_journaux',
+                        'cont_rien': 'rien',
+                        'cont_autre': 'autre',
+                    },
+                    'contenus_avant_dormir',
+                )
+
+    @staticmethod
+    def _legacy_values(instance, mapping, field_name):
+        values = getattr(instance, field_name, None) or []
+        if values:
+            return values
+        return [value for field, value in mapping.items() if getattr(instance, field)]
+
     def clean(self):
         cleaned_data = super().clean()
+
+        pens_values = cleaned_data.get('pens_avant_dormir', [])
+        if 'pens_avant_dormir' not in self.data:
+            pens_values = [
+                value for field, value in {
+                    'pens_trav': 'travail',
+                    'pens_fin': 'finances',
+                    'pens_fam': 'famille',
+                    'pens_proch': 'proches',
+                    'pens_actu': 'actualite',
+                    'pens_autre': 'autre',
+                    'pens_rien': 'rien',
+                }.items() if cleaned_data.get(field)
+            ]
+        content_values = cleaned_data.get('contenus_avant_dormir', [])
+        if 'contenus_avant_dormir' not in self.data:
+            content_values = [
+                value for field, value in {
+                    'cont_tv': 'television',
+                    'cont_series_films': 'series_films',
+                    'cont_rs': 'reseaux_sociaux',
+                    'cont_jeux': 'jeux_videos',
+                    'cont_livres': 'livres_journaux',
+                    'cont_rien': 'rien',
+                    'cont_autre': 'autre',
+                }.items() if cleaned_data.get(field)
+            ]
+        cleaned_data['pens_avant_dormir'] = pens_values
+        cleaned_data['contenus_avant_dormir'] = content_values
+
+        pens_mapping = {
+            'pens_trav': 'travail',
+            'pens_fin': 'finances',
+            'pens_fam': 'famille',
+            'pens_proch': 'proches',
+            'pens_actu': 'actualite',
+            'pens_autre': 'autre',
+            'pens_rien': 'rien',
+        }
+        content_mapping = {
+            'cont_tv': 'television',
+            'cont_series_films': 'series_films',
+            'cont_rs': 'reseaux_sociaux',
+            'cont_jeux': 'jeux_videos',
+            'cont_livres': 'livres_journaux',
+            'cont_rien': 'rien',
+            'cont_autre': 'autre',
+        }
+        for field_name, value in pens_mapping.items():
+            cleaned_data[field_name] = value in pens_values
+        for field_name, value in content_mapping.items():
+            cleaned_data[field_name] = value in content_values
 
         # Condition: si la modalité image n'est pas sélectionnée, vider les sous-choix images.
         if not cleaned_data.get('mod_img'):
@@ -659,20 +780,16 @@ class QuestionnaireForm(forms.ModelForm):
                 cleaned_data[field_name] = False
 
         # Contrainte: pens_rien exclusif.
-        if cleaned_data.get('pens_rien'):
-            other_pens_fields = ['pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu', 'pens_autre']
-            if any(cleaned_data.get(name) for name in other_pens_fields):
-                raise forms.ValidationError(
-                    "Si 'Je ne pense pas à des choses en particulier' est coché, les autres options de pensée doivent être décochées."
-                )
+        if 'rien' in pens_values and len(pens_values) > 1:
+            raise forms.ValidationError(
+                "Si 'Je ne pense pas à des choses en particulier' est coché, les autres options de pensée doivent être décochées."
+            )
 
         # Contrainte: cont_rien exclusif.
-        if cleaned_data.get('cont_rien'):
-            other_cont_fields = ['cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux', 'cont_livres', 'cont_autre']
-            if any(cleaned_data.get(name) for name in other_cont_fields):
-                raise forms.ValidationError(
-                    "Si 'Rien' est coché, les autres contenus/activités doivent être décochés."
-                )
+        if 'rien' in content_values and len(content_values) > 1:
+            raise forms.ValidationError(
+                "Si 'Rien' est coché, les autres contenus/activités doivent être décochés."
+            )
 
         # Si "Autre" pensée n'est pas coché, on ignore le texte libre.
         if not cleaned_data.get('pens_autre'):

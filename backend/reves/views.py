@@ -1035,6 +1035,12 @@ class QuestionnaireView(View):
             # Store the POST data for this section
             section_data = request.POST.dict()
             section_data.pop('csrfmiddlewaretoken', None)  # Remove CSRF token
+            for multiselect_name in ('pens_avant_dormir', 'contenus_avant_dormir'):
+                values = request.POST.getlist(multiselect_name)
+                if values:
+                    section_data[multiselect_name] = values
+                else:
+                    section_data.pop(multiselect_name, None)
 
             request.session['questionnaire_data'][f'section_{section}'] = section_data
             request.session.modified = True
@@ -1063,6 +1069,7 @@ class QuestionnaireView(View):
                 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
                 'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
                 'aide_medic', 'aide_tisane', 'aide_autre',
+                'pens_avant_dormir', 'contenus_avant_dormir',
                 'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
                 'pens_autre', 'pens_rien',
                 'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
@@ -1107,6 +1114,7 @@ class QuestionnaireView(View):
                     'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
                     'reveil_nuit', 'nuits_reveil', 'duree_eveil',
                     'aide_sommeil', 'aide_medic', 'aide_tisane', 'aide_autre',
+                    'pens_avant_dormir', 'contenus_avant_dormir',
                     'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
                     'pens_autre', 'pens_rien', 'pens_autre_txt',
                     'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
@@ -1152,7 +1160,9 @@ class QuestionnaireView(View):
                 q = Questionnaire(profil=profil)
 
             for field_name in SECTION_FIELDS.get(str(section), []):
-                if field_name in BOOL_CHECKBOX_FIELDS:
+                if field_name in {'pens_avant_dormir', 'contenus_avant_dormir'}:
+                    setattr(q, field_name, request.POST.getlist(field_name))
+                elif field_name in BOOL_CHECKBOX_FIELDS:
                     setattr(q, field_name, field_name in request.POST)
                 elif field_name in BOOL_RADIO_FIELDS:
                     val = request.POST.get(field_name)
