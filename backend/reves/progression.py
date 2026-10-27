@@ -6,13 +6,13 @@ from .models import Reve
 
 
 PALIERS = (
-    {"niveau": 1, "cle": "courbe", "libelle": "Courbe"},
-    {"niveau": 2, "cle": "tonalite", "libelle": "Tonalité"},
-    {"niveau": 3, "cle": "emotions", "libelle": "Émotions"},
-    {"niveau": 4, "cle": "temps", "libelle": "Temps"},
-    {"niveau": 5, "cle": "themes", "libelle": "Thèmes"},
-    {"niveau": 6, "cle": "profil", "libelle": "Profil"},
-    {"niveau": 7, "cle": "rapport", "libelle": "Rapport"},
+    {"niveau": 1, "cle": "courbe", "libelle": "Courbe", "detail": "La courbe hebdomadaire se débloque après votre première nuit."},
+    {"niveau": 2, "cle": "tonalite", "libelle": "Tonalité", "detail": "Découvrez la tonalité émotionnelle de vos rêves après deux nuits."},
+    {"niveau": 3, "cle": "emotions", "libelle": "Émotions", "detail": "Analysez les émotions nommées dans vos récits après trois nuits."},
+    {"niveau": 4, "cle": "temps", "libelle": "Temps", "detail": "Observez les repères temporels de vos rêves après quatre nuits."},
+    {"niveau": 5, "cle": "themes", "libelle": "Thèmes", "detail": "Explorez les thèmes qui reviennent dans vos récits après cinq nuits."},
+    {"niveau": 6, "cle": "profil", "libelle": "Profil", "detail": "Votre profil de rêveur est établi après six nuits."},
+    {"niveau": 7, "cle": "rapport", "libelle": "Rapport", "detail": "Le rapport complet est préparé à la fin de l'enquête."},
 )
 PROFILS = {
     "oublieux": {

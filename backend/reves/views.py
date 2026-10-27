@@ -202,13 +202,14 @@ class ProfilView(LoginRequiredMixin, View):
             "user": request.user,
             "palier": palier,
             "paliers": PALIERS,
-            "progress_pct": round((palier - 1) / 6 * 100, 1) if palier else 0,
+            "progress_pct": round(palier / 7 * 100, 1),
             "progress_message": (
                 "Notez votre premier rêve demain matin pour commencer." if palier == 0
-                else "Bravo, vous avez complété vos 7 nuits !" if palier == 7
-                else "Plus qu'une nuit ! Demain, votre rapport personnalisé sera débloqué." if palier == 6
-                else f"Plus que {6 - palier} nuits avant de découvrir votre profil de rêveur."
+                else "Enquête terminée. Votre rapport arrive par e-mail." if palier == 7
+                else "Votre profil est prêt ! Encore une nuit pour le rapport complet." if palier == 6
+                else f"Prochaine analyse : {PALIERS[palier]['libelle']}"
             ),
+            "progress_step_label": PALIERS[min(palier, 6)]["libelle"],
             "new_content": new_content,
             "profil_data": profil_data,
             "nuits": get_nuits(request.user),

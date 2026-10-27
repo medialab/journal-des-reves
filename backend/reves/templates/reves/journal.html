@@ -9,10 +9,7 @@
 		<div class="container-small journal-hero">
 			<h1 class="page-title">Bonjour {{ user.first_name }}</h1>
 			<div class="hero-buttons">
-				<a href="{% url 'reves:enregistrer' %}" class="btn btn-primary btn-large">
-					Ajouter un rêve
-					<span class="btn-arrow">→</span>
-				</a>
+				{% include "reves/_bouton_enregistrer.html" with bouton_label="Ajouter un rêve" %}
 				{% if not has_questionnaire %}
 					<a href="{% url 'reves:questionnaire' %}" class="btn btn-outline btn-large btn-outline-hero">
 						Remplissez le questionnaire
