@@ -272,6 +272,18 @@ UNFOLD = {
                 ],
             },
             {
+                "title": "Suivi enquête",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Suivi des quotas",
+                        "icon": "query_stats",
+                        "link": reverse_lazy("admin:reves_questionnaire_survey_follow_up"),
+                    },
+                ],
+            },
+            {
                 "title": "Contenu & Rêves",
                 "separator": True,
                 "collapsible": True,
