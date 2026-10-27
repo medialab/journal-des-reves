@@ -2532,7 +2532,8 @@ select:focus {
 
 /* Signup page: keep content readable on mobile and simplify consent cards */
 .signup-page .container-small {
-    max-width: 560px;
+    width: min(100% - 2rem, 600px);
+    max-width: 600px;
 }
 
 .signup-page .form-card {
@@ -2541,6 +2542,14 @@ select:focus {
     border: none;
     border-radius: 0;
     box-shadow: none;
+}
+
+.signup-page .modern-form {
+    gap: 20px;
+}
+
+.signup-page .form-section {
+    margin-bottom: 0;
 }
 
 .signup-page .form-group {
@@ -2554,6 +2563,15 @@ select:focus {
 .signup-page .form-help {
     margin-top: -4px;
     font-size: 0.75rem;
+}
+
+.signup-page .form-section > .form-help {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.signup-page .form-section > .form-help + .checkbox-group {
+    margin-top: 0;
 }
 
 .signup-page .error-message {
