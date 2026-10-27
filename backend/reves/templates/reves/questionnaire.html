@@ -274,13 +274,13 @@
                     <div class="form-group">
                         <label class="form-label">Avant de vous endormir, pensez-vous souvent à… (plusieurs réponses possibles)</label>
                         <div class="checkbox-group compact-choices sleep-choices-row">
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_trav" class="pens-option" {% if form.pens_trav.value %}checked{% endif %}><span class="checkbox-text">Travail / études</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_fin" class="pens-option" {% if form.pens_fin.value %}checked{% endif %}><span class="checkbox-text">Situation financière</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_fam" class="pens-option" {% if form.pens_fam.value %}checked{% endif %}><span class="checkbox-text">Famille</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_proch" class="pens-option" {% if form.pens_proch.value %}checked{% endif %}><span class="checkbox-text">Proches</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_actu" class="pens-option" {% if form.pens_actu.value %}checked{% endif %}><span class="checkbox-text">Actualité</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_autre" id="id_pens_autre" class="pens-option" {% if form.pens_autre.value %}checked{% endif %}><span class="checkbox-text">Autre</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_rien" id="id_pens_rien" {% if form.pens_rien.value %}checked{% endif %}><span class="checkbox-text">Je ne pense pas à des choses en particulier</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="travail" class="pens-option" {% if "travail" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Travail / études</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="finances" class="pens-option" {% if "finances" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Situation financière</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="famille" class="pens-option" {% if "famille" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Famille</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="proches" class="pens-option" {% if "proches" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Proches</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="actualite" class="pens-option" {% if "actualite" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Actualité</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="autre" id="id_pens_autre" class="pens-option" {% if "autre" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Autre</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="rien" id="id_pens_rien" {% if "rien" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Je ne pense pas à des choses en particulier</span></label>
                         </div>
                     </div>
 
@@ -292,13 +292,13 @@
                     <div class="form-group">
                         <label class="form-label">Parmi les contenus ou activités suivants, lesquels consultez-vous, regardez-vous ou pratiquez-vous le plus souvent avant de vous endormir ?</label>
                         <div class="checkbox-group compact-choices sleep-choices-row">
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_tv" class="cont-option" {% if form.cont_tv.value %}checked{% endif %}><span class="checkbox-text">Télévision</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_series_films" class="cont-option" {% if form.cont_series_films.value %}checked{% endif %}><span class="checkbox-text">Séries / films</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_rs" class="cont-option" {% if form.cont_rs.value %}checked{% endif %}><span class="checkbox-text">Réseaux sociaux</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_jeux" class="cont-option" {% if form.cont_jeux.value %}checked{% endif %}><span class="checkbox-text">Jeux vidéos</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_livres" class="cont-option" {% if form.cont_livres.value %}checked{% endif %}><span class="checkbox-text">Livres, journaux</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_rien" id="id_cont_rien" {% if form.cont_rien.value %}checked{% endif %}><span class="checkbox-text">Rien</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="cont_autre" class="cont-option" {% if form.cont_autre.value %}checked{% endif %}><span class="checkbox-text">Autres</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="television" class="cont-option" {% if "television" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Télévision</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="series_films" class="cont-option" {% if "series_films" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Séries / films</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="reseaux_sociaux" class="cont-option" {% if "reseaux_sociaux" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Réseaux sociaux</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="jeux_videos" class="cont-option" {% if "jeux_videos" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Jeux vidéos</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="livres_journaux" class="cont-option" {% if "livres_journaux" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Livres, journaux</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="rien" id="id_cont_rien" {% if "rien" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Rien</span></label>
+                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="autre" class="cont-option" {% if "autre" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Autres</span></label>
                         </div>
                     </div>
                 </section>
