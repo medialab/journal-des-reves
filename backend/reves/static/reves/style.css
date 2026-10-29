@@ -833,6 +833,22 @@ html.is-mobile-pwa .notification-bell {
     line-height: 1.18;
 }
 
+#questionnaireForm .parler-reves-options {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+#questionnaireForm .parler-reves-options .checkbox-label.choice-label {
+    display: inline-flex !important;
+    width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+}
+
 #questionnaireForm .checkbox-group.sleep-choices-row {
     display: flex !important;
     flex-direction: row !important;
