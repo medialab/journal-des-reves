@@ -223,28 +223,42 @@ class QuestionnaireFormValidationTest(TestCase):
 
         self.assertTrue(form.cleaned_data.get('aide_tisane'))
 
-    # --- pens_rien exclusif ---
-    def test_pens_rien_exclusif_raises_error(self):
-        data = self._valid_data()
-        data['pens_rien'] = 'on'
-        data['pens_trav'] = 'on'
-        form = QuestionnaireForm(data=data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('__all__', form.errors)
+    def test_removed_sleep_questions_preserve_existing_values(self):
+        user = User.objects.create_user(username='legacy-sleep-user', password='testpass123')
+        profil = user.profil
+        questionnaire = Questionnaire.objects.create(
+            profil=profil,
+            pens_avant_dormir=['travail', 'famille'],
+            contenus_avant_dormir=['television', 'livres_journaux'],
+            pens_trav=True,
+            pens_fam=True,
+            cont_tv=True,
+            cont_livres=True,
+        )
 
-    def test_pens_rien_alone_is_valid(self):
-        data = self._valid_data()
-        data['pens_rien'] = 'on'
-        form = QuestionnaireForm(data=data)
+        form = QuestionnaireForm(data=self._valid_data(), instance=questionnaire)
         self.assertTrue(form.is_valid(), msg=f"Erreurs: {form.errors}")
+        form.save()
+        questionnaire.refresh_from_db()
 
-    # --- cont_rien exclusif ---
-    def test_cont_rien_avec_autre_contenu_raises_error(self):
+        self.assertEqual(questionnaire.pens_avant_dormir, ['travail', 'famille'])
+        self.assertEqual(questionnaire.contenus_avant_dormir, ['television', 'livres_journaux'])
+        self.assertTrue(questionnaire.pens_trav)
+        self.assertTrue(questionnaire.pens_fam)
+        self.assertTrue(questionnaire.cont_tv)
+        self.assertTrue(questionnaire.cont_livres)
+
+    def test_multiple_speaking_answers_are_valid(self):
         data = self._valid_data()
-        data['cont_rien'] = 'on'
-        data['cont_tv'] = 'on'
+        data.update({
+            'parler_reves': '2',
+            'parler_reves_qui': ['famille', 'amis', 'ia'],
+        })
         form = QuestionnaireForm(data=data)
-        self.assertFalse(form.is_valid())
+
+        self.assertTrue(form.is_valid(), msg=f"Erreurs: {form.errors}")
+        self.assertEqual(form.cleaned_data['parler_reves_qui'], ['famille', 'amis', 'ia'])
+        self.assertEqual(form.cleaned_data['parler_reves_prk_jamais'], [])
 
     # --- composition_logement_conjoint : conj_* effacé si ne vit pas avec conjoint ---
     def test_conj_fields_cleared_when_not_living_with_partner(self):
@@ -464,6 +478,25 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
         self._ajax_post('1', {'freq_reves_not': '2'})
         q = Questionnaire.objects.get(profil=self.profil)
         self.assertEqual(q.freq_reves_not, 2)
+
+    def test_ajax_section1_does_not_overwrite_removed_sleep_questions(self):
+        q = Questionnaire.objects.create(
+            profil=self.profil,
+            pens_avant_dormir=['travail'],
+            contenus_avant_dormir=['television'],
+            pens_trav=True,
+            cont_tv=True,
+        )
+        self.client.session['questionnaire_id'] = q.pk
+        self.client.session.save()
+
+        self._ajax_post('1', SECTION1_DATA)
+        q.refresh_from_db()
+
+        self.assertEqual(q.pens_avant_dormir, ['travail'])
+        self.assertEqual(q.contenus_avant_dormir, ['television'])
+        self.assertTrue(q.pens_trav)
+        self.assertTrue(q.cont_tv)
 
     def test_ajax_section1_saves_mod_img_true(self):
         self._ajax_post('1', {'mod_img': 'on'})

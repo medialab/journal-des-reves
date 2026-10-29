@@ -357,6 +357,9 @@ function validateSection(sectionNumber) {
 
 			// Vérifier les radios - OBLIGATOIRE
 			if (radios.length > 0) {
+				if (!Array.from(radios).some(radio => radio.required)) {
+					return;
+				}
 				const isChecked = Array.from(radios).some(r => r.checked);
 				console.log('    Radios:', radios.length, '| Coché:', isChecked ? 'OUI' : 'NON ❌');
 				if (!isChecked) {
@@ -367,6 +370,9 @@ function validateSection(sectionNumber) {
 
 			// Vérifier les checkboxes - OBLIGATOIRE
 			if (checkboxes.length > 0) {
+				if (!Array.from(checkboxes).some(checkbox => checkbox.required)) {
+					return;
+				}
 				const isChecked = Array.from(checkboxes).some(cb => cb.checked);
 				console.log('    Checkboxes:', checkboxes.length, '| Coché:', isChecked ? 'OUI' : 'NON ❌');
 				if (!isChecked) {
@@ -378,6 +384,9 @@ function validateSection(sectionNumber) {
 			// Vérifier les selects - OBLIGATOIRE
 			if (selects.length > 0) {
 				const select = selects[0];
+				if (!select.required) {
+					return;
+				}
 				const hasValue = select.value && select.value !== '';
 				console.log('    Select:', select.name, '| Valeur:', select.value, '| Rempli:', hasValue ? 'OUI' : 'NON ❌');
 				if (!hasValue) {
@@ -389,6 +398,9 @@ function validateSection(sectionNumber) {
 			// Vérifier les inputs texte/time/number - OBLIGATOIRE
 			if (textInputs.length > 0) {
 				const input = textInputs[0];
+				if (!input.required) {
+					return;
+				}
 				const hasValue = input.value && input.value.trim() !== '';
 				console.log('    Input text:', input.name, input.type, '| Valeur:', input.value, '| Rempli:', hasValue ? 'OUI' : 'NON ❌');
 				if (!hasValue) {
@@ -400,6 +412,9 @@ function validateSection(sectionNumber) {
 			// Vérifier les textareas - OBLIGATOIRE
 			if (textareas.length > 0) {
 				const textarea = textareas[0];
+				if (!textarea.required) {
+					return;
+				}
 				const hasValue = textarea.value && textarea.value.trim() !== '';
 				console.log('    Textarea:', textarea.name, '| Rempli:', hasValue ? 'OUI' : 'NON ❌');
 				if (!hasValue) {
@@ -552,50 +567,9 @@ function bindSocialConditionsListeners() {
 	document.querySelectorAll('input[name="recrutement"]').forEach(radio => {
 		radio.addEventListener('change', updateSocialConditionsFields);
 	});
-
-	const pensRien = document.getElementById('id_pens_rien');
-	if (pensRien) {
-		pensRien.addEventListener('change', function() {
-			toggleExclusiveGroup('id_pens_rien', '.pens-option');
-			updateSocialConditionsFields();
-		});
-	}
-
-	const contRien = document.getElementById('id_cont_rien');
-	if (contRien) {
-		contRien.addEventListener('change', function() {
-			toggleExclusiveGroup('id_cont_rien', '.cont-option');
-		});
-	}
-
-	document.querySelectorAll('.pens-option').forEach(input => {
-		input.addEventListener('change', function() {
-			const pensRienCheckbox = document.getElementById('id_pens_rien');
-			if (pensRienCheckbox && this.checked) {
-				pensRienCheckbox.checked = false;
-				pensRienCheckbox.disabled = false;
-			}
-			updateSocialConditionsFields();
-		});
+	document.querySelectorAll('input[name="parler_reves"]').forEach(radio => {
+		radio.addEventListener('change', updateSocialConditionsFields);
 	});
-
-	document.querySelectorAll('.cont-option').forEach(input => {
-		input.addEventListener('change', function() {
-			const contRienCheckbox = document.getElementById('id_cont_rien');
-			if (contRienCheckbox && this.checked) {
-				contRienCheckbox.checked = false;
-				contRienCheckbox.disabled = false;
-			}
-			document.querySelectorAll('.cont-option').forEach(option => {
-				option.disabled = false;
-			});
-		});
-	});
-
-	const pensAutre = document.getElementById('id_pens_autre');
-	if (pensAutre) {
-		pensAutre.addEventListener('change', updateSocialConditionsFields);
-	}
 
 	const compositionEnfants = document.getElementById('id_composition_logement_enfants');
 	if (compositionEnfants) {
@@ -654,9 +628,6 @@ function updateSectionTwoFields() {
 }
 
 function updateSocialConditionsFields() {
-	toggleExclusiveGroup('id_pens_rien', '.pens-option');
-	toggleExclusiveGroup('id_cont_rien', '.cont-option');
-
 	const modImg = document.getElementById('id_mod_img');
 	const imagesGroup = document.getElementById('images_options_group');
 	if (modImg && imagesGroup) {
@@ -706,15 +677,29 @@ function updateSocialConditionsFields() {
 		}
 	}
 
-	const pensAutre = document.getElementById('id_pens_autre');
-	const pensAutreTxtGroup = document.getElementById('pens_autre_txt_group');
-	if (pensAutre && pensAutreTxtGroup) {
-		pensAutreTxtGroup.style.display = pensAutre.checked ? 'block' : 'none';
-		if (!pensAutre.checked) {
-			const txt = document.getElementById('id_pens_autre_txt');
-			if (txt) txt.value = '';
-		}
+	const parlerReves = document.querySelector('input[name="parler_reves"]:checked');
+	const parlerRevesQuiGroup = document.getElementById('parler_reves_qui_group');
+	const parlerRevesPrkJamaisGroup = document.getElementById('parler_reves_prk_jamais_group');
+	const parlerRevesQuiInputs = document.querySelectorAll('input[name="parler_reves_qui"]');
+	const parlerRevesPrkJamaisInputs = document.querySelectorAll('input[name="parler_reves_prk_jamais"]');
+	const raconte = parlerReves && parlerReves.value !== '7';
+	const jamais = parlerReves && parlerReves.value === '7';
+
+	if (parlerRevesQuiGroup) {
+		parlerRevesQuiGroup.style.display = raconte ? 'block' : 'none';
+		parlerRevesQuiGroup.hidden = !raconte;
 	}
+	if (parlerRevesPrkJamaisGroup) {
+		parlerRevesPrkJamaisGroup.style.display = jamais ? 'block' : 'none';
+		parlerRevesPrkJamaisGroup.hidden = !jamais;
+	}
+	if (!raconte) {
+		parlerRevesQuiInputs.forEach(input => { input.checked = false; });
+	}
+	if (!jamais) {
+		parlerRevesPrkJamaisInputs.forEach(input => { input.checked = false; });
+	}
+
 }
 
 function updateSectionThreeFields() {

@@ -1090,13 +1090,13 @@ class Questionnaire(ParticipantKeyModel):
 
     # pratiques_reves
     class RecrutementChoices(models.IntegerChoices):
-        ENTOURAGE = 1, "Une personne de mon entourage (enquêtrice, famille, ami·e, collègue…)"
-        PRESENTATION = 2, "Lors d’une présentation de l’enquête (cours, conférence, association…)"
-        AFFICHE = 3, "Une affiche"
-        GROUPE_ENQUETRICE = 4, "Un post de l'enquêtrice sur un groupe (Facebook, Reddit, Discord, etc.)"
-        RESEAUX_SOCIAUX = 5, "Sur les réseaux sociaux"
-        LISTE_DIFFUSION = 6, "Une liste de diffusion"
-        MEDIAS = 7, "Les médias (presse, radio, télévision)"
+        ENTOURAGE = 1, "Personne de mon entourage"
+        PRESENTATION = 2, "Présentation de l’enquête (cours, conférence, association…)"
+        AFFICHE = 3, "Affiche"
+        GROUPE_ENQUETRICE = 4, "Post de l'enquêtrice sur un groupe (Facebook, Discord ...)"
+        RESEAUX_SOCIAUX = 5, "Réseaux sociaux"
+        LISTE_DIFFUSION = 6, "Liste de diffusion"
+        MEDIAS = 7, "Médias"
         AUTRE = 8, "Autre"
 
     recrutement = models.IntegerField(
@@ -1136,7 +1136,17 @@ class Questionnaire(ParticipantKeyModel):
         choices=FrequenceRevesChoices.choices,
         null=True,
         blank=True,
-        verbose_name="À quelle fréquence parlez-vous de vos rêves et cauchemars à votre entourage ces derniers temps (au cours des derniers mois) ?"
+        verbose_name="Vous arrive-t-il de raconter vos rêves (ou cauchemars) ?"
+    )
+    parler_reves_qui = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="À qui parlez-vous de vos rêves ou cauchemars ?"
+    )
+    parler_reves_prk_jamais = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Pourquoi ne racontez-vous jamais vos rêves ou cauchemars ?"
     )
     freq_reves = models.IntegerField(
         choices=FrequenceRevesChoices.choices,
@@ -1179,15 +1189,15 @@ class Questionnaire(ParticipantKeyModel):
     )
 
     class GaliChoices(models.IntegerChoices):
-        FORTEMENT_LIMITE = 1, "Oui, fortement limité(e)"
-        LIMITE = 2, "Oui, limité(e), mais pas fortement"
-        PAS_LIMITE = 3, "Non, pas limité(e) du tout"
+        FORTEMENT_LIMITE = 1, "Oui, fortement limité·e"
+        LIMITE = 2, "Oui, limité·e, mais pas fortement"
+        PAS_LIMITE = 3, "Non, pas limité·e du tout"
 
     gali = models.IntegerField(
         choices=GaliChoices.choices,
         null=True,
         blank=True,
-        verbose_name="Êtes-vous limité(e), depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?"
+        verbose_name="Êtes-vous limité·e, depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?"
     )
 
     class TempsDuReveChoices(models.IntegerChoices):

@@ -116,22 +116,47 @@
                         {% if form.freq_reves_not.errors %}<div class="error-message">{{ form.freq_reves_not.errors }}</div>{% endif %}
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">Vous arrive-t-il de raconter vos rêves (ou cauchemars) ?</label>
+                        <div class="radio-group">
+                            {% for value, label in form.parler_reves.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="parler_reves" value="{{ value }}" required {% if form.parler_reves.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.parler_reves.errors %}<div class="error-message">{{ form.parler_reves.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group is-hidden-inline" id="parler_reves_qui_group" hidden>
+                        <label class="form-label">À qui ? <span class="form-help">(plusieurs choix possibles)</span></label>
+                        <div class="checkbox-group compact-choices parler-reves-options">
+                            {% for value, label in form.parler_reves_qui.field.choices %}
+                            <label class="checkbox-label choice-label">
+                                <input type="checkbox" name="parler_reves_qui" value="{{ value }}" {% if value in form.parler_reves_qui.value %}checked{% endif %}>
+                                <span class="checkbox-text">{{ label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group is-hidden-inline" id="parler_reves_prk_jamais_group" hidden>
+                        <label class="form-label">Pourquoi ? <span class="form-help">(plusieurs choix possibles)</span></label>
+                        <div class="checkbox-group compact-choices parler-reves-options">
+                            {% for value, label in form.parler_reves_prk_jamais.field.choices %}
+                            <label class="checkbox-label choice-label">
+                                <input type="checkbox" name="parler_reves_prk_jamais" value="{{ value }}" {% if value in form.parler_reves_prk_jamais.value %}checked{% endif %}>
+                                <span class="checkbox-text">{{ label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <div class="detresse-card">
                         <h4 class="detresse-title">Ces derniers temps (au cours des derniers mois), à quelle fréquence...</h4>
-
-                        <div class="detresse-row">
-                            <p class="detresse-question">... parlez-vous de vos rêves et cauchemars à votre entourage ?</p>
-                            <div class="detresse-grid">
-                                {% for value, label in form.parler_reves.field.choices %}
-                                {% if value != '' %}
-                                <label class="radio-label choice-label detresse-choice">
-                                    <input type="radio" name="parler_reves" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.parler_reves.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
-                                    <span class="radio-text">{{ label }}</span>
-                                </label>
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
 
                         <div class="detresse-row">
                             <p class="detresse-question">... vous souvenez-vous de vos rêves ?</p>
@@ -269,37 +294,6 @@
                         </div>
                     </div>
 
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Avant de vous endormir, pensez-vous souvent à… (plusieurs réponses possibles)</label>
-                        <div class="checkbox-group compact-choices sleep-choices-row">
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="travail" class="pens-option" {% if "travail" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Travail / études</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="finances" class="pens-option" {% if "finances" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Situation financière</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="famille" class="pens-option" {% if "famille" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Famille</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="proches" class="pens-option" {% if "proches" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Proches</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="actualite" class="pens-option" {% if "actualite" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Actualité</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="autre" id="id_pens_autre" class="pens-option" {% if "autre" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Autre</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="pens_avant_dormir" value="rien" id="id_pens_rien" {% if "rien" in form.pens_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Je ne pense pas à des choses en particulier</span></label>
-                        </div>
-                    </div>
-
-                    <div class="form-group is-hidden-inline" id="pens_autre_txt_group">
-                        <label class="form-label" for="id_pens_autre_txt">Précisez si autre</label>
-                        <textarea id="id_pens_autre_txt" name="pens_autre_txt" class="form-textarea" rows="3">{{ form.pens_autre_txt.value|default:'' }}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Parmi les contenus ou activités suivants, lesquels consultez-vous, regardez-vous ou pratiquez-vous le plus souvent avant de vous endormir ?</label>
-                        <div class="checkbox-group compact-choices sleep-choices-row">
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="television" class="cont-option" {% if "television" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Télévision</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="series_films" class="cont-option" {% if "series_films" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Séries / films</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="reseaux_sociaux" class="cont-option" {% if "reseaux_sociaux" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Réseaux sociaux</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="jeux_videos" class="cont-option" {% if "jeux_videos" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Jeux vidéos</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="livres_journaux" class="cont-option" {% if "livres_journaux" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Livres, journaux</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="rien" id="id_cont_rien" {% if "rien" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Rien</span></label>
-                            <label class="checkbox-label choice-label"><input type="checkbox" name="contenus_avant_dormir" value="autre" class="cont-option" {% if "autre" in form.contenus_avant_dormir.value %}checked{% endif %}><span class="checkbox-text">Autres</span></label>
-                        </div>
                     </div>
                 </section>
 
@@ -449,7 +443,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Êtes-vous limité(e), depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?</label>
+                        <label class="form-label">Êtes-vous limité·e, depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?</label>
                         <div class="radio-group inline-boolean-group compact-choices compact-inline-row">
                             {% for value, label in form.gali.field.choices %}
                             {% if value != '' %}

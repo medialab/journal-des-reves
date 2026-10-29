@@ -48,32 +48,31 @@ class ReveForm(forms.ModelForm):
 class QuestionnaireForm(forms.ModelForm):
     """Formulaire pour le questionnaire sur les rêves"""
 
-    PENSEES_CHOICES = (
-        ('travail', 'Travail / études'),
-        ('finances', 'Situation financière'),
+    PARLER_REVES_QUI_CHOICES = (
+        ('conjoint', 'Conjoint·e'),
         ('famille', 'Famille'),
-        ('proches', 'Proches'),
-        ('actualite', 'Actualité'),
-        ('autre', 'Autre'),
-        ('rien', 'Je ne pense pas à des choses en particulier'),
-    )
-    CONTENUS_CHOICES = (
-        ('television', 'Télévision'),
-        ('series_films', 'Séries / films'),
+        ('amis', 'Ami·es'),
+        ('collegues', 'Collègues'),
+        ('psy', 'Psy'),
         ('reseaux_sociaux', 'Réseaux sociaux'),
-        ('jeux_videos', 'Jeux vidéos'),
-        ('livres_journaux', 'Livres, journaux'),
-        ('rien', 'Rien'),
-        ('autre', 'Autres'),
+        ('ia', 'IA'),
+        ('autre', 'Autre'),
+    )
+    PARLER_REVES_PRK_JAMAIS_CHOICES = (
+        ('oubli', 'Je ne m’en souviens pas'),
+        ('sans_interet', 'Sans intérêt'),
+        ('trop_intime', 'Trop intime'),
+        ('personne', 'Personne à qui en parler'),
+        ('autre', 'Autre'),
     )
 
-    pens_avant_dormir = forms.MultipleChoiceField(
-        choices=PENSEES_CHOICES,
+    parler_reves_qui = forms.MultipleChoiceField(
+        choices=PARLER_REVES_QUI_CHOICES,
         required=False,
         widget=forms.CheckboxSelectMultiple,
     )
-    contenus_avant_dormir = forms.MultipleChoiceField(
-        choices=CONTENUS_CHOICES,
+    parler_reves_prk_jamais = forms.MultipleChoiceField(
+        choices=PARLER_REVES_PRK_JAMAIS_CHOICES,
         required=False,
         widget=forms.CheckboxSelectMultiple,
     )
@@ -87,6 +86,8 @@ class QuestionnaireForm(forms.ModelForm):
             'recrutement_autre',
             'freq_reves_not',
             'parler_reves',
+            'parler_reves_qui',
+            'parler_reves_prk_jamais',
             'freq_reves',
             'freq_cauchemar',
             # perception_reves
@@ -116,24 +117,6 @@ class QuestionnaireForm(forms.ModelForm):
             'aide_tisane',
             'aide_autre',
             # avant_dormir
-            'pens_avant_dormir',
-            'pens_trav',
-            'pens_fin',
-            'pens_fam',
-            'pens_proch',
-            'pens_actu',
-            'pens_autre',
-            'pens_rien',
-            'pens_autre_txt',
-            'contenus_avant_dormir',
-            'cont_tv',
-            'cont_series_films',
-            'cont_rs',
-            'cont_jeux',
-            'cont_livres',
-            'cont_rien',
-            'cont_autre',
-
             # PARTIE 1: Variables socio-démographiques
             'annee_naissance',
             'genre',
@@ -201,6 +184,8 @@ class QuestionnaireForm(forms.ModelForm):
             'recrutement_autre': forms.TextInput(attrs={'class': 'form-input'}),
             'freq_reves_not': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'parler_reves': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'parler_reves_qui': forms.CheckboxSelectMultiple(attrs={'class': 'checkbox-input'}),
+            'parler_reves_prk_jamais': forms.CheckboxSelectMultiple(attrs={'class': 'checkbox-input'}),
             'freq_reves': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'freq_cauchemar': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'mod_img': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
@@ -232,22 +217,6 @@ class QuestionnaireForm(forms.ModelForm):
             'aide_medic': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'aide_tisane': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
             'aide_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_trav': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_fin': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_fam': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_proch': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_actu': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'pens_rien': forms.CheckboxInput(attrs={'class': 'checkbox-input', 'id': 'id_pens_rien'}),
-            'pens_autre_txt': forms.Textarea(attrs={'class': 'form-textarea', 'rows': '3'}),
-            'cont_tv': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'cont_series_films': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'cont_rs': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'cont_jeux': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'cont_livres': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-            'cont_rien': forms.CheckboxInput(attrs={'class': 'checkbox-input', 'id': 'id_cont_rien'}),
-            'cont_autre': forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
-
             'annee_naissance': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'type': 'number',
@@ -335,7 +304,7 @@ class QuestionnaireForm(forms.ModelForm):
             'recrutement': 'Comment avez-vous connu cette étude ?',
             'recrutement_autre': 'Précisez autre mode de recrutement',
             'freq_reves_not': 'Avant cette enquête, vous est-il arrivé de noter vos rêves ?',
-            'parler_reves': 'À quelle fréquence parlez-vous de vos rêves et cauchemars à votre entourage ces derniers temps (au cours des derniers mois) ?',
+            'parler_reves': 'Vous arrive-t-il de raconter vos rêves (ou cauchemars) ?',
             'freq_reves': 'À quelle fréquence vous souvenez-vous de vos rêves ces derniers temps (au cours des derniers mois) ?',
             'freq_cauchemar': 'À quelle fréquence avez-vous fait des cauchemars ces derniers temps (au cours des derniers mois) ?',
             'mod_img': 'Images',
@@ -427,7 +396,7 @@ class QuestionnaireForm(forms.ModelForm):
             'discri_contexte_famille': 'Dans le cadre familial',
             'discri_contexte_autre': 'Lors d’une autre situation',
             'sante_generale': 'Comment est votre état de santé en général ?',
-            'gali': 'Êtes-vous limité(e), depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?',
+            'gali': 'Êtes-vous limité·e, depuis au moins six mois, à cause d’un problème de santé, dans les activités que les gens font habituellement ?',
             'det_1': 'Nerveux·se',
             'det_2': 'Triste et abattu·e',
             'det_3': 'Calme et détendu·e',
@@ -667,97 +636,8 @@ class QuestionnaireForm(forms.ModelForm):
                 if value not in (None, '')
             ]
 
-        if self.instance and self.instance.pk:
-            if not self.initial.get('pens_avant_dormir'):
-                self.initial['pens_avant_dormir'] = self._legacy_values(
-                    self.instance,
-                    {
-                        'pens_trav': 'travail',
-                        'pens_fin': 'finances',
-                        'pens_fam': 'famille',
-                        'pens_proch': 'proches',
-                        'pens_actu': 'actualite',
-                        'pens_autre': 'autre',
-                        'pens_rien': 'rien',
-                    },
-                    'pens_avant_dormir',
-                )
-            if not self.initial.get('contenus_avant_dormir'):
-                self.initial['contenus_avant_dormir'] = self._legacy_values(
-                    self.instance,
-                    {
-                        'cont_tv': 'television',
-                        'cont_series_films': 'series_films',
-                        'cont_rs': 'reseaux_sociaux',
-                        'cont_jeux': 'jeux_videos',
-                        'cont_livres': 'livres_journaux',
-                        'cont_rien': 'rien',
-                        'cont_autre': 'autre',
-                    },
-                    'contenus_avant_dormir',
-                )
-
-    @staticmethod
-    def _legacy_values(instance, mapping, field_name):
-        values = getattr(instance, field_name, None) or []
-        if values:
-            return values
-        return [value for field, value in mapping.items() if getattr(instance, field)]
-
     def clean(self):
         cleaned_data = super().clean()
-
-        pens_values = cleaned_data.get('pens_avant_dormir', [])
-        if 'pens_avant_dormir' not in self.data:
-            pens_values = [
-                value for field, value in {
-                    'pens_trav': 'travail',
-                    'pens_fin': 'finances',
-                    'pens_fam': 'famille',
-                    'pens_proch': 'proches',
-                    'pens_actu': 'actualite',
-                    'pens_autre': 'autre',
-                    'pens_rien': 'rien',
-                }.items() if cleaned_data.get(field)
-            ]
-        content_values = cleaned_data.get('contenus_avant_dormir', [])
-        if 'contenus_avant_dormir' not in self.data:
-            content_values = [
-                value for field, value in {
-                    'cont_tv': 'television',
-                    'cont_series_films': 'series_films',
-                    'cont_rs': 'reseaux_sociaux',
-                    'cont_jeux': 'jeux_videos',
-                    'cont_livres': 'livres_journaux',
-                    'cont_rien': 'rien',
-                    'cont_autre': 'autre',
-                }.items() if cleaned_data.get(field)
-            ]
-        cleaned_data['pens_avant_dormir'] = pens_values
-        cleaned_data['contenus_avant_dormir'] = content_values
-
-        pens_mapping = {
-            'pens_trav': 'travail',
-            'pens_fin': 'finances',
-            'pens_fam': 'famille',
-            'pens_proch': 'proches',
-            'pens_actu': 'actualite',
-            'pens_autre': 'autre',
-            'pens_rien': 'rien',
-        }
-        content_mapping = {
-            'cont_tv': 'television',
-            'cont_series_films': 'series_films',
-            'cont_rs': 'reseaux_sociaux',
-            'cont_jeux': 'jeux_videos',
-            'cont_livres': 'livres_journaux',
-            'cont_rien': 'rien',
-            'cont_autre': 'autre',
-        }
-        for field_name, value in pens_mapping.items():
-            cleaned_data[field_name] = value in pens_values
-        for field_name, value in content_mapping.items():
-            cleaned_data[field_name] = value in content_values
 
         # Condition: si la modalité image n'est pas sélectionnée, vider les sous-choix images.
         if not cleaned_data.get('mod_img'):
@@ -778,22 +658,6 @@ class QuestionnaireForm(forms.ModelForm):
         if cleaned_data.get('aide_sommeil') is not True:
             for field_name in ['aide_medic', 'aide_tisane', 'aide_autre']:
                 cleaned_data[field_name] = False
-
-        # Contrainte: pens_rien exclusif.
-        if 'rien' in pens_values and len(pens_values) > 1:
-            raise forms.ValidationError(
-                "Si 'Je ne pense pas à des choses en particulier' est coché, les autres options de pensée doivent être décochées."
-            )
-
-        # Contrainte: cont_rien exclusif.
-        if 'rien' in content_values and len(content_values) > 1:
-            raise forms.ValidationError(
-                "Si 'Rien' est coché, les autres contenus/activités doivent être décochés."
-            )
-
-        # Si "Autre" pensée n'est pas coché, on ignore le texte libre.
-        if not cleaned_data.get('pens_autre'):
-            cleaned_data['pens_autre_txt'] = ''
 
         # Conditions pour les enfants cohabitants.
         has_children_at_home = cleaned_data.get('composition_logement_enfants')
@@ -854,6 +718,11 @@ class QuestionnaireForm(forms.ModelForm):
                 self.add_error('discri_autre_precision', 'Précisez la raison "autre".')
             if not cleaned_data.get('discri_autre'):
                 cleaned_data['discri_autre_precision'] = ''
+
+        if cleaned_data.get('parler_reves') == 7:
+            cleaned_data['parler_reves_qui'] = []
+        else:
+            cleaned_data['parler_reves_prk_jamais'] = []
 
         return cleaned_data
 

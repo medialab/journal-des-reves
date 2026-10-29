@@ -182,16 +182,19 @@ class ProfilView(LoginRequiredMixin, View):
                 profil.profil_code = profil_data["code"]
                 profil.profil_revele_le = timezone.now()
                 profil.save(update_fields=["profil_code", "profil_revele_le"])
-            elif profil.profil_code:
+            elif profil.profil_code in PROFILS:
                 profil_data = calculer_profil(request.user)
                 profil_data.update({
                     "code": profil.profil_code,
                     "name": PROFILS[profil.profil_code]["name"],
                     "color": PROFILS[profil.profil_code]["color"],
                     "hook": PROFILS[profil.profil_code]["hook"],
-                    "paragraph": PROFILS[profil.profil_code]["paragraph"],
                     "traits": PROFILS[profil.profil_code]["traits"],
                 })
+            elif profil.profil_code:
+                profil_data = calculer_profil(request.user)
+                profil.profil_code = profil_data["code"]
+                profil.save(update_fields=["profil_code"])
             new_content = palier > profil.dernier_palier_vu
             profil.dernier_palier_vu = palier
             profil.save(update_fields=["dernier_palier_vu"])
@@ -1035,7 +1038,10 @@ class QuestionnaireView(View):
             # Store the POST data for this section
             section_data = request.POST.dict()
             section_data.pop('csrfmiddlewaretoken', None)  # Remove CSRF token
-            for multiselect_name in ('pens_avant_dormir', 'contenus_avant_dormir'):
+            for multiselect_name in (
+                'parler_reves_qui',
+                'parler_reves_prk_jamais',
+            ):
                 values = request.POST.getlist(multiselect_name)
                 if values:
                     section_data[multiselect_name] = values
@@ -1069,11 +1075,6 @@ class QuestionnaireView(View):
                 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
                 'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
                 'aide_medic', 'aide_tisane', 'aide_autre',
-                'pens_avant_dormir', 'contenus_avant_dormir',
-                'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
-                'pens_autre', 'pens_rien',
-                'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
-                'cont_livres', 'cont_rien', 'cont_autre',
                 'composition_logement_seul', 'composition_logement_conjoint',
                 'composition_logement_enfants', 'composition_logement_ami_parent_heberge',
                 'composition_logement_colocataire', 'composition_logement_parent_grand_parent',
@@ -1108,17 +1109,13 @@ class QuestionnaireView(View):
             SECTION_FIELDS = {
                 '1': [
                     'recrutement', 'recrutement_autre', 'freq_reves_not', 'parler_reves',
+                    'parler_reves_qui', 'parler_reves_prk_jamais',
                     'freq_reves', 'freq_cauchemar', 'mod_img', 'mod_son', 'mod_sens', 'mod_emot', 'mod_pens',
                     'img_coul', 'img_nb', 'img_net', 'img_flou', 'img_ns',
                     'etendue_souvenir_reve', 'temps_du_reve',
                     'heure_coucher', 'heure_reveil', 'latence_som', 'besoin_som',
                     'reveil_nuit', 'nuits_reveil', 'duree_eveil',
                     'aide_sommeil', 'aide_medic', 'aide_tisane', 'aide_autre',
-                    'pens_avant_dormir', 'contenus_avant_dormir',
-                    'pens_trav', 'pens_fin', 'pens_fam', 'pens_proch', 'pens_actu',
-                    'pens_autre', 'pens_rien', 'pens_autre_txt',
-                    'cont_tv', 'cont_series_films', 'cont_rs', 'cont_jeux',
-                    'cont_livres', 'cont_rien', 'cont_autre',
                 ],
                 '2': [
                     'perception_financiere', 'perception_risque_pauvrete',
@@ -1160,7 +1157,10 @@ class QuestionnaireView(View):
                 q = Questionnaire(profil=profil)
 
             for field_name in SECTION_FIELDS.get(str(section), []):
-                if field_name in {'pens_avant_dormir', 'contenus_avant_dormir'}:
+                if field_name in {
+                    'parler_reves_qui',
+                    'parler_reves_prk_jamais',
+                }:
                     setattr(q, field_name, request.POST.getlist(field_name))
                 elif field_name in BOOL_CHECKBOX_FIELDS:
                     setattr(q, field_name, field_name in request.POST)
