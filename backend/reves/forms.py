@@ -177,6 +177,8 @@ class QuestionnaireForm(forms.ModelForm):
             'det_3',
             'det_4',
             'det_5',
+            'violence_physique',
+            'violence_psychique',
         ]
         
         widgets = {
@@ -298,6 +300,8 @@ class QuestionnaireForm(forms.ModelForm):
             'det_3': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_4': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'det_5': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'violence_physique': forms.RadioSelect(attrs={'class': 'radio-input'}),
+            'violence_psychique': forms.RadioSelect(attrs={'class': 'radio-input'}),
         }
         
         labels = {
@@ -325,7 +329,7 @@ class QuestionnaireForm(forms.ModelForm):
             'besoin_som': 'En moyenne, de combien de temps de sommeil avez-vous besoin pour être en forme le lendemain ?',
             'reveil_nuit': 'Vous arrive-t-il de vous réveiller la nuit avec des difficultés pour vous rendormir ?',
             'nuits_reveil': 'Combien de nuits par semaine cela vous arrive-t-il ?',
-            'duree_eveil': 'En général, combien de temps restez-vous éveillé·e au cours de la nuit ?',
+            'duree_eveil': 'En général, combien de temps restez-vous éveillé·e au cours de la nuit (en additionnant tous vos réveils, en minutes) *.',
             'aide_sommeil': 'Utilisez-vous des aides pour dormir (médicaments, tisane, application de méditation, etc.) ?',
             'aide_medic': 'Médicaments',
             'aide_tisane': 'Tisane',
@@ -402,6 +406,8 @@ class QuestionnaireForm(forms.ModelForm):
             'det_3': 'Calme et détendu·e',
             'det_4': 'Si découragé·e que rien ne pouvait vous remonter le moral',
             'det_5': 'Heureux·se',
+            'violence_physique': 'Au cours de votre vie, est-il arrivé qu’une personne de votre famille ou un proche vous frappe, vous donne des coups avec des objets ou commette d’autres brutalités physiques sur vous ?',
+            'violence_psychique': 'Au cours de votre vie, est-il arrivé qu’une personne de votre famille ou un proche ait eu l’habitude de vous insulter, de vous humilier ou de créer un climat angoissant ?',
         }
 
     def __init__(self, *args, **kwargs):
@@ -635,6 +641,9 @@ class QuestionnaireForm(forms.ModelForm):
                 for value, label in field.choices
                 if value not in (None, '')
             ]
+
+        for field_name in ['violence_physique', 'violence_psychique']:
+            self.fields[field_name].required = True
 
     def clean(self):
         cleaned_data = super().clean()

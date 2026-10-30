@@ -1102,6 +1102,7 @@ class QuestionnaireView(View):
                 'perception_financiere', 'perception_risque_pauvrete', 'position_subjective_classe',
                 'perception_mobilite', 'discri_presence', 'sante_generale', 'gali',
                 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
+                'violence_physique', 'violence_psychique',
             }
             TIME_FIELDS = {'heure_coucher', 'heure_reveil', 'besoin_som'}
             DECIMAL_FIELDS = {'montant_loyer'}
@@ -1128,6 +1129,7 @@ class QuestionnaireView(View):
                     'discri_contexte_education', 'discri_contexte_sante', 'discri_contexte_famille',
                     'discri_contexte_autre',
                     'sante_generale', 'gali', 'det_1', 'det_2', 'det_3', 'det_4', 'det_5',
+                    'violence_physique', 'violence_psychique',
                 ],
                 '3': [
                     'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',

@@ -91,6 +91,8 @@ SECTION2_DATA = {
     'det_3': '3',
     'det_4': '3',
     'det_5': '3',
+    'violence_physique': '2',
+    'violence_psychique': '3',
 }
 
 SECTION3_DATA = {
@@ -169,6 +171,24 @@ class QuestionnaireFormValidationTest(TestCase):
 
     def _valid_data(self):
         return full_post_data()
+
+    def test_violence_questions_accept_all_decline_options(self):
+        for answer in ('1', '2', '3'):
+            data = self._valid_data()
+            data['violence_physique'] = answer
+            data['violence_psychique'] = answer
+            form = QuestionnaireForm(data=data)
+            self.assertTrue(form.is_valid(), msg=f"Réponse {answer}: {form.errors}")
+            self.assertEqual(form.cleaned_data['violence_physique'], int(answer))
+            self.assertEqual(form.cleaned_data['violence_psychique'], int(answer))
+
+    def test_violence_questions_are_both_required(self):
+        for field_name in ('violence_physique', 'violence_psychique'):
+            data = self._valid_data()
+            data.pop(field_name)
+            form = QuestionnaireForm(data=data)
+            self.assertFalse(form.is_valid())
+            self.assertIn(field_name, form.errors)
 
     # --- Soumission valide de base ---
     def test_valid_minimal_form(self):

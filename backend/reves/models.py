@@ -1014,6 +1014,24 @@ class Questionnaire(ParticipantKeyModel):
     det_3 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Calme et détendu·e')
     det_4 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Si découragé·e que rien ne pouvait vous remonter le moral')
     det_5 = models.IntegerField(choices=DetresseFrequenceChoices.choices, null=True, blank=True, verbose_name='Heureux/heureuse')
+
+    class ViolenceChoices(models.IntegerChoices):
+        OUI = 1, "Oui"
+        NON = 2, "Non"
+        PREFERE_NE_PAS_REPONDRE = 3, "Je préfère ne pas répondre"
+
+    violence_physique = models.IntegerField(
+        choices=ViolenceChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Au cours de votre vie, est-il arrivé qu’une personne de votre famille ou un proche vous frappe, vous donne des coups avec des objets ou commette d’autres brutalités physiques sur vous ?"
+    )
+    violence_psychique = models.IntegerField(
+        choices=ViolenceChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name="Au cours de votre vie, est-il arrivé qu’une personne de votre famille ou un proche ait eu l’habitude de vous insulter, de vous humilier ou de créer un climat angoissant ?"
+    )
     
     # Score de détresse psychologique (calculé à la sauvegarde)
     detresse_psychologique = models.IntegerField(
@@ -1258,7 +1276,7 @@ class Questionnaire(ParticipantKeyModel):
         null=True,
         blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(1440)],
-        verbose_name="En général, combien de temps restez-vous éveillé(e) durant un éveil ?"
+        verbose_name="En général, combien de temps restez-vous éveillé·e au cours de la nuit (en additionnant tous vos réveils, en minutes) *."
     )
 
     aide_sommeil = models.BooleanField(
