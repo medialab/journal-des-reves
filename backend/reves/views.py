@@ -1,7 +1,7 @@
 from django.db.models import F
 from django.db import transaction
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseRedirect, JsonResponse, FileResponse, HttpResponse
+from django.http import HttpResponseRedirect, JsonResponse, FileResponse, HttpResponse, StreamingHttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from django.views import generic, View
@@ -763,7 +763,23 @@ class ReveAudioDownloadView(View):
         '.webm': 'audio/webm',
     }
 
-    def _get_audio_content_type(self, audio_name):
+    def _get_audio_content_type(self, audio_name, audio_file=None):
+        if audio_file is not None:
+            try:
+                header = audio_file.read(12)
+                audio_file.seek(0)
+            except (OSError, ValueError):
+                header = b''
+
+            if header.startswith(b'RIFF') and header[8:12] == b'WAVE':
+                return 'audio/wav'
+            if header.startswith(b'\x1a\x45\xdf\xa3'):
+                return 'audio/webm'
+            if header.startswith(b'OggS'):
+                return 'audio/ogg'
+            if header[4:8] == b'ftyp':
+                return 'audio/mp4'
+
         extension = os.path.splitext(audio_name or '')[1].lower()
         if extension in self.AUDIO_MIME_BY_EXTENSION:
             return self.AUDIO_MIME_BY_EXTENSION[extension]
@@ -771,20 +787,40 @@ class ReveAudioDownloadView(View):
         guessed_type, _ = mimetypes.guess_type(audio_name or '')
         return guessed_type or 'application/octet-stream'
 
+    def _get_file_size(self, audio_file):
+        try:
+            return os.fstat(audio_file.fileno()).st_size
+        except (AttributeError, OSError):
+            current_position = audio_file.tell()
+            audio_file.seek(0, os.SEEK_END)
+            file_size = audio_file.tell()
+            audio_file.seek(current_position)
+            return file_size
+
+    def _stream_audio_range(self, audio_file, length):
+        try:
+            remaining = length
+            while remaining:
+                chunk = audio_file.read(min(64 * 1024, remaining))
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+                yield chunk
+        finally:
+            audio_file.close()
+
     def get(self, request, reve_id):
         """Retourne le fichier audio d'un rêve en lecture inline."""
         if not request.user.is_authenticated:
             return HttpResponse(status=403)
 
         reve = get_object_or_404(
-            Reve.objects.select_related('user', 'profil__user'),
+            Reve.objects,
             id=reve_id,
         )
 
-        is_owner = (
-            reve.user_id == request.user.id
-            or (reve.user_id is None and reve.profil.user_id == request.user.id)
-        )
+        owner = reve.user
+        is_owner = owner is not None and owner.id == request.user.id
         if not (is_owner or request.user.is_superuser):
             return HttpResponse(status=403)
 
@@ -793,12 +829,54 @@ class ReveAudioDownloadView(View):
 
         try:
             audio_name = os.path.basename(reve.audio.name or f'reve-{reve.id}.wav')
-            response = FileResponse(
-                reve.audio.open('rb'),
-                as_attachment=False,
-                filename=audio_name,
-                content_type=self._get_audio_content_type(audio_name),
-            )
+            audio_file = reve.audio.open('rb')
+            content_type = self._get_audio_content_type(audio_name, audio_file)
+            file_size = self._get_file_size(audio_file)
+            range_header = request.headers.get('Range')
+
+            if range_header:
+                if not range_header.startswith('bytes=') or ',' in range_header:
+                    audio_file.close()
+                    return HttpResponse(status=416)
+
+                range_value = range_header[6:].strip()
+                try:
+                    start_text, end_text = range_value.split('-', 1)
+                    if start_text:
+                        start = int(start_text)
+                        end = int(end_text) if end_text else file_size - 1
+                    else:
+                        suffix_length = int(end_text)
+                        start = max(file_size - suffix_length, 0)
+                        end = file_size - 1
+                    if start < 0 or start >= file_size or end < start:
+                        raise ValueError
+                    end = min(end, file_size - 1)
+                except (TypeError, ValueError):
+                    audio_file.close()
+                    response = HttpResponse(status=416)
+                    response['Content-Range'] = f'bytes */{file_size}'
+                    return response
+
+                content_length = end - start + 1
+                audio_file.seek(start)
+                response = StreamingHttpResponse(
+                    self._stream_audio_range(audio_file, content_length),
+                    status=206,
+                    content_type=content_type,
+                )
+                response['Content-Range'] = f'bytes {start}-{end}/{file_size}'
+                response['Content-Length'] = str(content_length)
+            else:
+                response = FileResponse(
+                    audio_file,
+                    as_attachment=False,
+                    filename=audio_name,
+                    content_type=content_type,
+                )
+                response['Content-Length'] = str(file_size)
+
+            response['Accept-Ranges'] = 'bytes'
             response['Content-Disposition'] = f'inline; filename="{audio_name}"'
             return response
         except Exception as error:
