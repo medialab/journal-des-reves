@@ -55,10 +55,9 @@ from .forms import QuestionnaireForm, SignUpForm
 def make_user_with_profil(username='testuser', days_old=10):
     """Crée un User + Profil éligible au questionnaire (créé il y a `days_old` jours)."""
     user = User.objects.create_user(username=username, password='testpass123')
-    profil = Profil.objects.create(
-        user=user,
-        email=f'{username}@test.com',
-    )
+    profil = user.profil
+    profil.email = f'{username}@test.com'
+    profil.save(update_fields=['email'])
     # Rétrodate la création pour passer le délai d'attente de 7 jours
     Profil.objects.filter(pk=profil.pk).update(
         created_at=timezone.now() - timezone.timedelta(days=days_old)
@@ -725,7 +724,6 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
         data['aide_tisane'] = 'on'
         data['mod_img'] = 'on'
         data['img_coul'] = 'on'
-        data['pens_trav'] = 'on'
         resp = self._final_post(data)
         self.assertEqual(resp.status_code, 302)
         q = Questionnaire.objects.get(profil=self.profil, is_completed=True)
@@ -737,7 +735,6 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
         self.assertTrue(q.aide_tisane)
         self.assertTrue(q.mod_img)
         self.assertTrue(q.img_coul)
-        self.assertTrue(q.pens_trav)
 
     def test_full_submission_saves_all_section2_fields(self):
         data = full_post_data()
@@ -913,6 +910,7 @@ class QuestionnaireEndToEndTest(TestCase):
         # ========== Section 1 : Rêves et sommeil ==========
         print("\n✓ Section 1 - Enregistrement des réponses sur les rêves et sommeil")
         section1_data = {
+            'recrutement': '5',              # Réseaux sociaux
             'freq_reves_not': '1',           # Oui souvent
             'mod_img': 'on',                 # La personne se souvient d'images
             'mod_son': 'on',                 # Et de sons
@@ -931,12 +929,6 @@ class QuestionnaireEndToEndTest(TestCase):
             'aide_sommeil': 'True',          # Utilise une aide
             'aide_tisane': 'on',             # Une tisane
             'aide_autre': 'on',              # Et autre chose
-            'pens_trav': 'on',               # Pense au travail
-            'pens_fam': 'on',                # Pense à la famille
-            'pens_autre': 'on',              # Pense à autre chose
-            'pens_autre_txt': 'Mes projets personnels',
-            'cont_series_films': 'on',       # Regarde séries/films
-            'cont_rs': 'on',                 # Consulte réseaux sociaux
         }
         resp1 = self._ajax_post('1', section1_data)
         self.assertEqual(resp1.status_code, 200)
@@ -960,6 +952,8 @@ class QuestionnaireEndToEndTest(TestCase):
             'det_3': '2',                    # Calme : souvent
             'det_4': '5',                    # Découragé : jamais
             'det_5': '2',                    # Heureux : souvent
+            'violence_physique': '1',
+            'violence_psychique': '1',
         }
         resp2 = self._ajax_post('2', section2_data)
         self.assertEqual(resp2.status_code, 200)
@@ -1002,7 +996,11 @@ class QuestionnaireEndToEndTest(TestCase):
         final_data.update(section3_data)
         
         resp_final = self.client.post(self.url, final_data, follow=False)
-        self.assertEqual(resp_final.status_code, 302)  # Redirection après succès
+        self.assertEqual(
+            resp_final.status_code,
+            302,
+            msg=f"Formulaire invalide: {resp_final.context['form'].errors.as_json() if resp_final.context and 'form' in resp_final.context else 'aucune erreur de formulaire'}",
+        )
         
         # ========== Vérification en base de données ==========
         print("✓ Vérification des données en base de données")
@@ -1027,12 +1025,6 @@ class QuestionnaireEndToEndTest(TestCase):
         self.assertTrue(q.aide_sommeil, "aide_sommeil mal enregistré")
         self.assertTrue(q.aide_tisane, "aide_tisane mal enregistré")
         self.assertTrue(q.aide_autre, "aide_autre mal enregistré")
-        self.assertTrue(q.pens_trav, "pens_trav mal enregistré")
-        self.assertTrue(q.pens_fam, "pens_fam mal enregistré")
-        self.assertTrue(q.pens_autre, "pens_autre mal enregistré")
-        self.assertEqual(q.pens_autre_txt, 'Mes projets personnels', "pens_autre_txt mal enregistré")
-        self.assertTrue(q.cont_series_films, "cont_series_films mal enregistré")
-        self.assertTrue(q.cont_rs, "cont_rs mal enregistré")
         
         # Section 2
         self.assertEqual(q.perception_financiere, 2, "perception_financiere mal enregistré")

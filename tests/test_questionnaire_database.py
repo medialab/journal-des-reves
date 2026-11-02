@@ -379,7 +379,7 @@ class QuestionnaireIntegrationTests(TestCase):
             # Socio-démographiques
             annee_naissance=1985,
             genre=Questionnaire.GenreChoices.FEMME,
-            habitat=Questionnaire.HabitatChoices.URBAIN,
+            habitat=Questionnaire.HabitatChoices.VILLE_MOYENNE,
             niv_diplome=Questionnaire.DiplomeChoices.BAC_2,
             # Rêves
             freq_reves_not=Questionnaire.FreqRevesNotChoices.QUELQUES_FOIS,
@@ -405,7 +405,7 @@ class QuestionnaireIntegrationTests(TestCase):
         # Vérifier tous les champs
         self.assertEqual(q_from_db.annee_naissance, 1985)
         self.assertEqual(q_from_db.genre, 1)
-        self.assertEqual(q_from_db.habitat, 2)
+        self.assertEqual(q_from_db.habitat, 3)
         self.assertTrue(q_from_db.mod_img)
         self.assertTrue(q_from_db.reveil_nuit)
         self.assertFalse(q_from_db.aide_sommeil)
