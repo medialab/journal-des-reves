@@ -91,6 +91,8 @@ SECTION2_DATA = {
     'det_3': '3',
     'det_4': '3',
     'det_5': '3',
+    'violence_physique': '2',
+    'violence_psychique': '3',
 }
 
 SECTION3_DATA = {
@@ -169,6 +171,24 @@ class QuestionnaireFormValidationTest(TestCase):
 
     def _valid_data(self):
         return full_post_data()
+
+    def test_violence_questions_accept_all_decline_options(self):
+        for answer in ('1', '2', '3'):
+            data = self._valid_data()
+            data['violence_physique'] = answer
+            data['violence_psychique'] = answer
+            form = QuestionnaireForm(data=data)
+            self.assertTrue(form.is_valid(), msg=f"Réponse {answer}: {form.errors}")
+            self.assertEqual(form.cleaned_data['violence_physique'], int(answer))
+            self.assertEqual(form.cleaned_data['violence_psychique'], int(answer))
+
+    def test_violence_questions_are_both_required(self):
+        for field_name in ('violence_physique', 'violence_psychique'):
+            data = self._valid_data()
+            data.pop(field_name)
+            form = QuestionnaireForm(data=data)
+            self.assertFalse(form.is_valid())
+            self.assertIn(field_name, form.errors)
 
     # --- Soumission valide de base ---
     def test_valid_minimal_form(self):
@@ -1520,6 +1540,16 @@ class SecureDreamAudioAccessTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('inline', response['Content-Disposition'])
+        self.assertEqual(response['Accept-Ranges'], 'bytes')
+
+    def test_audio_supports_range_requests(self):
+        self.client.login(username='audio-owner', password='testpass123')
+        response = self.client.get(self.url, HTTP_RANGE='bytes=0-4')
+
+        self.assertEqual(response.status_code, 206)
+        self.assertEqual(response['Content-Range'], 'bytes 0-4/18')
+        self.assertEqual(response['Content-Length'], '5')
+        self.assertEqual(response.content, b'test-')
 
     def test_audio_content_type_matches_file_extension(self):
         webm_reve = Reve.objects.create(
@@ -1532,6 +1562,26 @@ class SecureDreamAudioAccessTest(TestCase):
 
         self.client.login(username='audio-owner', password='testpass123')
         response = self.client.get(webm_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'audio/webm')
+
+    def test_audio_content_type_matches_container_when_extension_is_wrong(self):
+        webm_reve = Reve.objects.create(
+            user=self.owner_user,
+            profil=self.owner_profil,
+            audio=SimpleUploadedFile(
+                'dream.wav',
+                b'\x1a\x45\xdf\xa3\x93\x42\x86\x81\x01\x42\xf7\x81',
+                content_type='audio/wav',
+            ),
+            existence_souvenir=True,
+        )
+
+        self.client.login(username='audio-owner', password='testpass123')
+        response = self.client.get(
+            reverse('reves:reve_audio_short', args=[webm_reve.id])
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'audio/webm')

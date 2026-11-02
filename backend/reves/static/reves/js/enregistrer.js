@@ -84,8 +84,8 @@ function initRecorder() {
 
 	function findSupportedMimeType() {
 		const mimeTypes = [
-			'audio/mp4',
-			'audio/webm;codecs=opus',
+			...(IS_SAFARI ? ['audio/mp4'] : ['audio/webm;codecs=opus']),
+			...(IS_SAFARI ? ['audio/webm;codecs=opus'] : ['audio/mp4']),
 			'audio/wav',
 		];
 

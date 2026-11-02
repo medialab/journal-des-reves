@@ -272,7 +272,7 @@
                             <input type="number" id="id_nuits_reveil" name="nuits_reveil" min="0" max="7" class="form-input" value="{{ form.nuits_reveil.value|default:'' }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="id_duree_eveil">En général, combien de temps restez-vous éveillé·e durant un éveil (en minutes)?</label>
+                            <label class="form-label" for="id_duree_eveil">En général, combien de temps restez-vous éveillé·e au cours de la nuit (en additionnant tous vos réveils, en minutes) *.</label>
                             <input type="number" id="id_duree_eveil" name="duree_eveil" min="0" max="1440" class="form-input" value="{{ form.duree_eveil.value|default:'' }}">
                         </div>
                     </div>
@@ -295,6 +295,7 @@
                     </div>
 
                     </div>
+
                 </section>
 
                 <!-- ========== SECTION 2: POSITION SOCIALE, DISCRIMINATIONS, SANTE ========== -->
@@ -425,7 +426,7 @@
                         </div>
                     </div>
 
-                    <h3 class="subsection-violet">Santé générale perçue</h3>
+                    <h3 class="subsection-violet">Ressentis et expériences</h3>
 
                     <div class="form-group">
                         <label class="form-label">Comment est votre état de santé en général ?</label>
@@ -534,6 +535,36 @@
                             </div>
                             {% if form.det_5.errors %}<div class="error-message">{{ form.det_5.errors }}</div>{% endif %}
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Au cours de votre vie, est-il arrivé qu’une personne de votre famille ou un proche vous frappe, vous donne des coups avec des objets ou commette d’autres brutalités physiques sur vous ?</label>
+                        <div class="radio-group inline-boolean-group compact-choices compact-inline-row">
+                            {% for value, label in form.violence_physique.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="violence_physique" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.violence_physique.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.violence_physique.errors %}<div class="error-message">{{ form.violence_physique.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Au cours de votre vie, est-il arrivé qu’une personne de votre famille ou un proche ait eu l’habitude de vous insulter, de vous humilier ou de créer un climat angoissant ?</label>
+                        <div class="radio-group inline-boolean-group compact-choices compact-inline-row">
+                            {% for value, label in form.violence_psychique.field.choices %}
+                            {% if value != '' %}
+                            <label class="radio-label choice-label">
+                                <input type="radio" name="violence_psychique" value="{{ value }}" {% if forloop.first %}required{% endif %} {% if form.violence_psychique.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                                <span class="radio-text">{{ label }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.violence_psychique.errors %}<div class="error-message">{{ form.violence_psychique.errors }}</div>{% endif %}
                     </div>
                 </section>
                 

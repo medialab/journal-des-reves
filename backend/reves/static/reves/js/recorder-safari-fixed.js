@@ -57,9 +57,10 @@ class AudioRecorder {
      * Priorité: audio/mp4 (Safari) > audio/webm (Chrome/Firefox) > fallback
      */
     static findSupportedMimeType() {
+        const isSafari = document.documentElement.classList.contains('is-safari');
         const mimeTypes = [
-            'audio/mp4',           // Safari, iOS (BEST for Safari)
-            'audio/webm;codecs=opus',  // Chrome, Firefox
+            ...(isSafari ? ['audio/mp4'] : ['audio/webm;codecs=opus']),
+            ...(isSafari ? ['audio/webm;codecs=opus'] : ['audio/mp4']),
             'audio/wav',
             'audio/ogg',
         ];
