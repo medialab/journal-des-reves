@@ -415,7 +415,7 @@
                                 <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_emploi" class="discri-context" {% if form.discri_contexte_emploi.value %}checked{% endif %}><span class="checkbox-text">Lors d'une recherche d'emploi</span></label>
                                 <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_logement" class="discri-context" {% if form.discri_contexte_logement.value %}checked{% endif %}><span class="checkbox-text">Lors de la recherche d'un logement</span></label>
                                 <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_travail" class="discri-context" {% if form.discri_contexte_travail.value %}checked{% endif %}><span class="checkbox-text">Sur votre lieu de travail</span></label>
-                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_education" class="discri-context" {% if form.discri_contexte_education.value %}checked{% endif %}><span class="checkbox-text">A l'école, à l'université ou en formation</span></label>
+                                <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_education" class="discri-context" {% if form.discri_contexte_education.value %}checked{% endif %}><span class="checkbox-text">À l'école, à l'université ou en formation</span></label>
                                 <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_sante" class="discri-context" {% if form.discri_contexte_sante.value %}checked{% endif %}><span class="checkbox-text">Chez un médecin, professionnel de santé ou à l'hôpital</span></label>
                                 <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_famille" class="discri-context" {% if form.discri_contexte_famille.value %}checked{% endif %}><span class="checkbox-text">Dans le cadre familial</span></label>
                                 <label class="checkbox-label choice-label"><input type="checkbox" name="discri_contexte_autre" class="discri-context" {% if form.discri_contexte_autre.value %}checked{% endif %}><span class="checkbox-text">Lors d'une autre situation</span></label>
@@ -666,7 +666,7 @@
 
                     <!-- Revenus -->
                     <div class="form-group">
-                        <label class="form-label" for="id_revenus_tranche">En prenant en compte tous les types de revenus (salaire, aides sociales, chômages, aides familiales, revenus du patrimoine fonciers et financiers...) après impôts, quel est actuellement le montant mensuel des ressources de l’ensemble de votre ménage (conjoint inclus) ? </label>
+                        <label class="form-label" for="id_revenus_tranche">En prenant en compte tous les types de revenus (salaire, aides sociales, chômage, aides familiales, revenus du patrimoine fonciers et financiers...) après impôts, quel est actuellement le montant mensuel des ressources de l’ensemble de votre ménage (conjoint inclus) ? </label>
                         <select id="id_revenus_tranche" name="revenus_tranche" class="form-input">
                             <option value="">Sélectionnez...</option>
                             <option value="1" {% if form.revenus_tranche.value == "1" %}selected{% endif %}>Moins de 400 €</option>
