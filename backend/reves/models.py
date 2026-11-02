@@ -1108,13 +1108,13 @@ class Questionnaire(ParticipantKeyModel):
 
     # pratiques_reves
     class RecrutementChoices(models.IntegerChoices):
-        ENTOURAGE = 1, "Personne de mon entourage"
-        PRESENTATION = 2, "Présentation de l’enquête (cours, conférence, association…)"
-        AFFICHE = 3, "Affiche"
-        GROUPE_ENQUETRICE = 4, "Post de l'enquêtrice sur un groupe (Facebook, Discord ...)"
-        RESEAUX_SOCIAUX = 5, "Réseaux sociaux"
-        LISTE_DIFFUSION = 6, "Liste de diffusion"
+        RESEAUX_SOCIAUX = 5, "Réseaux sociaux (Instagram...)"
         MEDIAS = 7, "Médias"
+        AFFICHE = 3, "Affiche"
+        LISTE_DIFFUSION = 6, "Liste de diffusion"
+        ENTOURAGE = 1, "Personne de mon entourage"
+        PRESENTATION = 2, "Présentation (cours, conférence, association…)"
+        GROUPE_ENQUETRICE = 4, "Post sur un groupe précis (Facebook, Discord ...)"
         AUTRE = 8, "Autre"
 
     recrutement = models.IntegerField(
