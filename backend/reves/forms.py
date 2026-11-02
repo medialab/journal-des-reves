@@ -395,7 +395,7 @@ class QuestionnaireForm(forms.ModelForm):
             'discri_contexte_emploi': 'Lors d’une recherche d’emploi',
             'discri_contexte_logement': 'Lors de la recherche d’un logement',
             'discri_contexte_travail': 'Sur votre lieu de travail',
-            'discri_contexte_education': 'A l’école, à l’université ou en formation',
+            'discri_contexte_education': 'À l’école, à l’université ou en formation',
             'discri_contexte_sante': 'Chez un médecin, professionnel de santé ou à l’hôpital',
             'discri_contexte_famille': 'Dans le cadre familial',
             'discri_contexte_autre': 'Lors d’une autre situation',

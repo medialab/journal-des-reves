@@ -3,6 +3,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 from .services.email_service import send_welcome_email
 
 
@@ -13,9 +14,12 @@ def create_profil_on_user_creation(sender, instance, created, **kwargs):
     """
     if created:
         from .models import Profil
+        email = (instance.email or '').strip()
+        if not email:
+            email = f'pending-{instance.pk}-{timezone.now().timestamp()}@invalid.local'
         Profil.objects.get_or_create(
             user=instance,
-            defaults={'email': instance.email}
+            defaults={'email': email}
         )
 
 
