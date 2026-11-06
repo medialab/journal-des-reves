@@ -20,7 +20,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponseForbidden
 from django.views.generic.base import RedirectView
-from reves.views import SecurePasswordResetView
 
 
 def forbid_private_audio_access(_request, _path):
@@ -29,7 +28,6 @@ def forbid_private_audio_access(_request, _path):
 urlpatterns = [
     path("", include("reves.urls")),
     path("admin/", admin.site.urls),
-    path("accounts/reset/", SecurePasswordResetView.as_view(), name="password_reset"),
     path("accounts/", include("django.contrib.auth.urls")),
     path('', include('pwa.urls')),        # manifest.json + serviceworker.js + /offline
     path('webpush/', include('webpush.urls')),  # souscriptions push
