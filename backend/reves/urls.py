@@ -40,9 +40,6 @@ urlpatterns = [
     # Inscription avec consentement
     path("signup/", views.SignUpView.as_view(), name="signup"),
     
-    # Auth Django
-    path("accounts/", include("django.contrib.auth.urls")),
-    
     # Notifications API
     path("api/notifications/", views.NotificationsListView.as_view(), name="notifications_list"),
     path("api/notifications/<int:notification_id>/read/", views.NotificationMarkAsReadView.as_view(), name="notification_mark_read"),
