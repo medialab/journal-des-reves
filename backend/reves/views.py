@@ -5,9 +5,11 @@ from django.http import HttpResponseRedirect, JsonResponse, FileResponse, HttpRe
 from django.urls import reverse
 from django.contrib import messages
 from django.views import generic, View
+from django.views.generic.edit import FormView
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.views import PasswordResetView
 from django.core.cache import cache
 import uuid
 import os
@@ -22,6 +24,23 @@ from .services.journal_service import get_journal_data
 from .services.transcription_service import start_transcription_async
 from .forms import ReveForm, QuestionnaireForm, SignUpForm
 from .progression import PALIERS, PROFILS, calculer_profil, get_nuits, get_nuits_avec_souvenir, get_palier
+
+
+class SecurePasswordResetView(PasswordResetView):
+    """Always use HTTPS in password reset links sent by e-mail."""
+
+    def form_valid(self, form):
+        form.save(
+            use_https=True,
+            token_generator=self.token_generator,
+            from_email=self.from_email,
+            email_template_name=self.email_template_name,
+            subject_template_name=self.subject_template_name,
+            request=self.request,
+            html_email_template_name=self.html_email_template_name,
+            extra_email_context=self.extra_email_context,
+        )
+        return FormView.form_valid(self, form)
 
 
 # Security/abuse protection constants
