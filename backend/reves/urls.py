@@ -41,6 +41,7 @@ urlpatterns = [
     path("signup/", views.SignUpView.as_view(), name="signup"),
     
     # Auth Django
+    path("accounts/login/", views.SiteLoginView.as_view(), name="login"),
     path("accounts/", include("django.contrib.auth.urls")),
     
     # Notifications API

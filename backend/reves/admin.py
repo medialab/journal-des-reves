@@ -769,13 +769,37 @@ class QuestionnaireAdmin(ModelAdmin):
                 'genre',
                 'habitat',
                 'niv_diplome',
+                'profession',
+                'recrutement',
+                'recrutement_autre',
                 'travail_statut',
                 'a_deja_travaille',
             )
         )
         current_year = timezone.localdate().year
         counts = Counter()
+        distributions = {
+            'recrutement_label': Counter(),
+            'niv_diplome': Counter(),
+            'profession': Counter(),
+        }
         for row in rows:
+            if row['recrutement']:
+                recruitment_label = dict(Questionnaire.RecrutementChoices.choices).get(
+                    row['recrutement'],
+                    str(row['recrutement']),
+                )
+                if row['recrutement'] == Questionnaire.RecrutementChoices.AUTRE and row['recrutement_autre']:
+                    recruitment_label = f'{recruitment_label} : {row["recrutement_autre"].strip()}'
+                distributions['recrutement_label'][recruitment_label] += 1
+            for field, choices in (
+                ('niv_diplome', Questionnaire.DiplomeChoices.choices),
+                ('profession', Questionnaire.ProfessionChoices.choices),
+            ):
+                value = row[field]
+                if value:
+                    distributions[field][dict(choices).get(value, str(value))] += 1
+
             age = current_year - row['annee_naissance'] if row['annee_naissance'] else None
             age_group = self.age_group(age)
             genre = row['genre']
@@ -838,6 +862,14 @@ class QuestionnaireAdmin(ModelAdmin):
             'quotas': {group: quota_rows(group) for group in QUOTA_TARGETS},
             'out_of_age_range': counts['age:hors tranche'],
             'target': SURVEY_TARGET,
+            'distributions': {
+                group: [
+                    {'label': label, 'count': count}
+                    for label, count in values.most_common()
+                ]
+                for group, values in distributions.items()
+                if values
+            },
         }
 
     @staticmethod

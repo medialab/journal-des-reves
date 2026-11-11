@@ -10,30 +10,25 @@ from ..models import Reve
 
 def get_journal_data(profil):
 
-    reves = Reve.objects.filter(profil=profil, existence_souvenir=True)
+    reves = Reve.objects.filter(profil=profil, existence_souvenir=True).prefetch_related(
+        "emotions_reve",
+        "emotions_custom",
+    )
 
     total = reves.count()
 
     # ===== STATISTIQUES POUR LES GRAPHIQUES =====
     
     # 1. Émotions - Agréger pour un camembert
-    emotions_data = (
-        reves
-        .values("emotions_reve__libelle")
-        .exclude(emotions_reve__isnull=True)
-        .annotate(count=Count("id"))
-        .order_by("-count")
-    )
-    
-    # Formater pour le graphique
-    emotions_labels = [
-        emotion['emotions_reve__libelle'] 
-        for emotion in emotions_data
-    ]
-    emotions_counts = [
-        emotion['count'] 
-        for emotion in emotions_data
-    ]
+    emotion_counter = Counter()
+    for reve in reves:
+        for emotion in reve.emotions_reve.all():
+            emotion_counter[emotion.libelle] += 1
+        for emotion in reve.emotions_custom.all():
+            emotion_counter[emotion.libelle] += 1
+    emotions_data = emotion_counter.most_common()
+    emotions_labels = [label for label, _count in emotions_data]
+    emotions_counts = [count for _label, count in emotions_data]
 
     # 2. Étendue du rêve - Bar chart
     etendue_data = (
