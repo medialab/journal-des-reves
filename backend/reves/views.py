@@ -8,6 +8,7 @@ from django.views import generic, View
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.views import LoginView
 from django.core.cache import cache
 import uuid
 import os
@@ -20,7 +21,7 @@ import wave
 from .models import Reve, Profil, Questionnaire, ReveEmotion, ReveEmotionCustom, ReveElementCustom, ReveImageModalite, Notification
 from .services.journal_service import get_journal_data
 from .services.transcription_service import start_transcription_async
-from .forms import ReveForm, QuestionnaireForm, SignUpForm
+from .forms import EmailOrUsernameAuthenticationForm, ReveForm, QuestionnaireForm, SignUpForm
 from .progression import PALIERS, PROFILS, calculer_profil, get_nuits, get_nuits_avec_souvenir, get_palier
 
 
@@ -237,7 +238,8 @@ class ProfilView(LoginRequiredMixin, View):
         context = add_questionnaire_context(context, profil)
 
         return render(request, "reves/profil.html", context)
-    
+
+
     def post(self, request):
         """Gérer la mise à jour du profil"""
         try:
@@ -275,6 +277,11 @@ class ProfilView(LoginRequiredMixin, View):
                 'success': False,
                 'message': f'Erreur: {str(e)}'
             }, status=400)
+
+
+class SiteLoginView(LoginView):
+    authentication_form = EmailOrUsernameAuthenticationForm
+
 
 class DescriptionView(View):
     template_name = "reves/description.html"

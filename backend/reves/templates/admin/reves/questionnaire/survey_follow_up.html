@@ -16,6 +16,11 @@
   .quota-fill { height: 100%; border-radius: 999px; }
   .quota-fill.red { background: #dc2626; } .quota-fill.orange { background: #f59e0b; } .quota-fill.green { background: #16a34a; }
   .quota-note { color: #646464; font-size: .85rem; }
+  .histogram { display: flex; flex-direction: column; gap: .65rem; }
+  .histogram-row { display: grid; grid-template-columns: minmax(12rem, 1fr) 3rem; gap: .6rem; align-items: center; }
+  .histogram-label { overflow-wrap: anywhere; font-size: .88rem; }
+  .histogram-track { height: 1.15rem; background: #edf1f3; border-radius: 4px; overflow: hidden; }
+  .histogram-fill { height: 100%; min-width: 2px; background: #3245bd; }
 </style>
 
 <div class="survey-page">
@@ -32,16 +37,23 @@
     <section class="survey-card"><h2>Questionnaires complets</h2><div class="summary-value" id="complete-count">—</div></section>
   </div>
   <div id="quota-content" class="survey-grid" aria-live="polite"></div>
+  <div id="distribution-content" class="survey-grid" aria-live="polite"></div>
 </div>
 
 <script>
   const dataUrl = "{{ data_url }}";
   const dateInput = document.getElementById("start-date");
   const quotaContent = document.getElementById("quota-content");
+  const distributionContent = document.getElementById("distribution-content");
   const labels = {
     genre: "Genre", age: "Âge", genre_age: "Genre × âge", situation: "Situation",
     habitat: "Habitat", diplome: "Diplôme (25-29 ans)"
   };
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[character]));
+  }
   function render(data) {
     document.getElementById("registered-count").textContent = data.registered_count;
     document.getElementById("complete-count").textContent = data.complete_count;
@@ -53,6 +65,20 @@
         </div>`).join("")}
         ${group === "age" ? `<div class="quota-note">Hors tranche : ${data.out_of_age_range}</div>` : ""}
       </section>`).join("");
+    const distributionLabels = {
+      recrutement_label: "Mode de recrutement",
+      niv_diplome: "Niveau de diplôme",
+      profession: "Profession"
+    };
+    distributionContent.innerHTML = Object.entries(data.distributions || {}).map(([group, items]) => {
+      const maximum = Math.max(...items.map(item => item.count), 1);
+      return `<section class="survey-card"><h2>${distributionLabels[group]}</h2><div class="histogram">
+        ${items.map(item => `<div class="histogram-row">
+          <div><div class="histogram-label">${escapeHtml(item.label)}</div><div class="histogram-track"><div class="histogram-fill" style="width:${item.count / maximum * 100}%"></div></div></div>
+          <strong>${item.count}</strong>
+        </div>`).join("")}
+      </div></section>`;
+    }).join("");
   }
   async function refresh() {
     const response = await fetch(`${dataUrl}?start_date=${encodeURIComponent(dateInput.value)}`, {headers: {"Accept": "application/json"}});
