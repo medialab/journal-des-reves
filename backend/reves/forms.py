@@ -1,9 +1,34 @@
 from django import forms
 import re
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.utils import timezone
 from .models import Reve, Questionnaire, Profil
+
+
+class EmailOrUsernameAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(
+        label="Nom d'utilisateur ou adresse e-mail",
+        widget=forms.TextInput(attrs={"autofocus": True}),
+    )
+
+    def clean(self):
+        identifier = self.cleaned_data.get("username")
+        if identifier:
+            user = (
+                User.objects.filter(
+                    Q(username__iexact=identifier)
+                    | Q(email__iexact=identifier)
+                    | Q(profil__email__iexact=identifier)
+                )
+                .order_by("pk")
+                .first()
+            )
+            if user:
+                self.cleaned_data["username"] = user.username
+        return super().clean()
 
 
 class ReveForm(forms.ModelForm):

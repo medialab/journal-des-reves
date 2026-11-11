@@ -243,6 +243,7 @@ function initRecorder() {
 				clearInterval(recordingTimerInterval);
 				recordingTimerInterval = null;
 			}
+			window.dispatchEvent(new CustomEvent('recording-state-change'));
 		} else if (mediaRecorder.state === 'paused') {
 			mediaRecorder.resume();
 			statusText.textContent = 'Enregistrement en cours...';
@@ -252,6 +253,7 @@ function initRecorder() {
 				recordingStartTime = Date.now() - (parseInt(recordingTime.textContent.split(':')[0], 10) * 60000 + parseInt(recordingTime.textContent.split(':')[1], 10) * 1000);
 				recordingTimerInterval = setInterval(updateRecordingTime, 100);
 			}
+			window.dispatchEvent(new CustomEvent('recording-state-change'));
 		}
 	});
 
@@ -265,6 +267,7 @@ function initRecorder() {
 		stopBtn.disabled = true;
 		statusText.textContent = 'Enregistrement termine';
 		statusIndicator.classList.remove('recording');
+		window.dispatchEvent(new CustomEvent('recording-state-change'));
 	});
 
 	rerecordBtn.addEventListener('click', function() {
@@ -326,6 +329,7 @@ function initFormHandlers() {
 	const emotionsSection = document.getElementById('emotionsSection');
 	const audioInput = document.getElementById('audioInput');
 	const dreamTextarea = document.getElementById('dreamTextarea');
+	const recordingValidationMessage = document.getElementById('recordingValidationMessage');
 
 	if (!form) {
 		return;
@@ -412,7 +416,7 @@ function initFormHandlers() {
 			if (!dreamTextarea || !dreamTextarea.value.trim()) {
 				isValid = false;
 			}
-		} else if (!currentAudioBlob) {
+		} else if (!currentAudioBlob && mediaRecorder?.state !== 'paused') {
 			isValid = false;
 		}
 
@@ -423,8 +427,34 @@ function initFormHandlers() {
 			}
 		});
 
-		submitBtn.disabled = !isValid;
+		submitBtn.disabled = mediaRecorder?.state === 'paused' ? false : !isValid;
 	};
+
+	const showRecordingValidationMessage = (message) => {
+		if (!recordingValidationMessage) {
+			return;
+		}
+		recordingValidationMessage.textContent = `⚠ ${message}`;
+		showElement(recordingValidationMessage, 'block');
+	};
+
+	const clearRecordingValidationMessage = () => {
+		if (recordingValidationMessage) {
+			hideElement(recordingValidationMessage);
+		}
+	};
+
+	window.addEventListener('recording-state-change', () => {
+		clearRecordingValidationMessage();
+		checkForm();
+	});
+
+	submitBtn.addEventListener('click', (event) => {
+		if (mediaRecorder?.state === 'paused') {
+			event.preventDefault();
+			showRecordingValidationMessage('Vous devez arrêter l’enregistrement avant de soumettre.');
+		}
+	});
 
 	const updateChoiceStyles = () => {
 		const groups = {};
@@ -587,6 +617,7 @@ function initFormHandlers() {
 
 	form.addEventListener('submit', async function(e) {
 		e.preventDefault();
+		clearRecordingValidationMessage();
 
 		if (!noMemoryMode) {
 			if (RECORDING_MODE === 'text_only') {
@@ -595,9 +626,8 @@ function initFormHandlers() {
 					return;
 				}
 			} else if (!currentAudioBlob) {
-				// Vérification si enregistrement est en cours mais pas arrêté
 				if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-					alert('Vous devez arrêter l\'enregistrement avant de soumettre.');
+					showRecordingValidationMessage('Vous devez arrêter l’enregistrement avant de soumettre.');
 					return;
 				}
 				alert('Veuillez enregistrer un audio');
