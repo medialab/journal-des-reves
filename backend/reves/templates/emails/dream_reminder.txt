@@ -1,4 +1,4 @@
-Bonjour {{ username }},
+Bonjour,
 
 Merci d'avoir rempli le questionnaire ! Le plus long est fait. Il ne reste plus qu'à noter que tu ne te souviens pas ou à mettre des vocaux au réveil.
 
