@@ -1399,6 +1399,8 @@ class Notification(PublicKeyModel):
     class NotificationType(models.TextChoices):
         DAILY_REMINDER = 'daily_reminder', 'Rappel quotidien - Enregistrer un rêve'
         QUESTIONNAIRE_REMINDER = 'questionnaire_reminder', 'Rappel - Remplir le questionnaire'
+        QUESTIONNAIRE_EMAIL_REMINDER = 'questionnaire_email_reminder', 'E-mail - Remplir le questionnaire'
+        DREAM_EMAIL_REMINDER = 'dream_email_reminder', 'E-mail - Enregistrer un rêve'
         GENERAL = 'general', 'Notification générale'
     
     profil = models.ForeignKey(

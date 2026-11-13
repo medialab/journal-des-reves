@@ -49,6 +49,15 @@ class RevesConfig(AppConfig):
                 id='send_questionnaire_reminder',
                 replace_existing=True
             )
+
+            scheduler.add_job(
+                func=lambda: call_command('send_dream_reminder'),
+                trigger='cron',
+                hour=10,
+                minute=30,
+                id='send_dream_reminder',
+                replace_existing=True
+            )
             
             # Démarrer le scheduler
             scheduler.start()
@@ -87,6 +96,10 @@ Configuration dans settings.py:
             'task': 'reves.tasks.send_questionnaire_reminder_task',
             'schedule': crontab(hour=10, minute=0),  # 10h
         },
+        'send_dream_reminder': {
+            'task': 'reves.tasks.send_dream_reminder_task',
+            'schedule': crontab(hour=10, minute=30),  # 10h30
+        },
     }
 
 Créer reves/tasks.py:
@@ -113,6 +126,14 @@ Créer reves/tasks.py:
         except Exception as e:
             logger.error(f'❌ Error: {e}')
 
+    @shared_task
+    def send_dream_reminder_task():
+        try:
+            call_command('send_dream_reminder')
+            logger.info('✅ Dream reminders sent')
+        except Exception as e:
+            logger.error(f'❌ Error: {e}')
+
 Lancer:
     celery -A config worker -l info
     celery -A config beat -l info
@@ -129,6 +150,7 @@ Créer /usr/local/bin/reves_notifications.sh:
 cd /home/maudyaiche/dev/site_reves/backend
 /usr/bin/python3 manage.py send_daily_reminder >> /var/log/reves_daily.log 2>&1
 /usr/bin/python3 manage.py send_questionnaire_reminder >> /var/log/reves_questionnaire.log 2>&1
+/usr/bin/python3 manage.py send_dream_reminder >> /var/log/reves_dream.log 2>&1
 
 chmod +x /usr/local/bin/reves_notifications.sh
 

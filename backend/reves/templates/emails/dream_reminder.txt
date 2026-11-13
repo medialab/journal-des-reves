@@ -1,0 +1,14 @@
+Bonjour {{ username }},
+
+Merci d'avoir rempli le questionnaire ! Le plus long est fait. Il ne reste plus qu'à noter que tu ne te souviens pas ou à mettre des vocaux au réveil.
+
+Mis bout à bout, vos récits permettent de comprendre comment les études, le travail, les relations ou les inquiétudes du moment se glissent dans nos nuits.
+
+Au bout des 7 nuits, tu débloques ton rapport personnalisé qui te sera envoyé en fin d'enquête.
+
+👉 Enregistrer mon rêve : https://reves.sciencespo.fr/enregistrer/
+
+À demain matin,
+
+Maud Yaïche
+Doctorante en sociologie
