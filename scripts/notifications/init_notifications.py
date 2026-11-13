@@ -119,6 +119,7 @@ print("\\n✅ Système de notifications prêt à l'emploi!")
    Ajouter:
     0 8 * * * cd /path/to/site_reves/backend && python3 manage.py send_daily_reminder
     0 10 * * * cd /path/to/site_reves/backend && python3 manage.py send_questionnaire_reminder
+    30 10 * * * cd /path/to/site_reves/backend && python3 manage.py send_dream_reminder
    
    Avec APScheduler:
    $ pip install django-apscheduler

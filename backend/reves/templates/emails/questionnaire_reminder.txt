@@ -1,0 +1,18 @@
+Bonjour {{ username }},
+
+Tu t'es inscrit·e il y a quelques jours à l'enquête de Sciences Po sur les rêves, merci ! Il ne te reste qu'une étape avant de commencer : le questionnaire (5 minutes en moyenne, 10 minutes max).
+
+Pourquoi il compte autant ?
+Il permet de comprendre qui rêve de quoi, selon l'âge, les études, le travail ou le mode de vie. C'est lui qui permet une analyse sociologique.
+
+Et pour toi ?
+Dès que le questionnaire est rempli, tu peux noter si tu te souviens de tes rêves ou pas. À la fin, tu reçois ton rapport personnalisé sur ce que tes rêves disent de toi.
+
+👉 Remplir le questionnaire : https://reves.sciencespo.fr/questionnaire/
+
+Tes réponses restent confidentielles et servent uniquement à la recherche.
+
+Merci beaucoup,
+
+Maud Yaïche
+Doctorante en sociologie
