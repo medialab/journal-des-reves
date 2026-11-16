@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('questionnaireForm').addEventListener('submit', submitQuestionnaire);
 
 	document.getElementById('id_travail_statut').addEventListener('change', updateConditionalFields);
+	document.getElementById('id_habitat').addEventListener('change', updateRegionField);
 	document.querySelectorAll('input[name="a_deja_travaille"]').forEach(radio => {
 		radio.addEventListener('change', updateConditionalFields);
 	});
@@ -52,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	updateSectionTwoFields();
 	updateSectionThreeFields();
 	updateLogementFields();
+	updateRegionField();
 	bindSocialConditionsListeners();
 	addRequiredAsterisks();
 	normalizeServerValidationMessages();
@@ -540,6 +542,19 @@ function updateConditionalFields() {
 
 	const profession = document.getElementById('id_profession').value.trim();
 	fonctionManagementGroup.style.display = showProfession && profession ? 'block' : 'none';
+}
+
+function updateRegionField() {
+	const habitat = document.getElementById('id_habitat');
+	const regionGroup = document.getElementById('region_group');
+	const region = document.getElementById('id_region');
+	if (!habitat || !regionGroup || !region) return;
+
+	const showRegion = habitat.value !== '' && habitat.value !== '5';
+	regionGroup.classList.toggle('is-hidden-inline', !showRegion);
+	regionGroup.style.display = showRegion ? 'block' : 'none';
+	region.required = showRegion;
+	if (!showRegion) region.value = '';
 }
 
 function updateManagementFieldVisibility() {
