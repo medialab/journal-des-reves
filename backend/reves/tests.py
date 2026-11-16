@@ -98,6 +98,7 @@ SECTION3_DATA = {
     'annee_naissance': '1985',
     'genre': '1',
     'habitat': '2',
+    'region': 'Bretagne',
     'niv_diplome': '9',
     'revenus_tranche': '7',
     'travail_statut': '1',
@@ -965,6 +966,7 @@ class QuestionnaireEndToEndTest(TestCase):
             'annee_naissance': '1988',
             'genre': '1',                    # Femme
             'habitat': '2',                  # Urbain
+            'region': 'Bretagne',            # Région obligatoire hors Île-de-France
             'niv_diplome': '10',             # Bac +3/+4
             'revenus_tranche': '8',          # 1800 à 2000€
             'travail_statut': '1',           # En emploi

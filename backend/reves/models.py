@@ -590,6 +590,34 @@ class Questionnaire(ParticipantKeyModel):
         null=True,
         blank=True
     )
+
+    class RegionChoices(models.TextChoices):
+        ILE_DE_FRANCE = "Île-de-France", "Île-de-France"
+        AUVERGNE_RHONE_ALPES = "Auvergne-Rhône-Alpes", "Auvergne-Rhône-Alpes"
+        BOURGOGNE_FRANCHE_COMTE = "Bourgogne-Franche-Comté", "Bourgogne-Franche-Comté"
+        BRETAGNE = "Bretagne", "Bretagne"
+        CENTRE_VAL_DE_LOIRE = "Centre-Val de Loire", "Centre-Val de Loire"
+        CORSE = "Corse", "Corse"
+        GRAND_EST = "Grand Est", "Grand Est"
+        HAUTS_DE_FRANCE = "Hauts-de-France", "Hauts-de-France"
+        NORMANDIE = "Normandie", "Normandie"
+        NOUVELLE_AQUITAINE = "Nouvelle-Aquitaine", "Nouvelle-Aquitaine"
+        OCCITANIE = "Occitanie", "Occitanie"
+        PAYS_DE_LA_LOIRE = "Pays de la Loire", "Pays de la Loire"
+        PROVENCE_ALPES_COTE_D_AZUR = "Provence-Alpes-Côte d'Azur", "Provence-Alpes-Côte d'Azur"
+        GUADELOUPE = "Guadeloupe", "Guadeloupe"
+        GUYANE = "Guyane", "Guyane"
+        LA_REUNION = "La Réunion", "La Réunion"
+        MARTINIQUE = "Martinique", "Martinique"
+        MAYOTTE = "Mayotte", "Mayotte"
+
+    region = models.CharField(
+        max_length=64,
+        choices=RegionChoices.choices,
+        verbose_name="Région",
+        null=True,
+        blank=True,
+    )
     
     # Diplôme
     class DiplomeChoices(models.IntegerChoices):
@@ -1355,6 +1383,12 @@ class Questionnaire(ParticipantKeyModel):
 
     def save(self, *args, **kwargs):
         """Calcule automatiquement le score de détresse psychologique avant la sauvegarde"""
+        if self.habitat is None:
+            self.region = None
+        elif self.habitat == self.HabitatChoices.PARIS_REGION:
+            self.region = "Île-de-France"
+        else:
+            self.region = self.region or None
         self.detresse_psychologique = self._calculate_detresse_score()
         super().save(*args, **kwargs)
 

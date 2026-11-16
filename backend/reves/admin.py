@@ -768,6 +768,7 @@ class QuestionnaireAdmin(ModelAdmin):
                 'annee_naissance',
                 'genre',
                 'habitat',
+                'region',
                 'niv_diplome',
                 'profession',
                 'recrutement',
@@ -782,6 +783,11 @@ class QuestionnaireAdmin(ModelAdmin):
             'recrutement_label': Counter(),
             'niv_diplome': Counter(),
             'profession': Counter(),
+            'region': Counter({
+                'Île-de-France': 0,
+                **{label: 0 for _, label in Questionnaire.RegionChoices.choices},
+                'Non renseigné': 0,
+            }),
         }
         for row in rows:
             if row['recrutement']:
@@ -799,6 +805,8 @@ class QuestionnaireAdmin(ModelAdmin):
                 value = row[field]
                 if value:
                     distributions[field][dict(choices).get(value, str(value))] += 1
+
+            distributions['region'][row['region'] or 'Non renseigné'] += 1
 
             age = current_year - row['annee_naissance'] if row['annee_naissance'] else None
             age_group = self.age_group(age)

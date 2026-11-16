@@ -1217,7 +1217,7 @@ class QuestionnaireView(View):
                     'violence_physique', 'violence_psychique',
                 ],
                 '3': [
-                    'annee_naissance', 'genre', 'habitat', 'niv_diplome', 'revenus_tranche',
+                    'annee_naissance', 'genre', 'habitat', 'region', 'niv_diplome', 'revenus_tranche',
                     'logement', 'pret', 'montant_loyer',
                     'travail_statut', 'a_deja_travaille', 'profession', 'fonction_management',
                     'statut_couple',
@@ -1262,6 +1262,8 @@ class QuestionnaireView(View):
                             setattr(q, field_name, int(val))
                         except (ValueError, TypeError):
                             pass
+                    elif field_name == 'habitat':
+                        setattr(q, field_name, None)
                 elif field_name in TIME_FIELDS:
                     val = request.POST.get(field_name)
                     if val:
@@ -1279,6 +1281,12 @@ class QuestionnaireView(View):
                     if val is not None:
                         setattr(q, field_name, val)
 
+            if q.habitat is None:
+                q.region = None
+            elif q.habitat == Questionnaire.HabitatChoices.PARIS_REGION:
+                q.region = "Île-de-France"
+            elif 'region' in SECTION_FIELDS.get(str(section), []):
+                q.region = request.POST.get('region') or None
             q.save()
             request.session['questionnaire_id'] = q.id
             request.session.modified = True
