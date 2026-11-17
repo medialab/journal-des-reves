@@ -71,13 +71,13 @@ class Command(BaseCommand):
             if task.reminder_type == EmailReminderTask.ReminderType.QUESTIONNAIRE:
                 send_questionnaire_reminder_email(task.profil.user, task.profil)
                 notification_type = Notification.NotificationType.QUESTIONNAIRE_EMAIL_REMINDER
-                title = "Il te manque une étape pour lancer tes 7 nuits"
-                message = "Complète le questionnaire pour commencer l'enquête."
+                title = "Il vous manque une étape pour lancer vos 7 nuits"
+                message = "Complétez le questionnaire pour commencer l'enquête."
             else:
                 send_dream_reminder_email(task.profil.user, task.profil)
                 notification_type = Notification.NotificationType.DREAM_EMAIL_REMINDER
-                title = "Nuit 1 sur 7 : de quoi as-tu rêvé cette nuit ?"
-                message = "Enregistre un rêve ou indique que tu ne t'en souviens pas."
+                title = "Nuit 1 sur 7 : de quoi avez-vous rêvé cette nuit ?"
+                message = "Enregistrez un rêve ou indiquez que vous ne vous en souvenez pas."
         except (BadHeaderError, OSError, SMTPException, RuntimeError) as exc:
             task.attempts += 1
             task.last_error = str(exc)
