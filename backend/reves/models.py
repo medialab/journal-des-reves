@@ -1488,3 +1488,50 @@ class Notification(PublicKeyModel):
         self.is_read = True
         self.read_at = timezone.now()
         self.save()
+
+
+class EmailReminderTask(models.Model):
+    """Persistent outbox for the two reminder e-mail types."""
+
+    class ReminderType(models.TextChoices):
+        QUESTIONNAIRE = (
+            "questionnaire_email_reminder",
+            "Relance questionnaire",
+        )
+        DREAM = "dream_email_reminder", "Relance rêve"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "En attente"
+        SENT = "sent", "Envoyée"
+        FAILED = "failed", "Échec définitif"
+
+    profil = models.ForeignKey(Profil, on_delete=models.CASCADE)
+    reminder_type = models.CharField(max_length=50, choices=ReminderType.choices)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    attempts = models.PositiveSmallIntegerField(default=0)
+    available_at = models.DateTimeField(default=timezone.now)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("profil", "reminder_type"),
+                name="unique_email_reminder_task",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=("status", "available_at")),
+        ]
+
+
+class EmailReminderLock(models.Model):
+    """Database-backed mutex shared by all reminder workers."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
