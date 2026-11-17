@@ -57,7 +57,7 @@ def send_questionnaire_reminder_email(user, profil):
     return _send_templated_email(
         user,
         profil,
-        "Il te manque une étape pour lancer tes 7 nuits 🌙",
+        "Il vous manque une étape pour lancer vos 7 nuits 🌙",
         "questionnaire_reminder",
     )
 
@@ -66,6 +66,6 @@ def send_dream_reminder_email(user, profil):
     return _send_templated_email(
         user,
         profil,
-        "Nuit 1 sur 7 : de quoi as-tu rêvé cette nuit ?",
+        "Nuit 1 sur 7 : de quoi avez-vous rêvé cette nuit ?",
         "dream_reminder",
     )
