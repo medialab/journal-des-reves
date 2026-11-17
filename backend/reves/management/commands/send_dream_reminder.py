@@ -1,18 +1,16 @@
-"""Envoie les relances e-mail pour commencer le journal de rêves."""
+"""Met en file les relances e-mail pour commencer le journal de rêves."""
 
 from datetime import timedelta
-from smtplib import SMTPException
 
-from django.core.mail import BadHeaderError
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from reves.models import Notification, Profil, Questionnaire, Reve
-from reves.services.email_service import send_dream_reminder_email
+from reves.models import EmailReminderTask, Notification, Profil, Questionnaire, Reve
+from reves.services.email_queue import enqueue_reminder
 
 
 class Command(BaseCommand):
-    help = "Relance les participants qui n'ont encore enregistré aucune nuit"
+    help = "Met en file les relances rêve des participants éligibles"
     MAX_REMINDERS = 6
 
     def handle(self, *args, **options):
@@ -20,7 +18,6 @@ class Command(BaseCommand):
         questionnaire_cutoff = now - timedelta(days=7)
         one_week_ago = now - timedelta(days=7)
         count = 0
-        errors = 0
 
         profils = Profil.objects.filter(user__is_active=True).select_related("user")
         for profil in profils:
@@ -35,39 +32,17 @@ class Command(BaseCommand):
             if Reve.objects.filter(profil=profil).exists():
                 continue
 
-            last_email = Notification.objects.filter(
+            reminders = Notification.objects.filter(
                 profil=profil,
                 notification_type=Notification.NotificationType.DREAM_EMAIL_REMINDER,
-            ).order_by("-created_at").first()
-            reminder_count = Notification.objects.filter(
-                profil=profil,
-                notification_type=Notification.NotificationType.DREAM_EMAIL_REMINDER,
-            ).count()
-            if reminder_count >= self.MAX_REMINDERS:
+            )
+            last_email = reminders.order_by("-created_at").first()
+            if reminders.count() >= self.MAX_REMINDERS:
                 continue
             if last_email and last_email.created_at > one_week_ago:
                 continue
 
-            try:
-                send_dream_reminder_email(profil.user, profil)
-            except (BadHeaderError, OSError, SMTPException) as exc:
-                errors += 1
-                self.stderr.write(self.style.ERROR(
-                    f"✗ Échec pour {profil.user.username}: {exc}"
-                ))
-                continue
-
-            Notification.objects.create(
-                profil=profil,
-                notification_type=Notification.NotificationType.DREAM_EMAIL_REMINDER,
-                title="Nuit 1 sur 7 : de quoi as-tu rêvé cette nuit ?",
-                message="Enregistre un rêve ou indique que tu ne t'en souviens pas.",
-            )
+            enqueue_reminder(profil, EmailReminderTask.ReminderType.DREAM)
             count += 1
-            self.stdout.write(self.style.SUCCESS(
-                f"✓ Relance rêve envoyée à {profil.user.username}"
-            ))
 
-        self.stdout.write(self.style.SUCCESS(
-            f"{count} relances envoyées, {errors} échec(s)."
-        ))
+        self.stdout.write(self.style.SUCCESS(f"{count} relance(s) rêve mise(s) en file."))
