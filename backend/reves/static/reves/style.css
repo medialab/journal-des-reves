@@ -756,6 +756,22 @@ html.is-mobile-pwa .notification-bell {
     margin-top: 0;
 }
 
+#questionnaireForm section[data-section="3"] .region-question {
+    display: flex;
+    width: 100%;
+    margin-top: 0.66rem;
+}
+
+#questionnaireForm section[data-section="3"] .region-question.is-hidden-inline {
+    display: none;
+}
+
+#questionnaireForm section[data-section="3"] .region-question .form-input {
+    width: min(560px, 100%);
+    min-height: 3.25rem;
+    box-sizing: border-box;
+}
+
 #questionnaireForm .radio-label,
 #questionnaireForm .checkbox-label {
     padding: 0.24rem 0.48rem;

@@ -119,6 +119,12 @@ print("\\n✅ Système de notifications prêt à l'emploi!")
    Ajouter:
     0 8 * * * cd /path/to/site_reves/backend && python3 manage.py send_daily_reminder
     0 10 * * * cd /path/to/site_reves/backend && python3 manage.py send_questionnaire_reminder
+    30 10 * * * cd /path/to/site_reves/backend && python3 manage.py send_dream_reminder
+    * * * * * cd /path/to/site_reves/backend && python3 manage.py send_queued_email_reminders
+
+   Les deux premières commandes mettent les relances en file. Le worker est
+   appelé chaque minute mais applique une cadence minimale de 90 secondes,
+   une limite commune de 25 e-mails par heure et un verrou en base.
    
    Avec APScheduler:
    $ pip install django-apscheduler

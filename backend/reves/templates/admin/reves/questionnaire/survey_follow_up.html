@@ -68,7 +68,8 @@
     const distributionLabels = {
       recrutement_label: "Mode de recrutement",
       niv_diplome: "Niveau de diplôme",
-      profession: "Profession"
+      profession: "Profession",
+      region: "Région"
     };
     distributionContent.innerHTML = Object.entries(data.distributions || {}).map(([group, items]) => {
       const maximum = Math.max(...items.map(item => item.count), 1);

@@ -613,6 +613,19 @@
                         </div>
                     </div>
 
+                    <div class="form-group region-question is-hidden-inline" id="region_group">
+                        <label class="form-label" for="id_region">Dans quelle région vivez-vous ?</label>
+                        <select id="id_region" name="region" class="form-input">
+                            <option value="">Sélectionnez une réponse</option>
+                            {% for value, label in form.region.field.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if form.region.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.region.errors %}<div class="error-message">{{ form.region.errors }}</div>{% endif %}
+                    </div>
+
                     <!-- Année de naissance -->
                     <div class="form-group">
                         <label class="form-label" for="id_annee_naissance">Année de naissance</label>

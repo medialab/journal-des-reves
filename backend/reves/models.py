@@ -590,6 +590,34 @@ class Questionnaire(ParticipantKeyModel):
         null=True,
         blank=True
     )
+
+    class RegionChoices(models.TextChoices):
+        ILE_DE_FRANCE = "Île-de-France", "Île-de-France"
+        AUVERGNE_RHONE_ALPES = "Auvergne-Rhône-Alpes", "Auvergne-Rhône-Alpes"
+        BOURGOGNE_FRANCHE_COMTE = "Bourgogne-Franche-Comté", "Bourgogne-Franche-Comté"
+        BRETAGNE = "Bretagne", "Bretagne"
+        CENTRE_VAL_DE_LOIRE = "Centre-Val de Loire", "Centre-Val de Loire"
+        CORSE = "Corse", "Corse"
+        GRAND_EST = "Grand Est", "Grand Est"
+        HAUTS_DE_FRANCE = "Hauts-de-France", "Hauts-de-France"
+        NORMANDIE = "Normandie", "Normandie"
+        NOUVELLE_AQUITAINE = "Nouvelle-Aquitaine", "Nouvelle-Aquitaine"
+        OCCITANIE = "Occitanie", "Occitanie"
+        PAYS_DE_LA_LOIRE = "Pays de la Loire", "Pays de la Loire"
+        PROVENCE_ALPES_COTE_D_AZUR = "Provence-Alpes-Côte d'Azur", "Provence-Alpes-Côte d'Azur"
+        GUADELOUPE = "Guadeloupe", "Guadeloupe"
+        GUYANE = "Guyane", "Guyane"
+        LA_REUNION = "La Réunion", "La Réunion"
+        MARTINIQUE = "Martinique", "Martinique"
+        MAYOTTE = "Mayotte", "Mayotte"
+
+    region = models.CharField(
+        max_length=64,
+        choices=RegionChoices.choices,
+        verbose_name="Région",
+        null=True,
+        blank=True,
+    )
     
     # Diplôme
     class DiplomeChoices(models.IntegerChoices):
@@ -1355,6 +1383,12 @@ class Questionnaire(ParticipantKeyModel):
 
     def save(self, *args, **kwargs):
         """Calcule automatiquement le score de détresse psychologique avant la sauvegarde"""
+        if self.habitat is None:
+            self.region = None
+        elif self.habitat == self.HabitatChoices.PARIS_REGION:
+            self.region = "Île-de-France"
+        else:
+            self.region = self.region or None
         self.detresse_psychologique = self._calculate_detresse_score()
         super().save(*args, **kwargs)
 
@@ -1399,6 +1433,8 @@ class Notification(PublicKeyModel):
     class NotificationType(models.TextChoices):
         DAILY_REMINDER = 'daily_reminder', 'Rappel quotidien - Enregistrer un rêve'
         QUESTIONNAIRE_REMINDER = 'questionnaire_reminder', 'Rappel - Remplir le questionnaire'
+        QUESTIONNAIRE_EMAIL_REMINDER = 'questionnaire_email_reminder', 'E-mail - Remplir le questionnaire'
+        DREAM_EMAIL_REMINDER = 'dream_email_reminder', 'E-mail - Enregistrer un rêve'
         GENERAL = 'general', 'Notification générale'
     
     profil = models.ForeignKey(
@@ -1452,3 +1488,50 @@ class Notification(PublicKeyModel):
         self.is_read = True
         self.read_at = timezone.now()
         self.save()
+
+
+class EmailReminderTask(models.Model):
+    """Persistent outbox for the two reminder e-mail types."""
+
+    class ReminderType(models.TextChoices):
+        QUESTIONNAIRE = (
+            "questionnaire_email_reminder",
+            "Relance questionnaire",
+        )
+        DREAM = "dream_email_reminder", "Relance rêve"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "En attente"
+        SENT = "sent", "Envoyée"
+        FAILED = "failed", "Échec définitif"
+
+    profil = models.ForeignKey(Profil, on_delete=models.CASCADE)
+    reminder_type = models.CharField(max_length=50, choices=ReminderType.choices)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    attempts = models.PositiveSmallIntegerField(default=0)
+    available_at = models.DateTimeField(default=timezone.now)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("profil", "reminder_type"),
+                name="unique_email_reminder_task",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=("status", "available_at")),
+        ]
+
+
+class EmailReminderLock(models.Model):
+    """Database-backed mutex shared by all reminder workers."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)

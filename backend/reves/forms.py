@@ -146,6 +146,7 @@ class QuestionnaireForm(forms.ModelForm):
             'annee_naissance',
             'genre',
             'habitat',
+            'region',
             'niv_diplome',
             'revenus_tranche',
             'logement',
@@ -253,6 +254,7 @@ class QuestionnaireForm(forms.ModelForm):
             }),
             'genre': forms.RadioSelect(attrs={'class': 'radio-input'}),
             'habitat': forms.Select(attrs={'class': 'form-input'}),
+            'region': forms.Select(attrs={'class': 'form-input'}),
             'niv_diplome': forms.Select(attrs={
                 'class': 'form-input'
             }),
@@ -672,6 +674,15 @@ class QuestionnaireForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+
+        habitat = cleaned_data.get('habitat')
+        region = cleaned_data.get('region')
+        if habitat == Questionnaire.HabitatChoices.PARIS_REGION:
+            cleaned_data['region'] = "Île-de-France"
+        elif habitat is None:
+            cleaned_data['region'] = None
+        elif not region:
+            self.add_error('region', 'Ce champ est requis hors Île-de-France.')
 
         # Condition: si la modalité image n'est pas sélectionnée, vider les sous-choix images.
         if not cleaned_data.get('mod_img'):
