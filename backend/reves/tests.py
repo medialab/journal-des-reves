@@ -177,8 +177,8 @@ class QuestionnaireFormValidationTest(TestCase):
         cases = (
             ('sans habitat ni région', None, None, True, None),
             ('sans habitat avec région', None, 'Bretagne', True, None),
-            ('Paris sans région', '5', None, True, 'Île-de-France'),
-            ('Paris avec région', '5', 'Bretagne', True, 'Île-de-France'),
+            ('Paris sans région', '5', None, True, None),
+            ('Paris avec région', '5', 'Bretagne', True, None),
             ('hors Paris sans région', '2', None, False, None),
             ('hors Paris avec région', '2', 'Bretagne', True, 'Bretagne'),
         )
@@ -654,7 +654,7 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
                     self.assertIsNone(q.region)
                 elif habitat == '5':
                     self.assertEqual(q.habitat, 5)
-                    self.assertEqual(q.region, 'Île-de-France')
+                    self.assertIsNone(q.region)
                 else:
                     self.assertEqual(q.habitat, 2)
                     self.assertEqual(q.region, 'Bretagne')
@@ -763,8 +763,8 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
     def test_habitat_region_configurations_on_final_submission(self):
         cases = (
             ('sans habitat', None, None, None, True),
-            ('Paris sans région', '5', None, 'Île-de-France', True),
-            ('Paris avec région obsolète', '5', 'Bretagne', 'Île-de-France', True),
+            ('Paris sans région', '5', None, None, True),
+            ('Paris avec région obsolète', '5', 'Bretagne', None, True),
             ('hors Paris sans région', '2', None, None, False),
             ('hors Paris avec région', '2', 'Bretagne', 'Bretagne', True),
         )
