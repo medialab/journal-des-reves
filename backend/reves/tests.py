@@ -172,6 +172,34 @@ class QuestionnaireFormValidationTest(TestCase):
     def _valid_data(self):
         return full_post_data()
 
+    def test_habitat_region_configurations(self):
+        """Habitat et région sont normalisés pour toutes les configurations possibles."""
+        cases = (
+            ('sans habitat ni région', None, None, True, None),
+            ('sans habitat avec région', None, 'Bretagne', True, None),
+            ('Paris sans région', '5', None, True, 'Île-de-France'),
+            ('Paris avec région', '5', 'Bretagne', True, 'Île-de-France'),
+            ('hors Paris sans région', '2', None, False, None),
+            ('hors Paris avec région', '2', 'Bretagne', True, 'Bretagne'),
+        )
+
+        for label, habitat, region, is_valid, expected_region in cases:
+            with self.subTest(label=label):
+                data = self._valid_data()
+                if habitat is None:
+                    data.pop('habitat', None)
+                else:
+                    data['habitat'] = habitat
+                if region is None:
+                    data.pop('region', None)
+                else:
+                    data['region'] = region
+
+                form = QuestionnaireForm(data=data)
+                self.assertEqual(form.is_valid(), is_valid, msg=f"{label}: {form.errors}")
+                if is_valid:
+                    self.assertEqual(form.cleaned_data['region'], expected_region)
+
     def test_violence_questions_accept_all_decline_options(self):
         for answer in ('1', '2', '3'):
             data = self._valid_data()
@@ -602,6 +630,35 @@ class QuestionnaireViewAjaxSaveTest(TestCase):
         self.assertEqual(q.lieu_naissance, 1)
         self.assertEqual(q.lieu_naissance_pere, 2)
 
+    def test_ajax_section3_normalizes_region_by_habitat(self):
+        cases = (
+            ('sans habitat', None, None),
+            ('sans habitat avec région', None, 'Bretagne'),
+            ('Paris sans région', '5', None),
+            ('Paris avec région obsolète', '5', 'Bretagne'),
+            ('hors Paris avec région', '2', 'Bretagne'),
+        )
+
+        for label, habitat, region in cases:
+            with self.subTest(label=label):
+                data = {}
+                if habitat is not None:
+                    data['habitat'] = habitat
+                if region is not None:
+                    data['region'] = region
+
+                self._ajax_post('3', data)
+                q = Questionnaire.objects.get(profil=self.profil)
+                if habitat is None:
+                    self.assertIsNone(q.habitat)
+                    self.assertIsNone(q.region)
+                elif habitat == '5':
+                    self.assertEqual(q.habitat, 5)
+                    self.assertEqual(q.region, 'Île-de-France')
+                else:
+                    self.assertEqual(q.habitat, 2)
+                    self.assertEqual(q.region, 'Bretagne')
+
     def test_ajax_section3_saves_a_deja_travaille_lowercase_true(self):
         """Valeur 'True' (majuscule) envoyée par le template → doit sauvegarder True (le bug était en minuscule)."""
         self._ajax_post('1', SECTION1_DATA)
@@ -702,6 +759,47 @@ class QuestionnaireViewFinalSubmitTest(TestCase):
 
     def _final_post(self, data):
         return self.client.post(self.url, data, follow=False)
+
+    def test_habitat_region_configurations_on_final_submission(self):
+        cases = (
+            ('sans habitat', None, None, None, True),
+            ('Paris sans région', '5', None, 'Île-de-France', True),
+            ('Paris avec région obsolète', '5', 'Bretagne', 'Île-de-France', True),
+            ('hors Paris sans région', '2', None, None, False),
+            ('hors Paris avec région', '2', 'Bretagne', 'Bretagne', True),
+        )
+
+        for label, habitat, region, expected_region, should_submit in cases:
+            with self.subTest(label=label):
+                Questionnaire.objects.filter(profil=self.profil).delete()
+                session = self.client.session
+                session.pop('questionnaire_id', None)
+                session.pop('questionnaire_last_submit_at', None)
+                session.pop('questionnaire_last_submission_id', None)
+                session.pop('questionnaire_data', None)
+                session.save()
+                data = full_post_data()
+                if habitat is None:
+                    data.pop('habitat', None)
+                else:
+                    data['habitat'] = habitat
+                if region is None:
+                    data.pop('region', None)
+                else:
+                    data['region'] = region
+
+                resp = self._final_post(data)
+                if should_submit:
+                    self.assertEqual(resp.status_code, 302)
+                else:
+                    self.assertEqual(resp.status_code, 200)
+                    continue
+                q = Questionnaire.objects.get(profil=self.profil, is_completed=True)
+                if habitat is None:
+                    self.assertIsNone(q.habitat)
+                else:
+                    self.assertEqual(q.habitat, int(habitat))
+                self.assertEqual(q.region, expected_region)
 
     def test_full_submission_creates_completed_questionnaire(self):
         """Soumission complète → questionnaire marqué is_completed=True."""

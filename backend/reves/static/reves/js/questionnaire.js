@@ -227,6 +227,8 @@ function showSection(sectionNumber) {
 		section.classList.remove('active');
 	});
 
+	updateRegionField();
+
 	const targetSections = document.querySelectorAll(`#questionnaireForm [data-section="${sectionNumber}"]`);
 	if (targetSections.length > 0) {
 		targetSections.forEach(section => {
