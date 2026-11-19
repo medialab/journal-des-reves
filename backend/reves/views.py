@@ -1281,10 +1281,8 @@ class QuestionnaireView(View):
                     if val is not None:
                         setattr(q, field_name, val)
 
-            if q.habitat is None:
+            if q.habitat is None or q.habitat == Questionnaire.HabitatChoices.PARIS_REGION:
                 q.region = None
-            elif q.habitat == Questionnaire.HabitatChoices.PARIS_REGION:
-                q.region = "Île-de-France"
             elif 'region' in SECTION_FIELDS.get(str(section), []):
                 q.region = request.POST.get('region') or None
             q.save()

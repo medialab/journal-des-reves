@@ -677,12 +677,10 @@ class QuestionnaireForm(forms.ModelForm):
 
         habitat = cleaned_data.get('habitat')
         region = cleaned_data.get('region')
-        if habitat == Questionnaire.HabitatChoices.PARIS_REGION:
-            cleaned_data['region'] = "Île-de-France"
-        elif habitat is None:
+        if habitat is None or habitat == Questionnaire.HabitatChoices.PARIS_REGION:
             cleaned_data['region'] = None
         elif not region:
-            self.add_error('region', 'Ce champ est requis hors Île-de-France.')
+            self.add_error('region', 'Ce champ est requis hors Paris.')
 
         # Condition: si la modalité image n'est pas sélectionnée, vider les sous-choix images.
         if not cleaned_data.get('mod_img'):
