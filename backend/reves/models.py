@@ -1383,10 +1383,8 @@ class Questionnaire(ParticipantKeyModel):
 
     def save(self, *args, **kwargs):
         """Calcule automatiquement le score de détresse psychologique avant la sauvegarde"""
-        if self.habitat is None:
+        if self.habitat is None or self.habitat == self.HabitatChoices.PARIS_REGION:
             self.region = None
-        elif self.habitat == self.HabitatChoices.PARIS_REGION:
-            self.region = "Île-de-France"
         else:
             self.region = self.region or None
         self.detresse_psychologique = self._calculate_detresse_score()
