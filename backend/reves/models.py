@@ -610,6 +610,7 @@ class Questionnaire(ParticipantKeyModel):
         LA_REUNION = "La Réunion", "La Réunion"
         MARTINIQUE = "Martinique", "Martinique"
         MAYOTTE = "Mayotte", "Mayotte"
+        AUTRE_PAYS = "Dans un autre pays", "Dans un autre pays"
 
     region = models.CharField(
         max_length=64,
